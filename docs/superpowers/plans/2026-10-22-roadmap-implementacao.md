@@ -10,7 +10,7 @@
 
 **Especificação:** [requisitos](../../../requisitos.md), [arquitetura](../../../arquitetura.md), [design](../../../design.md) e [README](../../../README.md). Operação e qualidade: [onboarding](../../onboarding.md), [setup](../../setup.md) e [quality](../../quality.md).
 
-**Data:** 22/10/2026. **Estado:** M0 e T01 concluídos, conforme [plano da fundação](2026-10-22-m0-fundacao.md). T02/T03 ainda não iniciadas; M1 ainda não está completo. As decisões de produto continuam nos documentos canônicos, com propostas e confirmações separadas.
+**Data:** 22/10/2026. **Estado atual:** M0 e T01–T06 entregues localmente; T03 conserva a conferência com leitor de tela real. T07 integra atividades, conquistas e crédito automático, com execução/evidências em [plano T07](2026-10-22-t07-atividades.md). Análise e compensações são a próxima entrega, T08. Decisões confirmadas e propostas restantes constam em requisitos §6.1. A seção1 preserva o ponto de partida do planejamento.
 
 ## 1. Ponto de partida e restrições
 
@@ -362,4 +362,8 @@ Planos/cobrança, colaboradores, transferência, múltiplas fotos por registro d
 - Skill local do Vibe Coding Toolkit descoberta no cliente e consultada, com os fluxos de planejamento/orquestração; skills locais de planejamento, brainstorming, revisão e verificação usadas de forma proporcional ao pedido documental.
 - Na elaboração inicial do roadmap, versões e provedores ainda não estavam escolhidos. M0 confirmou D01, selecionou versões e executou consultas reais ao Context7 e às fontes oficiais, registradas no plano da fundação. Isso atualiza a descoberta inicial sem alegar instalação ou integração já concluída.
 
-T01 e a implementação de T03 foram entregues; resta a conferência de T03 com leitor de tela real. T02 exige decisões de acesso/limites e o ambiente local comprovado; M1 ainda não está completo. D03–D09 bloqueiam as respectivas políticas nos pacotes indicados em requisitos §6.1. A aprovação do roadmap não autoriza por si só publicação, cobrança ou migração em ambiente real.
+O estado atual está no início deste documento e nos planos de execução de cada
+entrega. A próxima etapa é T08, análise/compensações; D05 exige confirmação antes
+da respectiva regra. Os demais limites pendentes mantêm suas dependências em
+requisitos §6.1. A aprovação do roadmap não autoriza publicação, cobrança ou
+migração em ambiente real.

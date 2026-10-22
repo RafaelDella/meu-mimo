@@ -35,7 +35,8 @@ export async function mediaFixture(t) {
   const assets = new Set();
   const bucketName = process.env.MEDIA_BUCKET;
   const prefix = process.env.MEDIA_PREFIX;
-  assert.equal(bucketName, 'meumimo-t06-private'); assert.equal(prefix, 'integration');
+  assert.equal(bucketName, 'meumimo-t06-private');
+  assert.equal(prefix, process.env.T02_TASK === 't07' ? 't07-integration' : 'integration');
   const storage = fixture.auth.storage.from(bucketName);
 
   async function collection(purpose = 'MEMORY', member = participation, currentStore = store) {

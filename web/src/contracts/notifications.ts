@@ -1,8 +1,8 @@
-export type NotificationKind = 'INVITATION_ACCEPTED' | 'COMMENT_CREATED';
+export type NotificationKind = 'INVITATION_ACCEPTED' | 'COMMENT_CREATED' | 'SUBMISSION_RECEIVED';
 export type NotificationTarget = {
   storeId: string; participantMembershipId: string;
-} & ({ type: 'membership'; path: string } | {
-  type: 'conversation'; conversationId: string; subjectType: 'SUBMISSION' | 'TICKET'; subjectId: string; path: null;
+} & ({ type: 'membership'; path: string } | { type: 'submission'; subjectId: string; path: string } | {
+  type: 'conversation'; conversationId: string; subjectType: 'SUBMISSION' | 'TICKET'; subjectId: string; path: string | null;
 });
 export type NotificationView = {
   id: string; kind: NotificationKind; storeId: string; storeName: string | null;

@@ -1,16 +1,18 @@
 import Link from 'next/link';
 import type { StoreView } from '@/contracts/stores';
 
-export type StoreSection = 'home' | 'people' | 'invitations' | 'settings';
+export type StoreSection = 'home' | 'activities' | 'people' | 'invitations' | 'settings';
 export function StoreNavigation({ store, section }: { store: StoreView; section: StoreSection }) {
   const base = `/lojas/${store.id}`;
   const links: { section: StoreSection; href: string; label: string }[] = store.role === 'MERCHANT' ? [
     { section: 'home', href: base, label: 'Resumo' },
+    { section: 'activities', href: `${base}/atividades`, label: 'Atividades' },
     { section: 'people', href: `${base}/pessoas`, label: 'Pessoas' },
     { section: 'invitations', href: `${base}/convites`, label: 'Convites' },
     { section: 'settings', href: `${base}/configuracoes`, label: 'Configurações' },
   ] : [
     { section: 'home', href: base, label: 'Lojinha' },
+    { section: 'activities', href: `${base}/atividades`, label: 'Atividades' },
     { section: 'people', href: `${base}/pessoas`, label: 'Minha participação' },
   ];
   return <header className="store-context">

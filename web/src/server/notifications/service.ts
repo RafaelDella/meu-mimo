@@ -55,6 +55,6 @@ export async function resolveNotificationTarget(identity: Identity, notification
   return withStoreTransaction(identity, storeId, async scope => {
     const current = await scope.tx.notification.findFirst({ where: { id, ...notificationAudience(identity, storeId) }, select: notificationSelect });
     if (!current) unavailable();
-    return notificationTarget(current);
+    return notificationTarget(current, scope.tx);
   });
 }

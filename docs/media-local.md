@@ -123,3 +123,13 @@ saudável; publicação/monitoramento operacional ainda pertencem ao piloto.
 Histórico estruturado, backups,
 exportação/anonimização e restauração operacional completa pertencem a T14.
 Nenhum serviço pago, publicação ou arquivo pessoal foi usado.
+
+## Integração da origem T07
+
+[T07](activities-local.md) registra coleção EVIDENCE no rascunho e publica a foto
+READY na transação do recebimento. A mesma transação fecha uploads, preserva a
+evidência contra remoção genérica e atualiza hold: true manual/PENDING, false
+automático/APPROVED. Rascunho continua restrito ao autor, inclusive para lojista.
+Namespaces t07-development/t07-integration compartilham somente o bucket privado
+e ferramentas de T06; bancos, credenciais de gateway e temporários são próprios.
+Complemento/análise são T08 e álbum real continua T11.

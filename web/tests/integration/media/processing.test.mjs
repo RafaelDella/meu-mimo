@@ -197,7 +197,7 @@ test('mídia: Chromium autenticado reproduz derivado MP4 através de consulta pr
 test('mídia: CLI once processa arquivo com credencial separada e repetir não duplica derivados', async t => {
   const f = await mediaFixture(t);
   const item = await f.upload(f.owner, await fixtureBytes('photo.png'));
-  const run = () => execute(process.execPath, ['scripts/media-local.mjs', 'integration', '--once'],
+  const run = () => execute(process.execPath, ['scripts/media-local.mjs', process.env.T02_TASK ?? 't06', 'integration', '--once'],
     { windowsHide: true, timeout: 60_000, maxBuffer: 2_000_000 });
   const first = JSON.parse((await run()).stdout.trim());
   assert.ok(first.processed >= 1); assert.equal(first.failed, 0);

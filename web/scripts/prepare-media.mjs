@@ -6,9 +6,11 @@ import { createClient } from '@supabase/supabase-js';
 import { readState, taskResources, webRoot } from './local-runtime.mjs';
 import { prepareMediaTools } from './media-tools.mjs';
 
-execFileSync(process.execPath, ['scripts/prepare-local.mjs', 't06'], { cwd: webRoot, windowsHide: true, stdio: 'inherit' });
-const resources = taskResources('t06');
-const state = readState('t06');
+const task = process.argv[2] ?? 't06';
+if (!['t06', 't07'].includes(task)) throw new Error('Use t06 ou t07 para preparar mídia.');
+execFileSync(process.execPath, ['scripts/prepare-local.mjs', task], { cwd: webRoot, windowsHide: true, stdio: 'inherit' });
+const resources = taskResources(task);
+const state = readState(task);
 const tools = await prepareMediaTools();
 const client = createClient(state.runtime.SUPABASE_URL, state.integration.SUPABASE_SERVICE_ROLE_KEY,
   { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } });
@@ -27,4 +29,4 @@ finally { await authDatabase.end(); }
 state.media = { bucket, ffmpeg: tools.ffmpeg, ffprobe: tools.ffprobe };
 for (const target of ['integration', 'development']) mkdirSync(path.join(resources.directory, 'temp', target), { recursive: true });
 writeFileSync(resources.statePath, JSON.stringify(state, null, 2), { mode: 0o600 });
-process.stdout.write('Mídia T06 preparada: bucket privado, ferramentas locais e segredos separados do Next.\n');
+process.stdout.write(`Mídia ${task.toUpperCase()} preparada: bucket privado, ferramentas locais e segredos separados do Next.\n`);

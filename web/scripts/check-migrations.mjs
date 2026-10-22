@@ -5,6 +5,7 @@ import { cpSync, mkdirSync, readdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import pg from 'pg';
 import { artifactRoot, readState, webRoot } from './local-runtime.mjs';
+import { checkActivitiesMigration } from './check-activities-migration.mjs';
 
 const state = readState();
 const databaseName = `meumimo_t02_migrations_${randomUUID().replaceAll('-', '')}`;
@@ -58,7 +59,7 @@ try {
   const applied = await database.query('SELECT count(*)::int AS count FROM app._prisma_migrations WHERE finished_at IS NOT NULL');
   assert.equal(applied.rows[0].count, names.length);
   const policies = await database.query("SELECT count(*)::int AS count FROM pg_tables WHERE schemaname = 'app' AND rowsecurity = true");
-  assert.equal(policies.rows[0].count, 16);
+  assert.equal(policies.rows[0].count, 21);
   const priorStore = await database.query('SELECT state, timezone, name FROM app."Store" WHERE id = $1', [storeId]);
   assert.deepEqual(priorStore.rows[0], { state: 'ACTIVE', timezone: 'America/Sao_Paulo', name: 'Lojinha anterior' });
   const priorMembership = await database.query('SELECT "closedAt", role FROM app."Membership" WHERE id = $1', [membershipId]);
@@ -77,7 +78,8 @@ try {
       await database.query(`SET LOCAL ROLE ${role}`);
       await assert.rejects(database.query('SELECT * FROM app."Profile"'), { code: '42501' });
     } finally { await database.query('ROLLBACK'); }
-    for (const table of ['Invitation', 'StoreAudit', 'Conversation', 'Comment', 'OutboxEvent', 'Notification', 'MediaCollection', 'MediaAsset', 'MediaPart']) {
+    for (const table of ['Invitation', 'StoreAudit', 'Conversation', 'Comment', 'OutboxEvent', 'Notification', 'MediaCollection', 'MediaAsset', 'MediaPart',
+      'Activity', 'ActivityEvent', 'ActivitySubmission', 'SubmissionEvent', 'PointsEntry']) {
       await database.query('BEGIN');
       try {
         await database.query(`SET LOCAL ROLE ${role}`);
@@ -146,6 +148,7 @@ try {
   await assert.rejects(runtime.query('INSERT INTO app."AdminGrant" ("profileId") VALUES ($1)', [id]), { code: '42501' });
   await assert.rejects(runtime.query('UPDATE app."Profile" SET "suspendedAt" = now() WHERE id = $1', [id]), { code: '42501' });
   await assert.rejects(runtime.query('CREATE TABLE app.forbidden (id int)'), { code: '42501' });
+  await checkActivitiesMigration(runtime, { storeId, merchantId: id, participantId, profileId: secondProfile, otherStoreId });
   process.stdout.write('Migrações: banco vazio, evolução com dados preservados, RLS e privilégios efetivos comprovados.\n');
 } finally {
   await runtime?.end();

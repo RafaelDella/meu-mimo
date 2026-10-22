@@ -9,9 +9,10 @@ if (!['unit', 'integration'].includes(mode) || process.argv.length > 3) {
   throw new Error('Modo de testes inválido: use unit ou integration.');
 }
 const excluded = new Set(['e2e', 'fixtures', 'integration']);
-if (mode === 'integration' && !['t04', 't05', 't06'].includes(process.env.T02_TASK)) excluded.add('stores');
-if (mode === 'integration' && !['t05', 't06'].includes(process.env.T02_TASK)) { excluded.add('conversations'); excluded.add('notifications'); }
-if (mode === 'integration' && process.env.T02_TASK !== 't06') excluded.add('media');
+if (mode === 'integration' && !['t04', 't05', 't06', 't07'].includes(process.env.T02_TASK)) excluded.add('stores');
+if (mode === 'integration' && !['t05', 't06', 't07'].includes(process.env.T02_TASK)) { excluded.add('conversations'); excluded.add('notifications'); }
+if (mode === 'integration' && !['t06', 't07'].includes(process.env.T02_TASK)) excluded.add('media');
+if (mode === 'integration' && process.env.T02_TASK !== 't07') excluded.add('activities');
 const root = mode === 'integration' ? path.join(testsRoot, 'integration') : testsRoot;
 if (mode === 'integration') {
   try { await access(root); } catch { throw new Error('Nenhuma suíte de integração implementada.'); }

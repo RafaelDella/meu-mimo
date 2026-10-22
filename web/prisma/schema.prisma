@@ -36,7 +36,28 @@ enum ConversationSubject {
 enum NotificationKind {
   INVITATION_ACCEPTED
   COMMENT_CREATED
+  SUBMISSION_RECEIVED
 
+  @@schema("app")
+}
+
+enum ActivityFrequency {
+  ONCE
+  DAILY
+  WEEKLY
+  @@schema("app")
+}
+
+enum ApprovalMode {
+  MANUAL
+  AUTOMATIC
+  @@schema("app")
+}
+
+enum SubmissionStatus {
+  DRAFT
+  PENDING
+  APPROVED
   @@schema("app")
 }
 
@@ -80,6 +101,12 @@ model Profile {
   mediaAssets MediaAsset[]
   outboxEvents OutboxEvent[]
 
+  authoredActivities Activity[]
+  activityEvents ActivityEvent[]
+  authoredSubmissions ActivitySubmission[]
+  submissionEvents SubmissionEvent[]
+  pointsEntries PointsEntry[]
+
   @@schema("app")
 }
 
@@ -104,6 +131,12 @@ model Store {
   mediaCollections MediaCollection[]
   outboxEvents OutboxEvent[]
 
+  activities Activity[]
+  activityEvents ActivityEvent[]
+  submissions ActivitySubmission[]
+  submissionEvents SubmissionEvent[]
+  pointsEntries PointsEntry[]
+
   @@index([createdByProfileId])
   @@schema("app")
 }
@@ -123,9 +156,12 @@ model Membership {
   mediaCollections MediaCollection[]
   participantEvents OutboxEvent[] @relation("EventParticipant")
   receivedEvents OutboxEvent[] @relation("EventRecipient")
+  submissions ActivitySubmission[]
+  pointsEntries PointsEntry[]
 
   @@unique([storeId, profileId])
   @@unique([id, storeId])
+  @@unique([id, profileId])
   @@index([profileId, accessRevokedAt])
   @@index([storeId, accessRevokedAt])
   @@schema("app")
@@ -207,6 +243,7 @@ model OutboxEvent {
   recipientMembershipId String @db.Uuid
   invitationId String? @db.Uuid
   commentId String? @db.Uuid
+  submissionId String? @db.Uuid
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   availableAt DateTime @default(now()) @db.Timestamptz(6)
   processedAt DateTime? @db.Timestamptz(6)
@@ -218,6 +255,7 @@ model OutboxEvent {
   recipientMembership Membership @relation("EventRecipient", fields: [recipientMembershipId], references: [id], onDelete: Restrict)
   invitation Invitation? @relation(fields: [invitationId], references: [id], onDelete: Restrict)
   comment Comment? @relation(fields: [commentId], references: [id], onDelete: Restrict)
+  submission ActivitySubmission? @relation(fields: [submissionId], references: [id], onDelete: Restrict)
   notification Notification?
 
   @@index([processedAt, availableAt, id])
@@ -297,6 +335,7 @@ model MediaAsset {
   collection MediaCollection @relation(fields: [collectionId], references: [id], onDelete: Restrict)
   author Profile @relation(fields: [authorProfileId], references: [id], onDelete: Restrict)
   parts MediaPart[]
+  submissionEvidence ActivitySubmission?
 
   @@index([collectionId, revision, createdAt, id])
   @@index([state, availableAt, leaseUntil])
@@ -312,6 +351,130 @@ model MediaPart {
   asset MediaAsset @relation(fields: [assetId], references: [id], onDelete: Restrict)
 
   @@id([assetId, offset])
+  @@schema("app")
+}
+
+model Activity {
+  id String @id @db.Uuid
+  storeId String @db.Uuid
+  createdByProfileId String @db.Uuid
+  name String
+  description String @default("")
+  category String @default("")
+  sticker String @default("")
+  points Int
+  frequency ActivityFrequency @default(DAILY)
+  weeklyLimit Int @default(1)
+  approvalMode ApprovalMode @default(MANUAL)
+  version Int @default(1)
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  archivedAt DateTime? @db.Timestamptz(6)
+  store Store @relation(fields: [storeId], references: [id], onDelete: Restrict)
+  creator Profile @relation(fields: [createdByProfileId], references: [id], onDelete: Restrict)
+  events ActivityEvent[]
+  submissions ActivitySubmission[]
+
+  @@unique([id, storeId])
+  @@index([storeId, archivedAt, createdAt, id])
+  @@schema("app")
+}
+
+model ActivityEvent {
+  id String @id @db.Uuid
+  storeId String @db.Uuid
+  activityId String @db.Uuid
+  actorProfileId String @db.Uuid
+  version Int
+  kind String
+  requestDigest String
+  configuration Json
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  store Store @relation(fields: [storeId], references: [id], onDelete: Restrict)
+  activity Activity @relation(fields: [activityId], references: [id], onDelete: Restrict)
+  actor Profile @relation(fields: [actorProfileId], references: [id], onDelete: Restrict)
+
+  @@unique([activityId, version])
+  @@index([storeId, createdAt, id])
+  @@schema("app")
+}
+
+model ActivitySubmission {
+  id String @id @db.Uuid
+  storeId String @db.Uuid
+  activityId String @db.Uuid
+  participantMembershipId String @db.Uuid
+  authorProfileId String @db.Uuid
+  status SubmissionStatus @default(DRAFT)
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  receivedAt DateTime? @db.Timestamptz(6)
+  approvedAt DateTime? @db.Timestamptz(6)
+  requestDigest String?
+  activityVersion Int?
+  activityName String?
+  activityDescription String?
+  activityCategory String?
+  activitySticker String?
+  points Int?
+  frequency ActivityFrequency?
+  weeklyLimit Int?
+  approvalMode ApprovalMode?
+  caption String @default("")
+  timezone String?
+  localDate String? @db.VarChar(10)
+  periodKey String?
+  periodStart DateTime? @db.Timestamptz(6)
+  periodEnd DateTime? @db.Timestamptz(6)
+  occurrenceNumber Int?
+  evidenceAssetId String? @unique @db.Uuid
+  store Store @relation(fields: [storeId], references: [id], onDelete: Restrict)
+  activity Activity @relation(fields: [activityId], references: [id], onDelete: Restrict)
+  participant Membership @relation(fields: [participantMembershipId], references: [id], onDelete: Restrict)
+  author Profile @relation(fields: [authorProfileId], references: [id], onDelete: Restrict)
+  evidence MediaAsset? @relation(fields: [evidenceAssetId], references: [id], onDelete: Restrict)
+  events SubmissionEvent[]
+  pointsEntries PointsEntry[]
+  outboxEvents OutboxEvent[]
+
+  @@unique([id, storeId])
+  @@unique([id, storeId, participantMembershipId])
+  @@unique([activityId, participantMembershipId, frequency, periodKey, occurrenceNumber])
+  @@index([activityId, participantMembershipId, receivedAt])
+  @@index([storeId, participantMembershipId, status, receivedAt, id])
+  @@schema("app")
+}
+
+model SubmissionEvent {
+  id String @id @default(uuid()) @db.Uuid
+  storeId String @db.Uuid
+  submissionId String @db.Uuid
+  actorProfileId String @db.Uuid
+  kind String
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  store Store @relation(fields: [storeId], references: [id], onDelete: Restrict)
+  submission ActivitySubmission @relation(fields: [submissionId], references: [id], onDelete: Restrict)
+  actor Profile @relation(fields: [actorProfileId], references: [id], onDelete: Restrict)
+
+  @@unique([submissionId, kind])
+  @@index([storeId, createdAt, id])
+  @@schema("app")
+}
+
+model PointsEntry {
+  id String @id @default(uuid()) @db.Uuid
+  storeId String @db.Uuid
+  participantMembershipId String @db.Uuid
+  submissionId String @db.Uuid
+  actorProfileId String @db.Uuid
+  kind String
+  amount BigInt
+  sourceKey String @unique
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  store Store @relation(fields: [storeId], references: [id], onDelete: Restrict)
+  participant Membership @relation(fields: [participantMembershipId], references: [id], onDelete: Restrict)
+  submission ActivitySubmission @relation(fields: [submissionId], references: [id], onDelete: Restrict)
+  actor Profile @relation(fields: [actorProfileId], references: [id], onDelete: Restrict)
+
+  @@index([storeId, participantMembershipId, createdAt, id])
   @@schema("app")
 }
 

@@ -21,7 +21,7 @@ function holdFirstOutput(t, id) {
   const held = new Promise(resolve => { release = resolve; });
   const mock = t.mock.method(globalThis, 'fetch', async (input, init) => {
     const url = address(input);
-    if (!claimed && url.includes(`/storage/v1/object/${process.env.MEDIA_BUCKET}/integration/${id}/`) && url.endsWith('/display.jpg')) {
+    if (!claimed && url.includes(`/storage/v1/object/${process.env.MEDIA_BUCKET}/${process.env.MEDIA_PREFIX}/${id}/`) && url.endsWith('/display.jpg')) {
       claimed = true; enter(); await held;
     }
     return original(input, init);
@@ -40,7 +40,7 @@ test('mídia: parte salva no Storage antes da falha de confirmação retoma sem 
   let interrupted = false;
   const mock = t.mock.method(globalThis, 'fetch', async (input, init) => {
     const response = await original(input, init);
-    if (!interrupted && response.ok && address(input).includes(`/storage/v1/object/${process.env.MEDIA_BUCKET}/integration/${asset.id}/parts/0-${digest(bytes)}`)) {
+    if (!interrupted && response.ok && address(input).includes(`/storage/v1/object/${process.env.MEDIA_BUCKET}/${process.env.MEDIA_PREFIX}/${asset.id}/parts/0-${digest(bytes)}`)) {
       interrupted = true;
       // Storage confirmou os bytes; simula queda antes de confirmar MediaPart.
       throw new Error('Interrupção sintética entre Storage e confirmação.');

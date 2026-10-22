@@ -116,6 +116,10 @@ por isso mudar a porta não autoriza builds concorrentes.
 
 ## Recuperação e continuidade
 
+Para atividades e registros reais, siga [T07 local](activities-local.md).
+O preparo seleciona desenvolvimento T07; integração usa outro banco e namespace
+de mídia. Execute os modos e builds em série, preservando o estado dos anteriores.
+
 O backup anterior à adoção está em `.artifacts/toolkit-setup/before-setup.zip`,
 ignorado pelo Git, junto do manifesto de hashes dos arquivos preexistentes.
 Recupere apenas o arquivo necessário após comparar alterações posteriores;

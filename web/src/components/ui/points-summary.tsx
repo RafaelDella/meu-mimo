@@ -1,7 +1,7 @@
 export type PointsSummaryProps = {
   storeName: string;
-  available: number;
-  pending: number;
+  available: number | string;
+  pending: number | string;
 };
 
 const points = new Intl.NumberFormat('pt-BR');
@@ -14,11 +14,11 @@ export function PointsSummary({ storeName, available, pending }: PointsSummaryPr
       <dl>
         <div className="ui-points-available">
           <dt>Disponíveis</dt>
-          <dd><strong>{points.format(available)}</strong> pontos</dd>
+          <dd><strong>{points.format(typeof available === 'string' ? BigInt(available) : available)}</strong> pontos</dd>
         </div>
         <div className="ui-points-pending">
           <dt>Em análise</dt>
-          <dd><strong>{points.format(pending)}</strong> pontos</dd>
+          <dd><strong>{points.format(typeof pending === 'string' ? BigInt(pending) : pending)}</strong> pontos</dd>
         </div>
       </dl>
       <p className="ui-points-note">Os pontos em análise ainda não entram no seu saldo disponível.</p>

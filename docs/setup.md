@@ -439,3 +439,48 @@ Verificação final T06: check com 7+9 testes, lint/tipos/build, 101 cenários
 HTTP/pipeline (65 regressões e 36 de mídia/D08), 136 Chromium e manutenção por
 CLI aprovados. O scan de 353 arquivos versionáveis/estáticos não encontrou
 segredos locais. A revisão focal final não trouxe novo achado concreto.
+
+## Execução de T07
+
+O idealizador pediu implementação e commit com a orquestração do Vibe Coding
+Toolkit. A skill foi descoberta no cliente e consultada na mesma revisão
+790a895304e0c08b70a5b215c9d334f1c86b816c já adotada. O fluxo usa contratos antes
+dos despachos, arquivos exclusivos, integração serial e painel independente
+somente leitura. `brainstorming`, `writing-plans`, `requesting-code-review` e
+`verification-before-completion` foram aplicadas; as subskills de execução não
+descobertas foram substituídas pelo equivalente nativo, sem instalar catálogo.
+O desenho e D04 foram confirmados explicitamente antes da implementação.
+
+Context7 foi consultado para transações na linha Prisma instalada; a resposta
+misturou referências de versões 6/7, portanto prevaleceram os tipos locais e a
+[documentação oficial Prisma7](https://www.prisma.io/docs/orm/v7/prisma-client/queries/transactions).
+Calendário e índice parcial foram conferidos nas fontes oficiais do
+[PostgreSQL17](https://www.postgresql.org/docs/17/functions-datetime.html) e
+[índices parciais](https://www.postgresql.org/docs/17/indexes-partial.html).
+Nenhum código privado ou segredo foi enviado às consultas.
+
+O root aplicou a sétima migração nos bancos locais T02/T04/T05/T06 e T07, sem
+reset. A prova de banco vazio/evolução preservou dados e verificou RLS das 21
+tabelas, permissões efetivas, snapshot imutável, origem composta e crédito único.
+Auth/Storage continuam na stack meumimo-t02. T07 tem domínio/dev/shadow,
+gateway/consumidor restritos e namespace de bytes/temporários próprios.
+
+A revisão independente de segurança encontrou meia-noite repetida em Havana;
+o root reproduziu o deslocamento de uma hora no PostgreSQL e corrigiu o calendário.
+Candidatos dos offsets dos dois lados escolhem a primeira meia-noite; fronteira
+inexistente usa busca até o primeiro instante válido. A regressão cobre Havana
+23/25h, ambas as 00:30, dia anterior e Lisboa/semana de 169h. A revisão de UI encontrou
+401 durante envio sem retorno ao login e validação sem foco no campo inválido.
+As duas falhas foram reproduzidas antes das correções, preservando o caso 404
+que já funcionava. Revisores focais não encontraram novos achados concretos.
+
+Comandos e fronteiras estão em [T07 local](activities-local.md); desenho,
+despachos, checks e limites no [plano T07](superpowers/plans/2026-10-22-t07-atividades.md).
+Câmera/galeria em aparelhos físicos, leitor de tela, CI remoto e ambiente
+publicado continuam não observados. Nenhum serviço pago ou publicação.
+
+Verificação final T07: check com lint/tipos/build e 7+9 testes; migração
+vazia/evolutiva e permissões; 138 HTTP (37 T07, 101 regressões); 166 Chromium
+(30 T07, 136 regressões). Após isolar um estilo do resumo diário, check e os
+30 Chromium de T07 foram repetidos. Capturas normais e a 200% foram examinadas.
+O scan de 410 arquivos versionáveis/estáticos não encontrou segredos locais.

@@ -9,7 +9,8 @@ import { mediaEnvironment } from './media-environment.mjs';
 
 const resources = taskResources(process.argv[2] ?? 't02');
 const state = readState(resources.task);
-const mediaEnv = resources.task === 't06' ? mediaEnvironment('integration') : {};
+const withMedia = ['t06', 't07'].includes(resources.task);
+const mediaEnv = withMedia ? mediaEnvironment('integration', resources.task) : {};
 await bindLocalStack();
 // Depois de religar o DB, o pool do Auth pode descartar uma conexão antiga.
 // Exigir duas leituras administrativas saudáveis antes de iniciar os casos.
@@ -37,7 +38,7 @@ await new Promise((resolve, reject) => {
 
 // As credenciais administrativas pertencem aos fixtures, nunca ao processo Next.
 const serverEnv = Object.fromEntries(Object.entries(process.env).filter(([key]) =>
-  !/^(T0[2456]_|SUPABASE_|MEDIA_|FFMPEG_|FFPROBE_|MIGRATION_|SHADOW_)/i.test(key)));
+  !/^(T0[24567]_|SUPABASE_|MEDIA_|FFMPEG_|FFPROBE_|MIGRATION_|SHADOW_)/i.test(key)));
 Object.assign(serverEnv, state.runtime, { NODE_ENV: 'production' });
 const log = createWriteStream(path.join(resources.directory, 'next-integration.log'), { mode: 0o600 });
 const server = spawn(process.execPath, [path.join(webRoot, 'node_modules/next/dist/bin/next'),
@@ -53,7 +54,7 @@ let media;
 let mediaLog;
 
 try {
-  if (resources.task === 't06') {
+  if (withMedia) {
     await new Promise((resolve, reject) => {
       const probe = net.createServer();
       probe.once('error', () => reject(new Error('A porta 4311 está ocupada; não reutilizaremos outro processo de mídia.')));
@@ -88,7 +89,7 @@ try {
     const tests = spawn(process.execPath, ['scripts/run-tests.mjs', 'integration'], {
       cwd: webRoot, windowsHide: true, stdio: 'inherit', env: {
         ...process.env, ...state.runtime, ...state.integration, ...mediaEnv,
-        ...(resources.task === 't06' ? { T06_MEDIA_FIXTURES: path.join(resources.directory, 'fixtures') } : {}),
+        ...(withMedia ? { T06_MEDIA_FIXTURES: path.join(resources.directory, 'fixtures') } : {}),
         AUTH_RATE_LIMIT_SECRET: state.runtime.AUTH_RATE_LIMIT_SECRET,
       },
     });

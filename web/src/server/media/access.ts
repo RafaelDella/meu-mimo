@@ -18,6 +18,11 @@ export async function requireMediaCollection(scope: StoreScope, collectionId: st
   await scope.tx.$queryRaw`SELECT id FROM app."MediaCollection" WHERE id = ${id}::uuid FOR UPDATE`;
   const collection = await scope.tx.mediaCollection.findFirst({ where: { id, storeId: scope.store.id } });
   if (!collection) unavailable();
+  if (collection.purpose === 'EVIDENCE') {
+    const origin = await scope.tx.activitySubmission.findUnique({ where: { id: collection.subjectId },
+      select: { status: true, authorProfileId: true } });
+    if (origin?.status === 'DRAFT' && origin.authorProfileId !== scope.identity.userId) unavailable();
+  }
   return { ...scope, collection };
 }
 

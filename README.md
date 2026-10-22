@@ -43,7 +43,9 @@ T05 prepara comentários privados e novidades persistidas; o consumidor local e
 as APIs estão descritos em [conversas e novidades](docs/relation-local.md).
 T06 acrescenta transporte e processamento privado de fotos/vídeos; preparação e
 fronteiras em [mídia local](docs/media-local.md). D08 foi confirmada; a proteção
-de retenção será atualizada pelos módulos de origem ao integrar o domínio.
+de retenção é atualizada por cada origem integrada.
+T07 entrega atividades, conquistas e crédito automático único, com foto privada,
+histórico e saldo real da participação. Preparação em [atividades locais](docs/activities-local.md).
 O servidor da prévia em 4173 continua independente.
 
 Para verificar o navegador depois de `npm run check`:
@@ -65,8 +67,10 @@ resgate de tickets, extrato e bilhete, com dados de demonstração salvos no nav
 T03, identidade local T02 e lojas/participações/convites T04 com Supabase
 Auth/PostgreSQL/Prisma. A prévia visual não salva dados nem desconta pontos.
 T05 acrescenta APIs de conversa e notificações persistidas com outbox. T06 prepara
-mídia privada com derivados e retomada; registros/tickets/álbum reais, pontos,
-Realtime e a central completa de novidades permanecem no roadmap.
+mídia privada com derivados e retomada. T07 integra registros reais de atividade,
+pendência manual e crédito automático consultável. Análise manual/compensações
+T08, resgates/tickets, álbuns, Realtime e a central completa de novidades
+permanecem no roadmap.
 
 A aplicação completa está descrita nos documentos abaixo. A adoção do toolkit
 prepara o desenvolvimento e mantém o estágio atual explícito.

@@ -8,15 +8,23 @@ import { MediaItem } from './media-item';
 import { useMediaUpload } from './use-media-upload';
 import styles from './media.module.css';
 
-type Props = MediaContext & { accountKey: string; transport?: MediaTransport };
+export type MediaSelectionState = {
+  ready: boolean; busy: boolean; selectedCount: number; assetIds: string[]; unavailable: boolean;
+};
+type Props = MediaContext & {
+  accountKey: string; transport?: MediaTransport; onSelectionChange?: (state: MediaSelectionState) => void;
+};
 
 // Sessão e origem são responsabilidade do chamador. A chave descarta arquivos,
 // requisições e URLs imediatamente ao trocar conta, loja ou coleção.
-export function MediaUploader({ accountKey, storeId, collectionId, transport = mediaTransport }: Props) {
-  return <MediaUploadContent key={`${accountKey}:${storeId}:${collectionId}`} context={{ storeId, collectionId }} transport={transport} />;
+export function MediaUploader({ accountKey, storeId, collectionId, transport = mediaTransport, onSelectionChange }: Props) {
+  return <MediaUploadContent key={`${accountKey}:${storeId}:${collectionId}`} context={{ storeId, collectionId }}
+    transport={transport} onSelectionChange={onSelectionChange} />;
 }
 
-function MediaUploadContent({ context, transport }: { context: MediaContext; transport: MediaTransport }) {
+function MediaUploadContent({ context, transport, onSelectionChange }: {
+  context: MediaContext; transport: MediaTransport; onSelectionChange?: Props['onSelectionChange'];
+}) {
   const id = useId();
   const title = useRef<HTMLHeadingElement>(null);
   const camera = useRef<HTMLInputElement>(null);
@@ -27,6 +35,11 @@ function MediaUploadContent({ context, transport }: { context: MediaContext; tra
   const evidence = upload.page?.collection.purpose === 'EVIDENCE';
   const writable = !!upload.page?.collection.writable && !upload.denied && !upload.closedByServer;
   const selection = upload.items.filter(item => item.file && !item.invalid && ['selected', 'error'].includes(item.phase)).map(item => item.id);
+  useEffect(() => {
+    const unavailable = !upload.page || upload.loading || !!upload.loadError || upload.denied;
+    onSelectionChange?.({ ready: !unavailable && upload.items.every(item => !item.invalid && item.asset?.state === 'READY'),
+      busy: !!upload.busyId, selectedCount: upload.items.length, assetIds: upload.items.map(item => item.id), unavailable });
+  }, [upload.items, upload.page, upload.loading, upload.loadError, upload.denied, upload.busyId, onSelectionChange]);
   useEffect(() => {
     if (!upload.loading && focusAfterLoad.current) { focusAfterLoad.current = false; title.current?.focus(); }
   }, [upload.loading]);

@@ -1,8 +1,8 @@
 # Meu Mimo — proposta técnica e decisões de dados
 
 Atualizado em 22 de outubro de 2026. Complementa `design.md` e `requisitos.md`.
-Registra decisões, propostas futuras e o escopo local de T01–T06. D07 e D08
-foram confirmadas em T06; integração com as origens permanece no roadmap.
+Registra decisões, propostas futuras e o escopo local de T01–T07. D07 e D08
+foram confirmadas em T06; T07 integra a origem de conquistas.
 
 ## 1. Decisões e base da implementação
 
@@ -10,7 +10,7 @@ foram confirmadas em T06; integração com as origens permanece no roadmap.
 
 Interpretação adotada para “Prisma DB para migração”: **Prisma ORM e suas ferramentas de migração sobre PostgreSQL**.
 
-**D01 confirmada pelo idealizador em M0, em 22/10/2026:** Next.js/React/TypeScript em `web/`, PostgreSQL com Prisma e Supabase para Auth/Storage, com desenvolvimento e testes locais. Essa confirmação não contrata serviços nem autoriza publicação. **D02 confirmada em T02:** e-mail/senha com e-mail verificado, recuperação, retorno seguro ao convite e MFA/TOTP obrigatório para administração provisionada separadamente. A preparação local, D03 e os limites D04 de autenticação/T04 foram autorizados; as demais regras D04 e D05–D09 continuam propostas.
+**D01 confirmada pelo idealizador em M0, em 22/10/2026:** Next.js/React/TypeScript em `web/`, PostgreSQL com Prisma e Supabase para Auth/Storage, com desenvolvimento e testes locais. Essa confirmação não contrata serviços nem autoriza publicação. **D02 confirmada em T02:** e-mail/senha com e-mail verificado, recuperação, retorno seguro ao convite e MFA/TOTP obrigatório para administração provisionada separadamente. A preparação local, D03, D04 de autenticação/T04/T07 e D07/D08 foram autorizados. As propostas restantes estão discriminadas em requisitos §6.1.
 
 | Camada | Seleção e estado | Responsabilidade |
 |---|---|---|
@@ -186,15 +186,16 @@ Para a implantação serverless proposta, definir pooling, orçamento de conexõ
 
 Referências técnicas: [Prisma com Supabase](https://supabase.com/docs/guides/database/prisma), [customização de migrações](https://www.prisma.io/docs/orm/v7/prisma-migrate/workflows/customizing-migrations), [desenvolvimento e produção](https://www.prisma.io/docs/orm/v7/prisma-migrate/workflows/development-and-production). As duas últimas descrevem Prisma ORM v7 e precisam ser revalidadas se outra versão for escolhida.
 
-### 3.1. Fundação local de T02
+### 3.1. Fundação local e evolução até T07
 
 O schema privado `app` iniciou com Profile, Store, Membership e AdminGrant;
 T04 acrescenta os estados de loja/participação, Invitation e StoreAudit; T05,
 Conversation, Comment, OutboxEvent e Notification. AuthSession
 mantém revogação/contexto restrito, AuthRateBucket persiste a janela atômica
 e SecurityAudit registra evento/ator/instante sem senha, token ou e-mail.
-T06 acrescenta MediaCollection, MediaAsset e MediaPart. As seis migrações em
-`web/prisma/migrations/` incluem SQL de permissões; 16 tabelas têm RLS.
+T06 acrescenta MediaCollection, MediaAsset e MediaPart. T07 acrescenta Activity,
+ActivityEvent, ActivitySubmission, SubmissionEvent e PointsEntry. As sete migrações
+em `web/prisma/migrations/` incluem SQL de permissões; 21 tabelas têm RLS.
 Auth/Storage mantêm seus schemas gerenciados pelo Supabase.
 
 Runtime usa `meumimo_runtime`, sem superuser/bypass de RLS ou escrita em
@@ -220,10 +221,43 @@ Configuração, comandos, provisionamento administrativo e limites operacionais
 estão em [identidade local](docs/identity-local.md). Nenhuma migração ou
 implantação em ambiente real foi executada.
 
+### 3.2. Atividades e crédito inicial em T07
+
+Activity mantém a regra atual e ActivityEvent registra versões/configurações
+imutáveis. ActivitySubmission inicia DRAFT privado, com coleção de evidência;
+recebimento grava snapshot, data/fuso/período e número de ocorrência. O trigger
+de banco impede reescrever esse snapshot. Calendário PostgreSQL usa a primeira
+fronteira válida da data local, inclusive meia-noite repetida ou saltada no DST.
+Editar frequência conta todos os recebidos no período da regra nova.
+
+O lock compartilhado da loja serializa envio, regra, pausa e encerramento.
+Recebimento manual PENDING não credita; AUTOMATIC grava APPROVED, PointsEntry,
+SubmissionEvent, conversa, publicação/proteção de evidência e outbox na mesma
+transação. Nenhum byte externo é enviado dentro dela. Origem/loja/participação
+têm FKs compostas. Ledger e eventos não têm UPDATE/DELETE no papel runtime.
+Chave da origem e índice parcial impedem segundo crédito inicial; trigger exige
+valor igual aos pontos da origem aprovada. Total usa SUM bigint→texto e chega
+como string decimal à interface, que formata com BigInt.
+
+Não há carteira materializada ou endpoint público de crédito. GET do mesmo
+registro recupera resposta perdida; replay valida digest e autorização atual
+antes de devolver o resultado recebido, mesmo após pausa/alteração de regra.
+Rascunho/falha não ocupa ocorrência. Legenda até500 Unicode e foto opcional
+READY tornam-se imutáveis; a coleção fecha para upload e remoção genérica da
+evidência é recusada. Manual mantém hold; automático aplica os180 dias D08.
+
+Encerramento consulta PENDING real na mesma transação, substituindo a proteção
+provisória de T04. Primeiro recebimento marca domainStartedAt e bloqueia fuso.
+`SUBMISSION_RECEIVED` e comentários da origem resolvem destino ao registro real
+com audiência atual. Conversas recebidas mantêm as regras T05 após encerramento.
+Análise/contestação/compensações e novos estados ficam para T08. Operação,
+rotas e limites em [T07 local](docs/activities-local.md).
+
 ## 4. Modelo conceitual de dados
 
-A tabela descreve o modelo completo proposto. T02/T04/T05/T06 implementam os
-subconjuntos das seções 1.2–1.4 e 3.1; os demais modelos permanecem futuros.
+A tabela descreve o modelo completo proposto. T02/T04/T05/T06/T07 implementam os
+subconjuntos das seções 1.2–1.4, 3.1 e do contrato T07 abaixo; os demais modelos
+permanecem futuros.
 
 | Entidade | Dados e responsabilidade principais |
 |---|---|

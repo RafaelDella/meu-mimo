@@ -69,7 +69,7 @@ test('mídia D08: retomada por parte renova atividade antes dos bytes externos e
   const entered = new Promise(resolve => { enter = resolve; });
   const wait = new Promise(resolve => { release = resolve; });
   const mock = t.mock.method(globalThis, 'fetch', async (input, init) => {
-    if (!held && address(input).includes(`/storage/v1/object/${process.env.MEDIA_BUCKET}/integration/${asset.id}/parts/`)) {
+    if (!held && address(input).includes(`/storage/v1/object/${process.env.MEDIA_BUCKET}/${process.env.MEDIA_PREFIX}/${asset.id}/parts/`)) {
       held = true; enter(); await wait;
     }
     return original(input, init);

@@ -5,7 +5,7 @@ import { operationConflict, resourceId, unavailable } from '../stores/validation
 
 type EventInput = Pick<Prisma.OutboxEventUncheckedCreateInput,
   'key' | 'kind' | 'storeId' | 'participantMembershipId' | 'actorProfileId' |
-  'recipientMembershipId' | 'invitationId' | 'commentId'>;
+  'recipientMembershipId' | 'invitationId' | 'commentId' | 'submissionId'>;
 
 async function persistEvent(tx: StoreTransaction, input: EventInput): Promise<void> {
   // A unicidade também cobre duas transações que chegaram aqui ao mesmo tempo.
@@ -14,7 +14,8 @@ async function persistEvent(tx: StoreTransaction, input: EventInput): Promise<vo
   if (!existing || existing.kind !== input.kind || existing.storeId !== input.storeId ||
       existing.participantMembershipId !== input.participantMembershipId ||
       existing.actorProfileId !== input.actorProfileId || existing.recipientMembershipId !== input.recipientMembershipId ||
-      existing.invitationId !== (input.invitationId ?? null) || existing.commentId !== (input.commentId ?? null)) operationConflict();
+      existing.invitationId !== (input.invitationId ?? null) || existing.commentId !== (input.commentId ?? null) ||
+      existing.submissionId !== (input.submissionId ?? null)) operationConflict();
 }
 
 async function audience(tx: StoreTransaction, storeId: string, participantMembershipId: string) {
@@ -64,4 +65,19 @@ export async function enqueueCommentCreated(tx: StoreTransaction, commentId: str
     participantMembershipId: participant.id, actorProfileId: comment.authorProfileId,
     recipientMembershipId: recipient.id, invitationId: null, commentId: id,
   });
+}
+
+/** Recebimento real, crédito e novidade pertencem à mesma transação da origem. */
+export async function enqueueSubmissionReceived(tx: StoreTransaction, submissionId: string): Promise<void> {
+  const id = resourceId(submissionId);
+  const submission = await tx.activitySubmission.findUnique({ where: { id }, select: {
+    storeId: true, status: true, participantMembershipId: true, authorProfileId: true, receivedAt: true,
+  } });
+  if (!submission?.receivedAt || submission.status === 'DRAFT') unavailable();
+  const { participant, merchant } = await audience(tx, submission.storeId, submission.participantMembershipId);
+  if (submission.authorProfileId !== participant.profileId) unavailable();
+  await persistEvent(tx, { key: `submission.received:${id}`, kind: 'SUBMISSION_RECEIVED',
+    storeId: submission.storeId, participantMembershipId: participant.id,
+    actorProfileId: participant.profileId, recipientMembershipId: merchant.id,
+    submissionId: id, invitationId: null, commentId: null });
 }

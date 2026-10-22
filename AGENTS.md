@@ -21,7 +21,9 @@ os comandos e a separação de credenciais estão em `docs/onboarding.md`.
 T04 entrega lojas, participações e convites; recursos e comandos em `docs/stores-local.md`.
 T05 prepara conversas e outbox/notificações; comandos e fronteiras em `docs/relation-local.md`.
 T06 prepara transporte e processamento de mídia privada; comandos e pendências
-de retenção em `docs/media-local.md`. Integração com o domínio segue no roadmap.
+de retenção em `docs/media-local.md`.
+T07 entrega atividades, conquistas e crédito automático; comandos e limites em
+`docs/activities-local.md`. Análise manual e compensações continuam em T08.
 O plano da fundação e as dependências estão em
 [M0](docs/superpowers/plans/2026-10-22-m0-fundacao.md).
 
@@ -53,6 +55,9 @@ o consumidor local tem comando próprio e credencial restrita.
 T06 usa `test:integration:t06`, bancos `meumimo_t06`/dev/shadow e gateway local
 4311 separado; nunca passar service role ao Next. D08 foi confirmada; proteção
 de retenção permanece conservadora até a integração pela origem.
+T07 usa `test:integration:t07`, domínio `meumimo_t07`, Next 4310 e mídia 4311,
+em série com os modos anteriores. O namespace de Storage é `t07-integration`;
+desenvolvimento usa banco e namespace próprios.
 Prepare serviços e migrações conforme o onboarding. Não exponha as portas fora
 de loopback, não use o shim npm `docker` e não passe credenciais de fixture ou
 migração ao Next. Desenvolvimento, shadow e integração usam bancos separados.

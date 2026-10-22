@@ -15,10 +15,12 @@ export function mediaWorkerConfig() {
   const ffmpeg = process.env.FFMPEG_PATH;
   const ffprobe = process.env.FFPROBE_PATH;
   try {
-    const tempRoot = path.resolve(webRoot, '../.artifacts/t06-runtime/temp');
-    if (bucket !== 'meumimo-t06-private' || !['integration', 'development'].includes(prefix ?? '') ||
+    const task = prefix?.startsWith('t07-') ? 't07' : 't06';
+    const target = task === 't07' ? prefix?.slice(4) : prefix;
+    const tempRoot = path.resolve(webRoot, `../.artifacts/${task}-runtime/temp`);
+    if (bucket !== 'meumimo-t06-private' || !['integration', 'development'].includes(target ?? '') ||
         url !== 'http://127.0.0.1:54321' || !key || !temp || !path.isAbsolute(temp) ||
-        path.resolve(temp) !== path.join(tempRoot, prefix!) ||
+        path.resolve(temp) !== path.join(tempRoot, target!) ||
         !ffmpeg || !ffprobe || !path.isAbsolute(ffmpeg) || !path.isAbsolute(ffprobe) ||
         !existsSync(ffmpeg) || !existsSync(ffprobe)) throw new Error();
     const claims = JSON.parse(Buffer.from(key.split('.')[1] ?? '', 'base64url').toString('utf8'));

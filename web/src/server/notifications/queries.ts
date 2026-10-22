@@ -2,6 +2,7 @@ import '../only.ts';
 import type { Prisma } from '../../generated/prisma/client.ts';
 import type { Identity } from '../auth/types.ts';
 import type { NotificationTarget, NotificationView } from '../../contracts/notifications.ts';
+import type { StoreTransaction } from '../stores/transaction.ts';
 import { unavailable } from '../stores/validation.ts';
 
 export const notificationSelect = {
@@ -10,6 +11,7 @@ export const notificationSelect = {
     kind: true, storeId: true, participantMembershipId: true, createdAt: true,
     actor: { select: { displayName: true } }, store: { select: { name: true } },
     comment: { select: { conversation: { select: { id: true, subjectType: true, subjectId: true } } } },
+    submission: { select: { id: true, status: true } },
   } },
 } satisfies Prisma.NotificationSelect;
 
@@ -24,6 +26,7 @@ export function notificationAudience(identity: Identity, storeId?: string): Pris
     OR: [
       { kind: 'INVITATION_ACCEPTED', invitationId: { not: null }, recipientMembership: { role: 'MERCHANT' } },
       { kind: 'COMMENT_CREATED', comment: { conversation: { participantMembership: { accessRevokedAt: null } } } },
+      { kind: 'SUBMISSION_RECEIVED', submission: { status: { not: 'DRAFT' } }, recipientMembership: { role: 'MERCHANT' } },
     ],
   } };
 }
@@ -37,14 +40,24 @@ export function notificationView(notification: SelectedNotification): Notificati
   };
 }
 
-export function notificationTarget(notification: SelectedNotification): NotificationTarget {
+export async function notificationTarget(notification: SelectedNotification, tx: StoreTransaction): Promise<NotificationTarget> {
   const { event } = notification;
   const common = { storeId: event.storeId, participantMembershipId: event.participantMembershipId };
   if (event.kind === 'INVITATION_ACCEPTED') return { ...common, type: 'membership', path: `/lojas/${event.storeId}/pessoas` };
+  if (event.kind === 'SUBMISSION_RECEIVED') {
+    if (!event.submission || event.submission.status === 'DRAFT') unavailable();
+    return { ...common, type: 'submission', subjectId: event.submission.id,
+      path: `/lojas/${event.storeId}/registros/${event.submission.id}` };
+  }
   const conversation = event.comment?.conversation;
   if (!conversation) unavailable();
+  const submission = conversation.subjectType === 'SUBMISSION' ? await tx.activitySubmission.findFirst({
+    where: { id: conversation.subjectId, storeId: event.storeId,
+      participantMembershipId: event.participantMembershipId, receivedAt: { not: null } }, select: { id: true },
+  }) : null;
   return {
     ...common, type: 'conversation', conversationId: conversation.id,
-    subjectType: conversation.subjectType, subjectId: conversation.subjectId, path: null,
+    subjectType: conversation.subjectType, subjectId: conversation.subjectId,
+    path: submission ? `/lojas/${event.storeId}/registros/${submission.id}` : null,
   };
 }

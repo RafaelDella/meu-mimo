@@ -108,6 +108,13 @@ export async function removeMedia(identity: Identity, storeId: string, assetId: 
   return withMediaAsset(identity, storeId, assetId, async scope => {
     if (scope.asset.authorProfileId !== identity.userId) unavailable();
     if (scope.asset.removedAt) return mediaAssetView(scope.asset);
+    if (scope.collection.purpose === 'EVIDENCE' && scope.asset.publishedAt) {
+      const origin = await scope.tx.activitySubmission.findFirst({
+        where: { id: scope.collection.subjectId, receivedAt: { not: null } }, select: { id: true },
+      });
+      if (origin) throw new AppError('media_read_only', 409,
+        'A foto deste registro já foi recebida e permanece no histórico.');
+    }
     const now = await databaseNow(scope.tx);
     const result = await scope.tx.mediaAsset.update({ where: { id: scope.asset.id }, data: {
       state: 'REMOVING', removedAt: now, lastActivityAt: now, availableAt: now,

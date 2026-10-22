@@ -5,9 +5,11 @@ import path from 'node:path';
 import sharp from 'sharp';
 import { readState, taskResources } from './local-runtime.mjs';
 
-const state = readState('t06');
+const task = process.argv[2] ?? 't06';
+if (!['t06', 't07'].includes(task)) throw new Error('Use t06 ou t07 para fixtures de mídia.');
+const state = readState(task);
 if (!state.media?.ffmpeg || !state.media?.ffprobe) throw new Error('Prepare a mídia T06 antes das fixtures.');
-const directory = path.join(taskResources('t06').directory, 'fixtures');
+const directory = path.join(taskResources(task).directory, 'fixtures');
 mkdirSync(directory, { recursive: true });
 const file = name => path.join(directory, name);
 const execute = args => execFileSync(state.media.ffmpeg, ['-nostdin', '-hide_banner', '-loglevel', 'error', '-y', ...args],

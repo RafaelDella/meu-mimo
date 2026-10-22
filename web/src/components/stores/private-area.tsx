@@ -14,7 +14,7 @@ export function PrivateArea({ children }: { children: (session: AccountSession) 
   if (loading) return <p role="status">Conferindo sua conta…</p>;
   if (error || !session || session.recovery) {
     const needsLogin = error instanceof StoreRequestError && [401, 403].includes(error.status);
-    const destination = typeof window === 'undefined' ? '/lojas' : window.location.pathname;
+    const destination = typeof window === 'undefined' ? '/lojas' : window.location.pathname + window.location.search;
     return <section className="stores-card">
       <h2>{session?.recovery ? 'Conclua a recuperação' : 'Acesse sua conta'}</h2>
       <p role="alert">{session?.recovery ? 'Salve sua nova senha para continuar.' : needsLogin ? 'Entre na sua conta para abrir suas lojas.' : storeError(error)}</p>

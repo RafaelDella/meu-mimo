@@ -11,8 +11,10 @@ import { StoreSettings } from './store-settings';
 import { StorePeople } from './store-people';
 import { StoreInvitations } from './store-invitations';
 import { storeError, useResource } from './store-api';
+import { ActivityArea } from '@/components/activities/activity-area';
+import type { ActivityRoute } from '@/components/activities/transport';
 
-function Workspace({ storeId, section }: { storeId: string; section: StoreSection }) {
+function Workspace({ storeId, section, accountKey, activityRoute }: { storeId: string; section: StoreSection; accountKey: string; activityRoute?: ActivityRoute }) {
   const frame = useRef<HTMLDivElement>(null);
   const focusAfterRefresh = useRef(false);
   const { data: store, error, loading, refreshing, reload } = useResource<StoreView>(`/api/lojas/${encodeURIComponent(storeId)}`, true);
@@ -26,7 +28,7 @@ function Workspace({ storeId, section }: { storeId: string; section: StoreSectio
   if (error || !store) return <div ref={frame} className="stores-card"><h1 tabIndex={-1}>Loja indisponível</h1>
     <p role="alert">{storeError(error)}</p><div className="stores-actions"><Link className="stores-link" href="/lojas">Minhas lojas</Link>
       <Button variant="secondary" onClick={reload}>Tentar novamente</Button></div></div>;
-  const restricted = section !== 'home' && section !== 'people' && store.role !== 'MERCHANT';
+  const restricted = section !== 'home' && section !== 'people' && section !== 'activities' && store.role !== 'MERCHANT';
   return <div ref={frame} key={`${store.id}:${store.membershipId}`} aria-busy={refreshing}>
     <StoreNavigation store={store} section={section} />
     {store.state !== 'ACTIVE' && <p className="stores-banner" role="status">{store.state === 'PAUSED' ?
@@ -34,7 +36,8 @@ function Workspace({ storeId, section }: { storeId: string; section: StoreSectio
       'Esta loja foi encerrada. Você continua com acesso privado ao histórico e aos mimos já emitidos.'}</p>}
     {store.membershipClosedAt && <p className="stores-banner" role="status">Sua participação foi encerrada. Este cantinho continua disponível para consulta do seu histórico e pendências.</p>}
     {restricted ? <section className="stores-card"><h2>Acesso indisponível</h2><p>Esta área é reservada a quem gerencia a loja.</p></section> :
-      section === 'settings' ? <StoreSettings key={store.id} store={store} onUpdate={refresh} /> :
+      section === 'activities' ? <ActivityArea key={JSON.stringify(activityRoute)} store={store} accountKey={accountKey} route={activityRoute ?? { view: 'list' }} /> :
+        section === 'settings' ? <StoreSettings key={store.id} store={store} onUpdate={refresh} /> :
         section === 'people' ? <StorePeople key={store.id} store={store} onUpdate={refresh} /> :
           section === 'invitations' ? <StoreInvitations key={store.id} store={store} /> : <StoreHome store={store} />}
   </div>;
@@ -47,13 +50,15 @@ function StoreHome({ store }: { store: StoreView }) {
       <dd>{store.state === 'ACTIVE' ? 'Ativa' : store.state === 'PAUSED' ? 'Pausada' : 'Encerrada'}</dd></div></dl>
     {store.role === 'MERCHANT' ? <><p>Cuide da apresentação da sua lojinha e convide quem vai fazer parte dela.</p>
       <div className="stores-actions"><Link className="primary-link" href={`/lojas/${store.id}/convites`}>Convidar pessoa</Link>
-        <Link className="stores-link" href={`/lojas/${store.id}/configuracoes`}>Configurar loja</Link></div></> :
-      <p>Os seus dados nesta loja ficam entre você e quem oferece os mimos.</p>}
+        <Link className="stores-link" href={`/lojas/${store.id}/configuracoes`}>Configurar loja</Link>
+        <Link className="stores-link" href={`/lojas/${store.id}/atividades`}>Preparar atividades</Link></div></> :
+      <><p>Os seus dados nesta loja ficam entre você e quem oferece os mimos.</p><Link className="primary-link" href={`/lojas/${store.id}/atividades`}>Ver atividades</Link></>}
   </section>;
 }
 
-export function StoreWorkspace({ storeId, section }: { storeId: string; section: StoreSection }) {
+export function StoreWorkspace({ storeId, section, activityRoute }: { storeId: string; section: StoreSection; activityRoute?: ActivityRoute }) {
   return <main className="stores-shell"><PrivateArea>{session =>
-    <Workspace key={`${session.sessionId}:${storeId}`} storeId={storeId} section={section} />
+    <Workspace key={`${session.userId}:${session.sessionId}:${storeId}`} storeId={storeId} section={section}
+      accountKey={`${session.userId}:${session.sessionId}`} activityRoute={activityRoute} />
   }</PrivateArea></main>;
 }

@@ -144,7 +144,7 @@ test('pausa e encerramento de loja valem na API; o histórico continua autorizad
   assert.equal((await listing.json()).items[0].id, store.id);
 });
 
-test('limites de texto e fuso são reais; marcador protege a integração futura', async t => {
+test('limites de texto e fuso são reais; marcador protege o fuso sem inventar pendências', async t => {
   const fixture = await domainFixture(t);
   const owner = await fixture.user();
   const store = await fixture.createDomainStore(owner, 'N'.repeat(80), { presentation: 'P'.repeat(280) });
@@ -158,6 +158,6 @@ test('limites de texto e fuso são reais; marcador protege a integração futura
   await fixture.database.query('UPDATE app."Store" SET "domainStartedAt" = now() WHERE id = $1', [store.id]);
   await errorCode(await owner.client.patch(`/api/lojas/${store.id}`, { timezone: 'America/Sao_Paulo' }),
     409, 'timezone_locked');
-  await errorCode(await owner.client.post(`/api/lojas/${store.id}/estado`, { action: 'close' }),
-    409, 'lifecycle_dependencies_unavailable');
+  // T07 consulta registros reais; marcador sem pendência não impede encerramento.
+  expectStatus(await owner.client.post(`/api/lojas/${store.id}/estado`, { action: 'close' }), 200);
 });

@@ -77,13 +77,19 @@ export async function createFixture(t) {
       const scopeValues = [[...storeIds], profiles];
       await database.query(`DELETE FROM app."Notification" WHERE "eventId" IN (SELECT id FROM app."OutboxEvent" WHERE ${scope})`, scopeValues);
       await database.query(`DELETE FROM app."OutboxEvent" WHERE ${scope}`, scopeValues);
+      const submissionScope = '"storeId" = ANY($1::uuid[]) OR "authorProfileId" = ANY($2::uuid[]) OR "participantMembershipId" IN (SELECT id FROM app."Membership" WHERE "profileId" = ANY($2::uuid[]))';
+      await database.query(`DELETE FROM app."PointsEntry" WHERE "submissionId" IN (SELECT id FROM app."ActivitySubmission" WHERE ${submissionScope}) OR "actorProfileId" = ANY($2::uuid[])`, scopeValues);
+      await database.query(`DELETE FROM app."SubmissionEvent" WHERE "submissionId" IN (SELECT id FROM app."ActivitySubmission" WHERE ${submissionScope}) OR "actorProfileId" = ANY($2::uuid[])`, scopeValues);
+      await database.query(`DELETE FROM app."ActivitySubmission" WHERE ${submissionScope}`, scopeValues);
+      await database.query('DELETE FROM app."ActivityEvent" WHERE "storeId" = ANY($1::uuid[]) OR "actorProfileId" = ANY($2::uuid[])', scopeValues);
+      await database.query('DELETE FROM app."Activity" WHERE "storeId" = ANY($1::uuid[]) OR "createdByProfileId" = ANY($2::uuid[])', scopeValues);
       const conversationScope = '"storeId" = ANY($1::uuid[]) OR "participantMembershipId" IN (SELECT id FROM app."Membership" WHERE "profileId" = ANY($2::uuid[]))';
       await database.query(`DELETE FROM app."Comment" WHERE "authorProfileId" = ANY($2::uuid[]) OR "conversationId" IN (SELECT id FROM app."Conversation" WHERE ${conversationScope})`, scopeValues);
       await database.query(`DELETE FROM app."Conversation" WHERE ${conversationScope}`, scopeValues);
       const mediaScope = '"authorProfileId" = ANY($2::uuid[]) OR "collectionId" IN (SELECT id FROM app."MediaCollection" WHERE ' + conversationScope + ')';
       const media = await database.query(`SELECT id FROM app."MediaAsset" WHERE ${mediaScope}`, scopeValues);
       if (media.rowCount) {
-        assert.equal(environment.task, 't06', 'Mídia de fixture só pode existir no domínio reservado T06.');
+        assert.ok(['t06', 't07'].includes(environment.task), 'Mídia de fixture só pode existir nos domínios reservados T06/T07.');
         const { listAssetObjects, deleteObjects } = await import('../../../src/server/media-worker/storage.ts');
         for (const item of media.rows) await deleteObjects(await listAssetObjects(item.id));
       }
