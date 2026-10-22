@@ -3,9 +3,9 @@ import { AppError } from '../errors.ts';
 import type { StoreTransaction } from './transaction.ts';
 import { unavailable } from './validation.ts';
 
-export const LIFECYCLE_DEPENDENCIES_STAGE = 'T07_SUBMISSIONS' as const;
+export const LIFECYCLE_DEPENDENCIES_STAGE = 'T08_REVIEW' as const;
 
-/** A origem consulta pendências no mesmo lock da loja; T08/T09 estendem seus estados. */
+/** A origem consulta pendências no mesmo lock da loja; T09 acrescenta os tickets. */
 export async function assertLifecycleDependencies(
   tx: StoreTransaction,
   scope: { storeId: string; membershipId?: string },
@@ -14,7 +14,7 @@ export async function assertLifecycleDependencies(
   if (!store) unavailable();
   const pending = await tx.activitySubmission.count({ where: { storeId: scope.storeId,
     ...(scope.membershipId ? { participantMembershipId: scope.membershipId } : {}),
-    status: 'PENDING', receivedAt: { not: null } } });
+    status: { in: ['PENDING', 'CONTESTED'] }, receivedAt: { not: null } } });
   if (pending) throw new AppError('pending_submissions', 409,
     'Resolva os registros em análise antes de encerrar. O histórico continuará disponível.');
 }

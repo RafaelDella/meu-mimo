@@ -484,3 +484,43 @@ vazia/evolutiva e permissões; 138 HTTP (37 T07, 101 regressões); 166 Chromium
 (30 T07, 136 regressões). Após isolar um estilo do resumo diário, check e os
 30 Chromium de T07 foram repetidos. Capturas normais e a 200% foram examinadas.
 O scan de 410 arquivos versionáveis/estáticos não encontrou segredos locais.
+
+## Execução de T08
+
+O idealizador confirmou o desenho, D05 e os limites de análise/complemento antes
+da implementação e pediu commit ao concluir. A skill local do Vibe Coding
+Toolkit foi descoberta e aplicada com plano de ondas e revisão independente.
+Três escritores atuaram em domínio/API, UI/E2E e HTTP, com escopos exclusivos.
+O root integrou DTO/schema, migrações, mídia/outbox/lifecycle, scripts e documentos;
+executou os recursos mutáveis e Git. Uma atribuição focal criou a prova SQL,
+sem execução pelo escritor. Revisores novos receberam contexto explícito,
+sem histórico herdado, e trabalharam somente em leitura.
+
+Context7 foi consultado, mas misturou APIs atuais e v7. A integração preservou
+os tipos Prisma 7.10.1 e o helper transacional existente, conferidos com a
+[documentação oficial v7](https://www.prisma.io/docs/orm/v7/prisma-client/queries/transactions).
+Nenhum código privado ou segredo foi enviado. Executing-plans e
+subagent-driven-development não foram descobertas neste cliente; a execução
+usou o equivalente nativo documentado no plano.
+
+T08 tem bancos `meumimo_t08`/dev/shadow separados, prefixos Storage próprios e
+Next 4310/mídia 4311 em loopback. Auth/Storage continuam na stack meumimo-t02.
+As duas migrações aditivas foram aplicadas nos bancos locais T02/T04/T05/T06/T07
+e T08, incluindo desenvolvimento e integração, preservando as migrações
+anteriores. São nove migrações e 22 tabelas com RLS. Não houve reset ou migração
+em ambiente real, alteração de dependências ou publicação.
+
+Verificação: `check` com lint/tipos/build e 7+9 testes; migração vazia/evolutiva
+com crédito T07 preservado; 175 HTTP e 270 Chromium. Os cinco HTTP de mídia
+afetados pela ordenação das evidências passaram novamente depois do ajuste.
+Revisão independente encerrada após reprodução/correção dos achados; capturas
+normais e a 200% conferidas. Comandos, contratos e limites em
+[T08 local](points-local.md); despachos e evidências no
+[plano T08](superpowers/plans/2026-10-22-t08-analise-extrato.md).
+
+Resgates/tickets continuam em T09/T10. O caso completo de anulação após gasto
+não foi simulado por débito fictício. Aparelhos físicos, leitor de tela,
+CI remoto e publicação permanecem não observados.
+
+O scan T08 de 462 arquivos versionáveis/estáticos não encontrou segredos locais
+ou chaves privadas. Artefatos, credenciais e capturas permanecem fora do Git.

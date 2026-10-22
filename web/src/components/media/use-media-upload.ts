@@ -6,6 +6,7 @@ import { StoreRequestError, storeError } from '@/components/stores/store-api';
 import type { MediaContext, MediaTransport } from './transport';
 import { fileError, fromAsset, uploadItem } from './upload';
 import type { ItemPatch, UploadItem } from './upload';
+import { loadMediaPages } from './load-media-pages';
 
 export function useMediaUpload(context: MediaContext, transport: MediaTransport) {
   const [items, setItems] = useState<UploadItem[]>([]);
@@ -13,6 +14,7 @@ export function useMediaUpload(context: MediaContext, transport: MediaTransport)
   const active = useRef<{ id: string; controller: AbortController } | null>(null);
   const alive = useRef(true);
   const [revision, setRevision] = useState(0);
+  const [pages, setPages] = useState(1);
   const [result, setResult] = useState<{ key: number; page?: MediaPage; error?: string }>();
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
@@ -34,7 +36,7 @@ export function useMediaUpload(context: MediaContext, transport: MediaTransport)
   }
   useEffect(() => {
     const controller = new AbortController();
-    transport.list({ storeId, collectionId }, controller.signal).then(value => {
+    loadMediaPages(transport, { storeId, collectionId }, controller.signal, pages).then(value => {
       if (controller.signal.aborted) return;
       const known = new Map(rows.current.map(item => [item.id, item]));
       const remote = value.items.filter(asset => !['REMOVING', 'REMOVED'].includes(asset.state));
@@ -52,7 +54,7 @@ export function useMediaUpload(context: MediaContext, transport: MediaTransport)
     return () => controller.abort();
     // context is keyed by the parent; callers pass a stable transport.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [storeId, collectionId, transport, revision]);
+  }, [storeId, collectionId, transport, revision, pages]);
   useEffect(() => {
     alive.current = true;
     return () => { alive.current = false; active.current?.controller.abort(); };
@@ -151,5 +153,7 @@ export function useMediaUpload(context: MediaContext, transport: MediaTransport)
   }
   return { items, page, error, message, busyId, denied, closedByServer, loading: !current, loadError: current?.error,
     choose, send, remove, resume, privacyFailure, refresh: () => { setRevision(value => value + 1); },
+    hasMore: !!page && page.items.length < page.total,
+    loadMore: () => { setPages(value => value + 1); setRevision(value => value + 1); },
     pause: () => active.current?.controller.abort(), revision };
 }

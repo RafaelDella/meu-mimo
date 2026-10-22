@@ -46,6 +46,8 @@ fronteiras em [mídia local](docs/media-local.md). D08 foi confirmada; a proteç
 de retenção é atualizada por cada origem integrada.
 T07 entrega atividades, conquistas e crédito automático único, com foto privada,
 histórico e saldo real da participação. Preparação em [atividades locais](docs/activities-local.md).
+T08 acrescenta aprovação manual, contestação/complemento, compensações e extrato
+com filtros. Preparação em [análise e extrato locais](docs/points-local.md).
 O servidor da prévia em 4173 continua independente.
 
 Para verificar o navegador depois de `npm run check`:
@@ -68,8 +70,9 @@ T03, identidade local T02 e lojas/participações/convites T04 com Supabase
 Auth/PostgreSQL/Prisma. A prévia visual não salva dados nem desconta pontos.
 T05 acrescenta APIs de conversa e notificações persistidas com outbox. T06 prepara
 mídia privada com derivados e retomada. T07 integra registros reais de atividade,
-pendência manual e crédito automático consultável. Análise manual/compensações
-T08, resgates/tickets, álbuns, Realtime e a central completa de novidades
+pendência manual e crédito automático consultável. T08 integra análise,
+complementos, estorno/recomposição e extrato real. Resgates/tickets, álbuns,
+Realtime e a central completa de novidades
 permanecem no roadmap.
 
 A aplicação completa está descrita nos documentos abaixo. A adoção do toolkit

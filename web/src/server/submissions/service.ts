@@ -58,7 +58,7 @@ export async function readSubmission(identity: Identity, storeId: string, submis
 
 export async function listSubmissions(identity: Identity, storeId: string, query = new URLSearchParams()): Promise<SubmissionPage> {
   const page = pagination(query);
-  const status = choice(query, 'status', ['PENDING', 'APPROVED'] as const);
+  const status = choice(query, 'status', ['PENDING', 'APPROVED', 'CONTESTED', 'VOIDED'] as const);
   const activityId = query.has('activityId') ? resourceId(query.get('activityId')!) : null;
   const membershipId = query.has('membershipId') ? resourceId(query.get('membershipId')!) : null;
   const from = query.has('from') ? localDate(query.get('from')) : null;
@@ -83,6 +83,10 @@ export async function listSubmissions(identity: Identity, storeId: string, query
     return { items, total, page: page.page, pageSize: page.pageSize };
   });
 }
+
+export { reviewSubmission } from './review.ts';
+export { respondToSubmission } from './response.ts';
+export { readReviewOperation, listSubmissionHistory } from './history.ts';
 
 export async function submitSubmission(identity: Identity, storeId: string, submissionId: string,
   body: Record<string, unknown>): Promise<SubmissionView> {

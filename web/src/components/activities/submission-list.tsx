@@ -55,7 +55,8 @@ export function SubmissionList({ store, activityId, compact = false }: { store: 
       {!activityId && <ResourceFilter storeId={store.id} onChange={value => setFilters(previous => ({ ...previous, activityId: value }))} />}
       {store.role === 'MERCHANT' && <ResourceFilter storeId={store.id} people onChange={value => setFilters(previous => ({ ...previous, membershipId: value }))} />}
       <label className="stores-field">Situação<select className="ui-input" value={filters.status} onChange={event => setFilters(previous => ({ ...previous, status: event.target.value }))}>
-        <option value="">Todos os registros</option><option value="PENDING">Aguardando aprovação</option><option value="APPROVED">Aprovados</option></select></label>
+        <option value="">Todos os registros</option><option value="PENDING">Aguardando aprovação</option><option value="APPROVED">Aprovados</option>
+        <option value="CONTESTED">Em contestação</option><option value="VOIDED">Anulados</option></select></label>
       <Input label="Desde a data" type="date" value={filters.from} onChange={event => setFilters(previous => ({ ...previous, from: event.target.value }))} />
       <Input label="Até a data" type="date" value={filters.to} onChange={event => setFilters(previous => ({ ...previous, to: event.target.value }))} />
       <p>As datas consideram o fuso da loja: {store.timezone}.</p>{invalidRange && <p role="alert">A data final precisa ser igual ou posterior à inicial.</p>}

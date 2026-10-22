@@ -28,7 +28,7 @@ function Workspace({ storeId, section, accountKey, activityRoute }: { storeId: s
   if (error || !store) return <div ref={frame} className="stores-card"><h1 tabIndex={-1}>Loja indisponível</h1>
     <p role="alert">{storeError(error)}</p><div className="stores-actions"><Link className="stores-link" href="/lojas">Minhas lojas</Link>
       <Button variant="secondary" onClick={reload}>Tentar novamente</Button></div></div>;
-  const restricted = section !== 'home' && section !== 'people' && section !== 'activities' && store.role !== 'MERCHANT';
+  const restricted = section !== 'home' && section !== 'people' && section !== 'activities' && section !== 'statement' && store.role !== 'MERCHANT';
   return <div ref={frame} key={`${store.id}:${store.membershipId}`} aria-busy={refreshing}>
     <StoreNavigation store={store} section={section} />
     {store.state !== 'ACTIVE' && <p className="stores-banner" role="status">{store.state === 'PAUSED' ?
@@ -36,7 +36,7 @@ function Workspace({ storeId, section, accountKey, activityRoute }: { storeId: s
       'Esta loja foi encerrada. Você continua com acesso privado ao histórico e aos mimos já emitidos.'}</p>}
     {store.membershipClosedAt && <p className="stores-banner" role="status">Sua participação foi encerrada. Este cantinho continua disponível para consulta do seu histórico e pendências.</p>}
     {restricted ? <section className="stores-card"><h2>Acesso indisponível</h2><p>Esta área é reservada a quem gerencia a loja.</p></section> :
-      section === 'activities' ? <ActivityArea key={JSON.stringify(activityRoute)} store={store} accountKey={accountKey} route={activityRoute ?? { view: 'list' }} /> :
+      section === 'activities' || section === 'statement' ? <ActivityArea key={JSON.stringify(activityRoute)} store={store} accountKey={accountKey} route={activityRoute ?? { view: 'list' }} /> :
         section === 'settings' ? <StoreSettings key={store.id} store={store} onUpdate={refresh} /> :
         section === 'people' ? <StorePeople key={store.id} store={store} onUpdate={refresh} /> :
           section === 'invitations' ? <StoreInvitations key={store.id} store={store} /> : <StoreHome store={store} />}

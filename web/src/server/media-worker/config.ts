@@ -15,8 +15,8 @@ export function mediaWorkerConfig() {
   const ffmpeg = process.env.FFMPEG_PATH;
   const ffprobe = process.env.FFPROBE_PATH;
   try {
-    const task = prefix?.startsWith('t07-') ? 't07' : 't06';
-    const target = task === 't07' ? prefix?.slice(4) : prefix;
+    const task = /^t0[78]-/.test(prefix ?? '') ? prefix!.slice(0, 3) : 't06';
+    const target = task !== 't06' ? prefix?.slice(4) : prefix;
     const tempRoot = path.resolve(webRoot, `../.artifacts/${task}-runtime/temp`);
     if (bucket !== 'meumimo-t06-private' || !['integration', 'development'].includes(target ?? '') ||
         url !== 'http://127.0.0.1:54321' || !key || !temp || !path.isAbsolute(temp) ||

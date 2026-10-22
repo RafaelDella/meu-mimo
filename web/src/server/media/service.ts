@@ -27,7 +27,8 @@ export async function listMedia(identity: Identity, storeId: string, collectionI
       OR: [{ authorProfileId: identity.userId }, { publishedAt: { not: null } }] };
     const total = await scope.tx.mediaAsset.count({ where });
     const assets = await scope.tx.mediaAsset.findMany({ where,
-      orderBy: [{ revision: 'asc' }, { createdAt: 'asc' }, { id: 'asc' }], skip: page.skip, take: page.pageSize });
+      orderBy: [{ revision: scope.collection.purpose === 'EVIDENCE' ? 'desc' : 'asc' },
+        { createdAt: 'asc' }, { id: 'asc' }], skip: page.skip, take: page.pageSize });
     return { collection: mediaCollectionView(scope), items: assets.map(mediaAssetView),
       total, page: page.page, pageSize: page.pageSize };
   });

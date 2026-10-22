@@ -37,6 +37,8 @@ enum NotificationKind {
   INVITATION_ACCEPTED
   COMMENT_CREATED
   SUBMISSION_RECEIVED
+  SUBMISSION_REVIEWED
+  SUBMISSION_RESPONDED
 
   @@schema("app")
 }
@@ -58,6 +60,8 @@ enum SubmissionStatus {
   DRAFT
   PENDING
   APPROVED
+  CONTESTED
+  VOIDED
   @@schema("app")
 }
 
@@ -106,6 +110,7 @@ model Profile {
   authoredSubmissions ActivitySubmission[]
   submissionEvents SubmissionEvent[]
   pointsEntries PointsEntry[]
+  reviewEvents SubmissionReviewEvent[]
 
   @@schema("app")
 }
@@ -136,6 +141,7 @@ model Store {
   submissions ActivitySubmission[]
   submissionEvents SubmissionEvent[]
   pointsEntries PointsEntry[]
+  reviewEvents SubmissionReviewEvent[]
 
   @@index([createdByProfileId])
   @@schema("app")
@@ -244,6 +250,7 @@ model OutboxEvent {
   invitationId String? @db.Uuid
   commentId String? @db.Uuid
   submissionId String? @db.Uuid
+  reviewEventId String? @db.Uuid
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   availableAt DateTime @default(now()) @db.Timestamptz(6)
   processedAt DateTime? @db.Timestamptz(6)
@@ -256,6 +263,7 @@ model OutboxEvent {
   invitation Invitation? @relation(fields: [invitationId], references: [id], onDelete: Restrict)
   comment Comment? @relation(fields: [commentId], references: [id], onDelete: Restrict)
   submission ActivitySubmission? @relation(fields: [submissionId], references: [id], onDelete: Restrict)
+  reviewEvent SubmissionReviewEvent? @relation(fields: [reviewEventId], references: [id], onDelete: Restrict)
   notification Notification?
 
   @@index([processedAt, availableAt, id])
@@ -336,6 +344,7 @@ model MediaAsset {
   author Profile @relation(fields: [authorProfileId], references: [id], onDelete: Restrict)
   parts MediaPart[]
   submissionEvidence ActivitySubmission?
+  reviewEvidence SubmissionReviewEvent?
 
   @@index([collectionId, revision, createdAt, id])
   @@index([state, availableAt, leaseUntil])
@@ -408,6 +417,7 @@ model ActivitySubmission {
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   receivedAt DateTime? @db.Timestamptz(6)
   approvedAt DateTime? @db.Timestamptz(6)
+  analysisVersion Int @default(0)
   requestDigest String?
   activityVersion Int?
   activityName String?
@@ -434,6 +444,7 @@ model ActivitySubmission {
   events SubmissionEvent[]
   pointsEntries PointsEntry[]
   outboxEvents OutboxEvent[]
+  reviewEvents SubmissionReviewEvent[]
 
   @@unique([id, storeId])
   @@unique([id, storeId, participantMembershipId])
@@ -468,13 +479,51 @@ model PointsEntry {
   kind String
   amount BigInt
   sourceKey String @unique
+  reviewEventId String? @unique @db.Uuid
+  compensatesEntryId String? @unique @db.Uuid
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   store Store @relation(fields: [storeId], references: [id], onDelete: Restrict)
   participant Membership @relation(fields: [participantMembershipId], references: [id], onDelete: Restrict)
   submission ActivitySubmission @relation(fields: [submissionId], references: [id], onDelete: Restrict)
   actor Profile @relation(fields: [actorProfileId], references: [id], onDelete: Restrict)
+  reviewEvent SubmissionReviewEvent? @relation(fields: [reviewEventId], references: [id], onDelete: Restrict)
+  compensates PointsEntry? @relation("PointsCompensation", fields: [compensatesEntryId], references: [id], onDelete: Restrict)
+  compensation PointsEntry? @relation("PointsCompensation")
 
+  @@unique([id, storeId, participantMembershipId, submissionId])
   @@index([storeId, participantMembershipId, createdAt, id])
+  @@schema("app")
+}
+
+model SubmissionReviewEvent {
+  id String @id @db.Uuid
+  storeId String @db.Uuid
+  submissionId String @db.Uuid
+  actorProfileId String @db.Uuid
+  version Int
+  action String
+  fromStatus SubmissionStatus
+  toStatus SubmissionStatus
+  reason String @default("")
+  text String @default("")
+  requestDigest String
+  evidenceAssetId String? @unique @db.Uuid
+  evidenceRevision Int?
+  requestId String? @unique @db.Uuid
+  delta BigInt @default(0)
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  store Store @relation(fields: [storeId], references: [id], onDelete: Restrict)
+  submission ActivitySubmission @relation(fields: [submissionId], references: [id], onDelete: Restrict)
+  actor Profile @relation(fields: [actorProfileId], references: [id], onDelete: Restrict)
+  evidence MediaAsset? @relation(fields: [evidenceAssetId], references: [id], onDelete: Restrict)
+  request SubmissionReviewEvent? @relation("ResponseRequest", fields: [requestId], references: [id], onDelete: Restrict)
+  response SubmissionReviewEvent? @relation("ResponseRequest")
+  pointsEntry PointsEntry?
+  outboxEvents OutboxEvent[]
+
+  @@unique([submissionId, version])
+  @@unique([id, submissionId, storeId])
+  @@index([storeId, createdAt, id])
   @@schema("app")
 }
 

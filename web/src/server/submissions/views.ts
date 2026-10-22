@@ -6,6 +6,7 @@ import { periodAt } from '../activities/periods.ts';
 import { conversationView } from '../conversations/views.ts';
 import type { StoreScope } from '../stores/transaction.ts';
 import { unavailable } from '../stores/validation.ts';
+import { analysisView } from './analysis.ts';
 
 export function submissionSnapshot(row: ActivitySubmission): ActivitySnapshot | null {
   if (!row.receivedAt) return null;
@@ -26,9 +27,10 @@ export async function submissionView(scope: StoreScope, submission: ActivitySubm
     subjectType_subjectId: { subjectType: 'SUBMISSION', subjectId: submission.id },
   } }) : null;
   const currentPeriod = submission.status === 'DRAFT' ? await periodAt(scope.tx, scope.store.timezone, activity.frequency, now) : null;
+  const analysis = await analysisView(scope, submission, collection);
   return { id: submission.id, storeId: submission.storeId, activityId: submission.activityId,
     participantMembershipId: submission.participantMembershipId, participant: participant.profile, status: submission.status,
-    pointsState: submission.status === 'DRAFT' ? 'NONE' : submission.status === 'PENDING' ? 'PENDING' : 'CREDITED',
+    pointsState: analysis.pointsState, analysis: analysis.analysis,
     caption: submission.caption, createdAt: submission.createdAt.toISOString(), receivedAt: submission.receivedAt?.toISOString() ?? null,
     approvedAt: submission.approvedAt?.toISOString() ?? null, localDate: submission.localDate, timezone: submission.timezone,
     periodKey: submission.periodKey, periodStart: submission.periodStart?.toISOString() ?? null,

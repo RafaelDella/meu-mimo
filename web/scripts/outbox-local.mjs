@@ -17,7 +17,7 @@ if (target === 'development') {
 }
 assertLocalDatabase(runtime.DATABASE_URL, target === 'development' ? resources.development : resources.database);
 const environment = Object.fromEntries(Object.entries(process.env).filter(([key]) =>
-  !/^(T0[24567]_|SUPABASE_|MEDIA_|FFMPEG_|FFPROBE_|MIGRATION_|SHADOW_)/i.test(key)));
+  !/^(T0[245678]_|SUPABASE_|MEDIA_|FFMPEG_|FFPROBE_|MIGRATION_|SHADOW_)/i.test(key)));
 Object.assign(environment, runtime);
 const child = spawn(process.execPath, ['--conditions=react-server', path.join(webRoot, 'scripts/outbox-worker.mjs'),
   ...(mode ? [mode] : [])], { cwd: webRoot, env: environment, stdio: 'inherit', windowsHide: true });

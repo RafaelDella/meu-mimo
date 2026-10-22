@@ -59,7 +59,17 @@
     "db:migrate:check": "node scripts/check-migrations.mjs",
     "test:e2e": "playwright test",
     "prebuild": "prisma generate",
-    "check": "npm run lint && npm run typecheck && npm test && npm run build"
+    "check": "npm run lint && npm run typecheck && npm test && npm run build",
+    "test:integration:t08": "node scripts/integration.mjs t08",
+    "local:prepare:t08": "node scripts/prepare-media.mjs t08",
+    "db:migrate:dev:t08": "node scripts/prisma-local.mjs development t08",
+    "db:migrate:integration:t08": "node scripts/prisma-local.mjs integration t08",
+    "media:fixtures:t08": "node scripts/media-fixtures.mjs t08",
+    "media:dev:t08": "node scripts/media-local.mjs t08 development",
+    "media:once:t08": "node scripts/media-local.mjs t08 integration --once",
+    "media:purge:t08": "node scripts/media-local.mjs t08 integration --purge-once",
+    "outbox:dev:t08": "node scripts/outbox-local.mjs t08 development",
+    "outbox:once:t08": "node scripts/outbox-local.mjs t08 integration --once"
   },
   "dependencies": {
     "@prisma/adapter-pg": "7.10.1",

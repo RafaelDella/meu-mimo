@@ -1,7 +1,7 @@
 # Meu Mimo — proposta técnica e decisões de dados
 
 Atualizado em 22 de outubro de 2026. Complementa `design.md` e `requisitos.md`.
-Registra decisões, propostas futuras e o escopo local de T01–T07. D07 e D08
+Registra decisões, propostas futuras e o escopo local de T01–T08. D07 e D08
 foram confirmadas em T06; T07 integra a origem de conquistas.
 
 ## 1. Decisões e base da implementação
@@ -10,7 +10,7 @@ foram confirmadas em T06; T07 integra a origem de conquistas.
 
 Interpretação adotada para “Prisma DB para migração”: **Prisma ORM e suas ferramentas de migração sobre PostgreSQL**.
 
-**D01 confirmada pelo idealizador em M0, em 22/10/2026:** Next.js/React/TypeScript em `web/`, PostgreSQL com Prisma e Supabase para Auth/Storage, com desenvolvimento e testes locais. Essa confirmação não contrata serviços nem autoriza publicação. **D02 confirmada em T02:** e-mail/senha com e-mail verificado, recuperação, retorno seguro ao convite e MFA/TOTP obrigatório para administração provisionada separadamente. A preparação local, D03, D04 de autenticação/T04/T07 e D07/D08 foram autorizados. As propostas restantes estão discriminadas em requisitos §6.1.
+**D01 confirmada pelo idealizador em M0, em 22/10/2026:** Next.js/React/TypeScript em `web/`, PostgreSQL com Prisma e Supabase para Auth/Storage, com desenvolvimento e testes locais. Essa confirmação não contrata serviços nem autoriza publicação. **D02 confirmada em T02:** e-mail/senha com e-mail verificado, recuperação, retorno seguro ao convite e MFA/TOTP obrigatório para administração provisionada separadamente. A preparação local, D03, D04 de autenticação/T04/T07/T08, D05 e D07/D08 foram autorizados. As propostas restantes estão discriminadas em requisitos §6.1.
 
 | Camada | Seleção e estado | Responsabilidade |
 |---|---|---|
@@ -186,7 +186,7 @@ Para a implantação serverless proposta, definir pooling, orçamento de conexõ
 
 Referências técnicas: [Prisma com Supabase](https://supabase.com/docs/guides/database/prisma), [customização de migrações](https://www.prisma.io/docs/orm/v7/prisma-migrate/workflows/customizing-migrations), [desenvolvimento e produção](https://www.prisma.io/docs/orm/v7/prisma-migrate/workflows/development-and-production). As duas últimas descrevem Prisma ORM v7 e precisam ser revalidadas se outra versão for escolhida.
 
-### 3.1. Fundação local e evolução até T07
+### 3.1. Fundação local e evolução até T08
 
 O schema privado `app` iniciou com Profile, Store, Membership e AdminGrant;
 T04 acrescenta os estados de loja/participação, Invitation e StoreAudit; T05,
@@ -194,8 +194,9 @@ Conversation, Comment, OutboxEvent e Notification. AuthSession
 mantém revogação/contexto restrito, AuthRateBucket persiste a janela atômica
 e SecurityAudit registra evento/ator/instante sem senha, token ou e-mail.
 T06 acrescenta MediaCollection, MediaAsset e MediaPart. T07 acrescenta Activity,
-ActivityEvent, ActivitySubmission, SubmissionEvent e PointsEntry. As sete migrações
-em `web/prisma/migrations/` incluem SQL de permissões; 21 tabelas têm RLS.
+ActivityEvent, ActivitySubmission, SubmissionEvent e PointsEntry. T08 acrescenta
+SubmissionReviewEvent e compensações. As nove migrações em
+`web/prisma/migrations/` incluem SQL de permissões; 22 tabelas têm RLS.
 Auth/Storage mantêm seus schemas gerenciados pelo Supabase.
 
 Runtime usa `meumimo_runtime`, sem superuser/bypass de RLS ou escrita em
@@ -250,12 +251,38 @@ Encerramento consulta PENDING real na mesma transação, substituindo a proteç�
 provisória de T04. Primeiro recebimento marca domainStartedAt e bloqueia fuso.
 `SUBMISSION_RECEIVED` e comentários da origem resolvem destino ao registro real
 com audiência atual. Conversas recebidas mantêm as regras T05 após encerramento.
-Análise/contestação/compensações e novos estados ficam para T08. Operação,
-rotas e limites em [T07 local](docs/activities-local.md).
+Operação de atividades em [T07 local](docs/activities-local.md).
+
+### 3.3. Análise e compensações em T08
+
+D05 foi confirmada: CONTESTED conserva crédito, VOIDED estorna uma vez, e
+REOPEN volta a PENDING sem recompor. Aprovar depois recompõe a ponta estornada.
+ActivitySubmission.analysisVersion separa análise da versão do snapshot;
+SubmissionReviewEvent registra UUID/digest, autor, estados, motivo, resposta,
+revisão de evidência e delta. approvedAt conserva a primeira aprovação.
+
+PointsEntry recebe reviewEventId e compensatesEntryId únicos; crédito inicial,
+estorno e recomposição formam uma cadeia por origem/loja/participação. FKs
+compostas, índice inicial e triggers diferidos exigem evento e alteração da
+origem correspondentes, delta igual ao lançamento e crédito consistente com
+o estado final. Ledger/auditorias não recebem UPDATE/DELETE no runtime.
+
+O lock da loja serializa também saldo, análise, resposta e encerramento. UUID
+é recuperada antes de verificar versão/saldo após autorização atual. Uma prévia
+de saldo diferente causa 409. Resposta exige solicitação aberta e texto ou foto
+READY da revisão atual; publicação, fechamento de uploads, hold D08 e outbox
+pertencem à mesma transação. Pausa permite complementos de origem contestada;
+CLOSED permite consulta/replay. Encerramento bloqueia PENDING/CONTESTED.
+
+Histórico une eventos T07/T08. Extrato usa datas inclusivas no fuso atual da
+loja, tipo e pessoa; os totais usam SUM→texto/BigInt. Primeiras aprovações e
+ajustes diários são separados. Novidades apontam ao evento reautorizado.
+Contratos e comandos em [T08 local](docs/points-local.md). Gastos/tickets seguem
+para T09; a prova completa de saldo negativo após gasto depende dessa etapa.
 
 ## 4. Modelo conceitual de dados
 
-A tabela descreve o modelo completo proposto. T02/T04/T05/T06/T07 implementam os
+A tabela descreve o modelo completo proposto. T02/T04/T05/T06/T07/T08 implementam os
 subconjuntos das seções 1.2–1.4, 3.1 e do contrato T07 abaixo; os demais modelos
 permanecem futuros.
 

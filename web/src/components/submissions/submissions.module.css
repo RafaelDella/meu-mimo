@@ -1,0 +1,11 @@
+.impact { padding: 1rem 12px; border: 2px solid var(--border-control); border-radius: 1rem; background: var(--surface-soft); }
+.impact dl { display: grid; gap: .75rem; }
+.impact dd { margin: 0; font-weight: 600; }
+.text { white-space: pre-wrap; overflow-wrap: anywhere; }
+.timeline { padding-inline-start: 1.25rem; }
+.timeline li { padding-block: .75rem; border-bottom: 1px solid var(--border); }
+.focused { border: 2px solid var(--action); border-radius: 1rem; padding: 1rem 12px; }
+.panel { min-width: 0; display: grid; gap: .75rem; }
+.panel :where(p, h3, h4, dd, a) { overflow-wrap: anywhere; }
+.panel textarea { width: 100%; min-height: 120px; resize: vertical; }
+.panel input, .panel select { min-height: 48px; }

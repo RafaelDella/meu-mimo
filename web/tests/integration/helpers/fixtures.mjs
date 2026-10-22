@@ -52,6 +52,18 @@ export async function createFixture(t) {
     return { id, storeId: store.id, profileId: user.id, role };
   }
 
+  async function deleteChain(table, reference, scope, values) {
+    assert.ok(['PointsEntry:compensatesEntryId', 'SubmissionReviewEvent:requestId'].includes(table + ':' + reference));
+    const ids = (await database.query(`SELECT id FROM app."${table}" WHERE ${scope}`, values)).rows.map(row => row.id);
+    let remaining = ids.length;
+    while (remaining) {
+      const result = await database.query(`DELETE FROM app."${table}" parent WHERE parent.id=ANY($1::uuid[])
+        AND NOT EXISTS (SELECT 1 FROM app."${table}" child WHERE child."${reference}"=parent.id)`, [ids]);
+      assert.ok(result.rowCount, 'A limpeza não pode romper referências fora desta fixture.');
+      remaining -= result.rowCount;
+    }
+  }
+
   async function cleanup() {
     try {
       if (emails.size) {
@@ -78,7 +90,10 @@ export async function createFixture(t) {
       await database.query(`DELETE FROM app."Notification" WHERE "eventId" IN (SELECT id FROM app."OutboxEvent" WHERE ${scope})`, scopeValues);
       await database.query(`DELETE FROM app."OutboxEvent" WHERE ${scope}`, scopeValues);
       const submissionScope = '"storeId" = ANY($1::uuid[]) OR "authorProfileId" = ANY($2::uuid[]) OR "participantMembershipId" IN (SELECT id FROM app."Membership" WHERE "profileId" = ANY($2::uuid[]))';
-      await database.query(`DELETE FROM app."PointsEntry" WHERE "submissionId" IN (SELECT id FROM app."ActivitySubmission" WHERE ${submissionScope}) OR "actorProfileId" = ANY($2::uuid[])`, scopeValues);
+      await deleteChain('PointsEntry', 'compensatesEntryId',
+        `"submissionId" IN (SELECT id FROM app."ActivitySubmission" WHERE ${submissionScope}) OR "actorProfileId" = ANY($2::uuid[])`, scopeValues);
+      await deleteChain('SubmissionReviewEvent', 'requestId',
+        `"submissionId" IN (SELECT id FROM app."ActivitySubmission" WHERE ${submissionScope}) OR "actorProfileId" = ANY($2::uuid[])`, scopeValues);
       await database.query(`DELETE FROM app."SubmissionEvent" WHERE "submissionId" IN (SELECT id FROM app."ActivitySubmission" WHERE ${submissionScope}) OR "actorProfileId" = ANY($2::uuid[])`, scopeValues);
       await database.query(`DELETE FROM app."ActivitySubmission" WHERE ${submissionScope}`, scopeValues);
       await database.query('DELETE FROM app."ActivityEvent" WHERE "storeId" = ANY($1::uuid[]) OR "actorProfileId" = ANY($2::uuid[])', scopeValues);
@@ -89,7 +104,7 @@ export async function createFixture(t) {
       const mediaScope = '"authorProfileId" = ANY($2::uuid[]) OR "collectionId" IN (SELECT id FROM app."MediaCollection" WHERE ' + conversationScope + ')';
       const media = await database.query(`SELECT id FROM app."MediaAsset" WHERE ${mediaScope}`, scopeValues);
       if (media.rowCount) {
-        assert.ok(['t06', 't07'].includes(environment.task), 'Mídia de fixture só pode existir nos domínios reservados T06/T07.');
+        assert.ok(['t06', 't07', 't08'].includes(environment.task), 'Mídia de fixture só pode existir nos domínios reservados T06/T07/T08.');
         const { listAssetObjects, deleteObjects } = await import('../../../src/server/media-worker/storage.ts');
         for (const item of media.rows) await deleteObjects(await listAssetObjects(item.id));
       }

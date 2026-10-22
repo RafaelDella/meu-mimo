@@ -14,6 +14,7 @@
 | `npm --prefix web run test:integration:t05` | Domínio T05 em 4310, regressões T02/T04 e conversas/outbox/notificações reais com falhas e entrega concorrente |
 | `npm --prefix web run test:integration:t06` | Domínio T06 em 4310, processo de mídia 4311, Storage privado, pipeline real e regressões T02/T04/T05 |
 | `npm --prefix web run test:integration:t07` | Atividades, calendário/DST, concorrência, ledger, foto real e regressões anteriores no domínio T07, com Next4310/mídia4311 |
+| `npm --prefix web run test:integration:t08` | Análise, complementos, compensações, extrato, mídia real e regressões no domínio T08, com Next 4310/mídia 4311 |
 | `npm --prefix web run db:migrate:check` | Banco vazio, evolução com dados fictícios preservados, RLS e permissões efetivas |
 | `npm run web:build` | Build real de produção Next |
 | `npm run web:test:e2e` | Smoke do build em Chromium a 320/390 px; requer browser instalado |
@@ -173,3 +174,20 @@ seguida de reprodução/correção dos achados, incluindo sessão/foco e meia-no
 repetida. Após o ajuste final de CSS restrito ao resumo, check e os 30 Chromium
 afetados passaram novamente. Capturas normais/200% e scan de segredos conferidos.
 Detalhes e limites no [plano T07](superpowers/plans/2026-10-22-t07-atividades.md).
+
+T08 passou `check` com 7+9 testes, lint/tipos/build, prova de migração com crédito
+T07 anterior à evolução e privilégios efetivos, 175 HTTP (37 T08 e 138 regressões)
+e 270 Chromium (104 T08 e 166 regressões) em 320/390. Após mudar a ordenação da
+consulta de evidências, os cinco HTTP de autorização/mídia passaram novamente.
+As capturas de anulação, complemento e extrato normal/200% foram examinadas.
+
+Revisão independente identificou paginação após 50 fotos, descarte do extrato
+após perda de acesso e foco após remover o acionador da decisão. As regressões
+falharam antes e passaram depois das correções, incluindo 401/403/404. A prova
+SQL também rejeita evento órfão, anulação sem estorno e aprovação sem crédito.
+Um seletor ambíguo de paginação foi restringido ao histórico antes da suíte final.
+Detalhes no [plano T08](superpowers/plans/2026-10-22-t08-analise-extrato.md).
+
+Saldo negativo após gasto e preservação de tickets exigem a integração T09;
+T08 prova estorno real, aritmética assinada e apresentação controlada. Leitor
+de tela, aparelhos físicos, CI remoto e publicação continuam não observados.

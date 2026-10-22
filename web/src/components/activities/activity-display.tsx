@@ -2,13 +2,12 @@ import Link from 'next/link';
 import type { ActivityAvailability, ActivityFields, ActivityView, SubmissionView } from '@/contracts/activities';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Button } from '@/components/ui/button';
+import { SubmissionBadges } from '@/components/submissions/review-display';
+import { localTime, points } from './format';
 import { activityPath } from './transport';
 import styles from './activities.module.css';
 
-export function points(value: string | number) { return new Intl.NumberFormat('pt-BR').format(typeof value === 'string' ? BigInt(value) : value); }
-export function localTime(value: string, timezone: string) {
-  return new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short', timeZone: timezone }).format(new Date(value));
-}
+export { localTime, points } from './format';
 export function frequency(activity: Pick<ActivityFields, 'frequency' | 'weeklyLimit'>) {
   return activity.frequency === 'ONCE' ? 'Uma vez por participante' : activity.frequency === 'DAILY' ? 'Uma vez por dia' : `Até ${activity.weeklyLimit} ${activity.weeklyLimit === 1 ? 'vez' : 'vezes'} por semana`;
 }
@@ -38,8 +37,8 @@ export function ActivityCard({ activity, merchant }: { activity: ActivityView; m
 export function SubmissionCard({ submission, merchant }: { submission: SubmissionView; merchant: boolean }) {
   const activity = submission.snapshot ?? submission.activity;
   return <article className="stores-card"><h3>{activity.name}</h3>{merchant && <p>{submission.participant.displayName || 'Participante'}</p>}
-    <StatusBadge tone={submission.status === 'APPROVED' ? 'success' : 'pending'} text={submission.status === 'APPROVED' ? 'Aprovado automaticamente' : 'Aguardando aprovação'} />
-    <p>{points(activity.points)} pontos · {submission.pointsState === 'CREDITED' ? 'Crédito confirmado' : 'Pontos em análise'}</p>
+    <SubmissionBadges submission={submission} />
+    <p>{points(activity.points)} pontos da ocasião</p>
     {submission.receivedAt && <p><time dateTime={submission.receivedAt}>{localTime(submission.receivedAt, submission.timezone || 'UTC')}</time> · {submission.timezone}</p>}
     <Link className="stores-link" href={`/lojas/${submission.storeId}/registros/${submission.id}`}>Abrir registro<span className={styles.srOnly}> de {activity.name}</span></Link>
   </article>;

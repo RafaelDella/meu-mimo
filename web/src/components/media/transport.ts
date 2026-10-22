@@ -5,7 +5,7 @@ import { StoreRequestError, storeRequest } from '@/components/stores/store-api';
 
 export type MediaContext = { storeId: string; collectionId: string };
 export type MediaTransport = {
-  list(context: MediaContext, signal: AbortSignal): Promise<MediaPage>;
+  list(context: MediaContext, signal: AbortSignal, page?: number): Promise<MediaPage>;
   reserve(context: MediaContext, files: MediaFileInput[], signal: AbortSignal): Promise<{ items: MediaAssetView[] }>;
   get(context: MediaContext, assetId: string, signal: AbortSignal): Promise<MediaAssetView>;
   part(context: MediaContext, assetId: string, offset: number, bytes: Blob, signal: AbortSignal): Promise<MediaAssetView>;
@@ -18,7 +18,7 @@ function base(context: MediaContext) { return `/api/lojas/${encodeURIComponent(c
 function asset(context: MediaContext, id: string) { return `${base(context)}/arquivos/${encodeURIComponent(id)}`; }
 
 export const mediaTransport: MediaTransport = {
-  list: (context, signal) => storeRequest(`${base(context)}/${encodeURIComponent(context.collectionId)}?pageSize=50`, 'GET', undefined, signal),
+  list: (context, signal, page = 1) => storeRequest(`${base(context)}/${encodeURIComponent(context.collectionId)}?pageSize=50&page=${page}`, 'GET', undefined, signal),
   reserve: (context, files, signal) => storeRequest(`${base(context)}/${encodeURIComponent(context.collectionId)}`, 'POST', { files }, signal),
   get: (context, id, signal) => storeRequest(asset(context, id), 'GET', undefined, signal),
   complete: (context, id, signal) => storeRequest(`${asset(context, id)}/concluir`, 'POST', {}, signal),

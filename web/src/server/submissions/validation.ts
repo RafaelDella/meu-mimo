@@ -3,7 +3,7 @@ import { plainText, positiveInteger } from '../activities/validation.ts';
 import { allowedFields, invalidField, resourceId } from '../stores/validation.ts';
 
 export function localDate(value: unknown): string {
-  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) invalidField();
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value) || value.startsWith('0000-')) invalidField();
   const parsed = new Date(`${value}T00:00:00.000Z`);
   if (!Number.isFinite(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== value) invalidField();
   return value;

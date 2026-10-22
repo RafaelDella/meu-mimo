@@ -93,7 +93,7 @@ test('mídia: nova versão de evidência preserva foto histórica sem reabrir or
   assert.equal(second.revision, 2);
   assert.equal((await f.asset(f.ana, first.id)).revision, 1);
   const history = await f.ana.client.get(f.collectionPath(f.evidence)); expectStatus(history, 200);
-  assert.deepEqual((await history.json()).items.map(asset => asset.revision), [1, 2]);
+  assert.deepEqual((await history.json()).items.map(asset => asset.revision), [2, 1]);
   expectStatus(await f.owner.client.get(f.assetPath(first.id)), 200);
   await errorCode(await f.owner.client.get(f.assetPath(second.id)), 404);
   await errorCode(await f.ana.client.post(f.collectionPath(f.evidence), { files: [secondInput], revision: 3 }), 400);

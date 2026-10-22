@@ -3,13 +3,14 @@
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
-import type { ActivityPage, PointsBalance, PointsEntryView } from '@/contracts/activities';
-import type { PageResult, StoreView } from '@/contracts/stores';
+import type { ActivityPage, PointsBalance } from '@/contracts/activities';
+import type { StoreView } from '@/contracts/stores';
 import { useResource, storeError } from '@/components/stores/store-api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { PointsSummary } from '@/components/ui/points-summary';
-import { ActivityCard, Pagination, localTime, points } from './activity-display';
+import { ActivityCard, Pagination, points } from './activity-display';
+import { signedPoints } from '@/components/submissions/review-display';
 import { SubmissionList } from './submission-list';
 import { activityPath, base, privacyError } from './transport';
 import styles from './activities.module.css';
@@ -42,24 +43,17 @@ function ActivityCatalog({ store }: { store: StoreView }) {
 }
 
 export function ParticipantPoints({ store }: { store: StoreView }) {
-  const [page, setPage] = useState(1);
   const balance = useResource<PointsBalance>(`${base(store.id)}/pontos`);
-  const entries = useResource<PageResult<PointsEntryView>>(`${base(store.id)}/pontos/movimentos?page=${page}`);
-  if (privacyError(balance.error) || privacyError(entries.error)) return <p role="alert">Seus pontos nesta loja não estão disponíveis para esta conta.</p>;
+  if (privacyError(balance.error)) return <p role="alert">Seus pontos nesta loja não estão disponíveis para esta conta.</p>;
   return <section className={styles.summary} aria-label="Pontos e conquistas nesta loja">
     {balance.loading && <p role="status">Consultando seus pontos…</p>}
     {balance.error ? <div role="alert"><p>{storeError(balance.error)}</p><Button variant="secondary" onClick={balance.reload}>Consultar pontos novamente</Button></div> : null}
     {balance.data && <><PointsSummary storeName={store.name || 'Sua lojinha'} available={balance.data.available} pending={balance.data.pending} />
+      {BigInt(balance.data.available) < 0n && <p role="status">Seu saldo está negativo por ajustes registrados no extrato. Os tickets já emitidos continuam válidos; novos resgates dependerão de saldo suficiente.</p>}
       <div className="stores-card"><h3>Hoje nesta loja</h3><p>{balance.data.today.localDate.split('-').reverse().join('/')} · {balance.data.today.timezone}</p>
         <dl><div><dt>Registros enviados</dt><dd>{balance.data.today.submitted}</dd></div><div><dt>Registros aprovados</dt><dd>{balance.data.today.approved}</dd></div>
-          <div><dt>Pontos creditados</dt><dd>{points(balance.data.today.credited)}</dd></div></dl></div></>}
-    <div className="stores-card"><h3>Créditos das suas conquistas</h3>{entries.loading && <p role="status">Consultando créditos…</p>}
-      {entries.error ? <div role="alert"><p>{storeError(entries.error)}</p><Button variant="secondary" onClick={entries.reload}>Consultar créditos novamente</Button></div> : null}
-      {entries.data && <>{!entries.data.items.length && <p>Seus créditos confirmados aparecerão aqui, com acesso à conquista de origem.</p>}
-        <ol className={styles.movements}>{entries.data.items.map(entry => <li key={entry.id}><strong>+{points(entry.amount)} pontos · {entry.activityName}</strong>
-          <p>{balance.data ? localTime(entry.createdAt, balance.data.today.timezone) : 'Crédito confirmado'}</p><Link className="stores-link" href={entry.path}>Abrir conquista de origem</Link></li>)}</ol>
-        <Pagination page={entries.data.page} pageSize={entries.data.pageSize} total={entries.data.total} onPage={setPage} /></>}
-    </div>
+          <div><dt>Pontos creditados</dt><dd>{points(balance.data.today.credited)}</dd></div><div><dt>Ajustes líquidos</dt><dd>{signedPoints(balance.data.today.adjusted ?? '0')}</dd></div></dl></div></>}
+    <Link className="primary-link" href={`/lojas/${store.id}/extrato`}>Ver extrato de pontos</Link>
   </section>;
 }
 

@@ -10,7 +10,7 @@ export type SubmissionBody = {
 };
 export type ActivityRoute = { view: 'list' } | { view: 'new' } |
   { view: 'detail' | 'edit' | 'register'; activityId: string; draftId?: string } |
-  { view: 'submission'; submissionId: string };
+  { view: 'submission'; submissionId: string; eventId?: string; returnTo?: string } | { view: 'statement'; query: string };
 export function base(storeId: string) { return `/api/lojas/${encodeURIComponent(storeId)}`; }
 export function activityPath(storeId: string, activityId?: string) {
   return `/lojas/${encodeURIComponent(storeId)}/atividades${activityId ? `/${encodeURIComponent(activityId)}` : ''}`;

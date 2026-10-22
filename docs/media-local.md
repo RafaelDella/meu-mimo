@@ -133,3 +133,9 @@ automático/APPROVED. Rascunho continua restrito ao autor, inclusive para lojist
 Namespaces t07-development/t07-integration compartilham somente o bucket privado
 e ferramentas de T06; bancos, credenciais de gateway e temporários são próprios.
 Complemento/análise são T08 e álbum real continua T11.
+
+T08 integra complementos de evidência reais durante pausa, com uma seleção
+por revisão e proteção D08 na transação da análise. A consulta de evidências
+ordena revisões mais recentes primeiro; a interface carrega arquivos anteriores
+por páginas e revalida o conjunto aberto ao atualizar. Álbuns mantêm sua ordem.
+Contrato e comandos próprios em [T08 local](points-local.md).

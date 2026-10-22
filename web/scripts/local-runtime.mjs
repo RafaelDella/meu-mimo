@@ -10,7 +10,7 @@ export const statePath = path.join(artifactRoot, 'integration.json');
 mkdirSync(artifactRoot, { recursive: true });
 
 export function taskResources(task = 't02') {
-  if (!['t02', 't04', 't05', 't06', 't07'].includes(task)) throw new Error('Use somente t02, t04, t05, t06 ou t07.');
+  if (!['t02', 't04', 't05', 't06', 't07', 't08'].includes(task)) throw new Error('Use somente t02, t04, t05, t06, t07 ou t08.');
   const directory = path.resolve(webRoot, `../.artifacts/${task}-runtime`);
   return { task, directory, statePath: path.join(directory, 'integration.json'),
     database: task === 't02' ? 'postgres' : `meumimo_${task}`,

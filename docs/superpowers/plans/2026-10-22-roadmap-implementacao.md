@@ -10,7 +10,7 @@
 
 **Especificação:** [requisitos](../../../requisitos.md), [arquitetura](../../../arquitetura.md), [design](../../../design.md) e [README](../../../README.md). Operação e qualidade: [onboarding](../../onboarding.md), [setup](../../setup.md) e [quality](../../quality.md).
 
-**Data:** 22/10/2026. **Estado atual:** M0 e T01–T06 entregues localmente; T03 conserva a conferência com leitor de tela real. T07 integra atividades, conquistas e crédito automático, com execução/evidências em [plano T07](2026-10-22-t07-atividades.md). Análise e compensações são a próxima entrega, T08. Decisões confirmadas e propostas restantes constam em requisitos §6.1. A seção1 preserva o ponto de partida do planejamento.
+**Data:** 22/10/2026. **Estado atual:** M0 e T01–T08 entregues localmente; T03 conserva a conferência com leitor de tela real. T08 integra análise, complementos, compensações e extrato, com evidências no [plano T08](2026-10-22-t08-analise-extrato.md). A próxima entrega é T09, catálogo/resgate/tickets, dependente de D06. Decisões confirmadas e propostas restantes constam em requisitos §6.1. A seção 1 preserva o ponto de partida do planejamento.
 
 ## 1. Ponto de partida e restrições
 
@@ -199,10 +199,15 @@ Android/iPhone reais permanece no aceite móvel D09/T14.
 **Responsável:** domínio de conquistas/pontos. **Depende de:** T07 e D05.
 **Arquivos:** `web/src/server/{submissions,points}/**`, `web/src/app/lojas/[storeId]/{registros,extrato}/**`, `web/src/components/{submissions,points}/**`, `web/tests/{integration,e2e}/points/**`, `web/prisma/**`. **Recursos:** padrão T08.
 
-- [ ] Entregar L05/P05 e extrato: aprovar, contestar com motivo/resposta/complemento, manter, anular e reabrir preservando eventos anteriores.
-- [ ] Diferenciar estado da análise e dos pontos. Contestar crédito existente não o remove; anulação/recomposição seguem D05, com compensação única e impacto claro antes de confirmar.
-- [ ] Entregar filtros/paginação por período/tipo e origem autorizada do movimento, disponíveis pelo potinho e por Meus mimos. Separar ganhos, débitos, devoluções e compensações.
-- [ ] Verificar aprovações/anulações simultâneas e repetidas, pontos já gastos, reabertura sem crédito duplicado, reconciliação do saldo com o extrato e histórico após renomear/arquivar atividade.
+- [x] Entregar L05/P05 e extrato: aprovar, contestar com motivo/resposta/complemento, manter, anular e reabrir preservando eventos anteriores.
+- [x] Diferenciar estado da análise e dos pontos. Contestar crédito existente não o remove; anulação/recomposição seguem D05, com compensação única e impacto claro antes de confirmar.
+- [x] Entregar filtros/paginação por período/tipo e origem autorizada do movimento, disponíveis pelo potinho e pela navegação da loja. Ganhos, estornos e recomposições são separados; Meus mimos, débitos/devoluções e tickets serão integrados em T09/T10.
+- [x] Verificar aprovações/anulações simultâneas e repetidas, aritmética de saldo negativo identificada, reabertura sem crédito duplicado, reconciliação do saldo com o extrato e histórico após renomear/arquivar atividade.
+
+D05 e os limites foram confirmados antes da implementação. Prova local: 175 HTTP,
+270 Chromium, migração com crédito T07 anterior preservado e revisão independente.
+O cenário completo de gasto → anulação → ticket preservado depende de T09; T08
+não introduz débito fictício. Comandos em [T08 local](../../points-local.md).
 
 ### T09 · Catálogo, resgate transacional e histórico de tickets
 
@@ -363,7 +368,7 @@ Planos/cobrança, colaboradores, transferência, múltiplas fotos por registro d
 - Na elaboração inicial do roadmap, versões e provedores ainda não estavam escolhidos. M0 confirmou D01, selecionou versões e executou consultas reais ao Context7 e às fontes oficiais, registradas no plano da fundação. Isso atualiza a descoberta inicial sem alegar instalação ou integração já concluída.
 
 O estado atual está no início deste documento e nos planos de execução de cada
-entrega. A próxima etapa é T08, análise/compensações; D05 exige confirmação antes
-da respectiva regra. Os demais limites pendentes mantêm suas dependências em
+entrega. A próxima etapa é T09, catálogo/resgate/tickets; D06 exige confirmação
+antes da respectiva regra. T08 e D05 estão registradas no plano de execução. Os demais limites pendentes mantêm suas dependências em
 requisitos §6.1. A aprovação do roadmap não autoriza publicação, cobrança ou
 migração em ambiente real.

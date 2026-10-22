@@ -5,7 +5,7 @@ import { operationConflict, resourceId, unavailable } from '../stores/validation
 
 type EventInput = Pick<Prisma.OutboxEventUncheckedCreateInput,
   'key' | 'kind' | 'storeId' | 'participantMembershipId' | 'actorProfileId' |
-  'recipientMembershipId' | 'invitationId' | 'commentId' | 'submissionId'>;
+  'recipientMembershipId' | 'invitationId' | 'commentId' | 'submissionId' | 'reviewEventId'>;
 
 async function persistEvent(tx: StoreTransaction, input: EventInput): Promise<void> {
   // A unicidade também cobre duas transações que chegaram aqui ao mesmo tempo.
@@ -15,7 +15,8 @@ async function persistEvent(tx: StoreTransaction, input: EventInput): Promise<vo
       existing.participantMembershipId !== input.participantMembershipId ||
       existing.actorProfileId !== input.actorProfileId || existing.recipientMembershipId !== input.recipientMembershipId ||
       existing.invitationId !== (input.invitationId ?? null) || existing.commentId !== (input.commentId ?? null) ||
-      existing.submissionId !== (input.submissionId ?? null)) operationConflict();
+      existing.submissionId !== (input.submissionId ?? null) ||
+      existing.reviewEventId !== (input.reviewEventId ?? null)) operationConflict();
 }
 
 async function audience(tx: StoreTransaction, storeId: string, participantMembershipId: string) {
@@ -80,4 +81,19 @@ export async function enqueueSubmissionReceived(tx: StoreTransaction, submission
     storeId: submission.storeId, participantMembershipId: participant.id,
     actorProfileId: participant.profileId, recipientMembershipId: merchant.id,
     submissionId: id, invitationId: null, commentId: null });
+}
+
+/** Cada decisão ou complemento entrega apenas um aviso à outra pessoa da origem. */
+export async function enqueueSubmissionReview(tx: StoreTransaction, eventId: string): Promise<void> {
+  const id = resourceId(eventId);
+  const event = await tx.submissionReviewEvent.findUnique({ where: { id }, include: { submission: true } });
+  if (!event || !event.submission.receivedAt || event.submission.status === 'DRAFT') unavailable();
+  const { participant, merchant } = await audience(tx, event.storeId, event.submission.participantMembershipId);
+  const responding = event.action === 'RESPOND';
+  if (event.actorProfileId !== (responding ? participant.profileId : merchant.profileId)) unavailable();
+  await persistEvent(tx, { key: `submission.review:${id}`,
+    kind: responding ? 'SUBMISSION_RESPONDED' : 'SUBMISSION_REVIEWED', storeId: event.storeId,
+    participantMembershipId: participant.id, actorProfileId: event.actorProfileId,
+    recipientMembershipId: responding ? merchant.id : participant.id,
+    submissionId: event.submissionId, reviewEventId: id, invitationId: null, commentId: null });
 }

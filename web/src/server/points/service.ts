@@ -1,13 +1,14 @@
 import '../only.ts';
 import type { PageResult } from '../../contracts/stores.ts';
-import type { PointsBalance, PointsEntryView } from '../../contracts/activities.ts';
+import type { PointsBalance, PointsEntryView, PointsKind } from '../../contracts/activities.ts';
 import type { Identity } from '../auth/types.ts';
 import { periodAt } from '../activities/periods.ts';
-import { requireConversationAudience } from '../conversations/access.ts';
 import { consumeStoreLimit } from '../stores/limits.ts';
 import type { StoreScope } from '../stores/transaction.ts';
-import { databaseNow, requireMembership, withStoreTransaction } from '../stores/transaction.ts';
-import { invalidField, operationConflict, pagination, resourceId } from '../stores/validation.ts';
+import { databaseNow, withStoreTransaction } from '../stores/transaction.ts';
+import { choice, invalidField, operationConflict, pagination } from '../stores/validation.ts';
+import { localDate } from '../submissions/validation.ts';
+import { movementRange, targetParticipant } from './queries.ts';
 
 /** Somente a origem recebida chama o crédito, dentro da própria transação. */
 export async function creditSubmission(scope: StoreScope, submissionId: string, now: Date): Promise<void> {
@@ -27,53 +28,61 @@ export async function creditSubmission(scope: StoreScope, submissionId: string, 
     amount: BigInt(submission.points), sourceKey, createdAt: now } });
 }
 
-async function targetParticipant(scope: StoreScope, query: URLSearchParams): Promise<string> {
-  const actor = requireMembership(scope);
-  const requested = query.get('membershipId');
-  if (!requested && actor.role === 'MERCHANT') invalidField();
-  const id = requested ? resourceId(requested) : actor.id;
-  return (await requireConversationAudience(scope, id)).id;
-}
-
 export async function readPoints(identity: Identity, storeId: string, query = new URLSearchParams()): Promise<PointsBalance> {
   await consumeStoreLimit(identity, 'read');
   return withStoreTransaction(identity, storeId, async scope => {
-    const membershipId = await targetParticipant(scope, query);
+    const membershipId = (await targetParticipant(scope, query))!;
     const now = await databaseNow(scope.tx);
     const day = await periodAt(scope.tx, scope.store.timezone, 'DAILY', now);
-    const totals = await scope.tx.$queryRaw<{ available: string; pending: string; credited: string }[]>`
+    const totals = await scope.tx.$queryRaw<{ available: string; pending: string; credited: string; adjusted: string; approved: number }[]>`
       SELECT
         (SELECT COALESCE(sum(amount),0)::text FROM app."PointsEntry"
           WHERE "storeId"=${scope.store.id}::uuid AND "participantMembershipId"=${membershipId}::uuid) AS available,
-        (SELECT COALESCE(sum(points),0)::text FROM app."ActivitySubmission"
+        (SELECT COALESCE(sum(points),0)::text FROM app."ActivitySubmission" AS submission
           WHERE "storeId"=${scope.store.id}::uuid AND "participantMembershipId"=${membershipId}::uuid
-          AND status='PENDING' AND "receivedAt" IS NOT NULL) AS pending,
+          AND status IN ('PENDING','CONTESTED') AND "receivedAt" IS NOT NULL
+          AND (SELECT COALESCE(sum(amount),0) FROM app."PointsEntry" WHERE "submissionId"=submission.id)=0) AS pending,
         (SELECT COALESCE(sum(amount),0)::text FROM app."PointsEntry"
           WHERE "storeId"=${scope.store.id}::uuid AND "participantMembershipId"=${membershipId}::uuid
-          AND "createdAt">=${day.startsAt} AND "createdAt"<${day.endsAt}) AS credited`;
+          AND kind='ACTIVITY_CREDIT' AND "createdAt">=${day.startsAt} AND "createdAt"<${day.endsAt}) AS credited,
+        (SELECT COALESCE(sum(amount),0)::text FROM app."PointsEntry"
+          WHERE "storeId"=${scope.store.id}::uuid AND "participantMembershipId"=${membershipId}::uuid
+          AND kind IN ('ACTIVITY_REVERSAL','ACTIVITY_RESTORE')
+          AND "createdAt">=${day.startsAt} AND "createdAt"<${day.endsAt}) AS adjusted,
+        (SELECT count(*)::int FROM app."PointsEntry"
+          WHERE "storeId"=${scope.store.id}::uuid AND "participantMembershipId"=${membershipId}::uuid
+          AND kind='ACTIVITY_CREDIT' AND "createdAt">=${day.startsAt} AND "createdAt"<${day.endsAt}) AS approved`;
     const where = { storeId: scope.store.id, participantMembershipId: membershipId,
       receivedAt: { gte: day.startsAt!, lt: day.endsAt! } };
     const submitted = await scope.tx.activitySubmission.count({ where });
-    const approved = await scope.tx.activitySubmission.count({ where: { storeId: scope.store.id,
-      participantMembershipId: membershipId, status: 'APPROVED', approvedAt: { gte: day.startsAt!, lt: day.endsAt! } } });
     return { storeId: scope.store.id, participantMembershipId: membershipId, available: totals[0].available, pending: totals[0].pending,
-      today: { localDate: day.localDate, timezone: day.timezone, submitted, approved, credited: totals[0].credited } };
+      today: { localDate: day.localDate, timezone: day.timezone, submitted, approved: totals[0].approved,
+        credited: totals[0].credited, adjusted: totals[0].adjusted } };
   });
 }
 
 export async function listPointsEntries(identity: Identity, storeId: string, query = new URLSearchParams()): Promise<PageResult<PointsEntryView>> {
   const page = pagination(query);
+  const kind = choice(query, 'kind', ['ACTIVITY_CREDIT', 'ACTIVITY_REVERSAL', 'ACTIVITY_RESTORE'] as const);
+  const from = query.has('from') ? localDate(query.get('from')) : null;
+  const to = query.has('to') ? localDate(query.get('to')) : null;
+  if (from && to && from > to) invalidField();
   await consumeStoreLimit(identity, 'read');
   return withStoreTransaction(identity, storeId, async scope => {
-    const membershipId = await targetParticipant(scope, query);
-    const where = { storeId: scope.store.id, participantMembershipId: membershipId };
+    const membershipId = await targetParticipant(scope, query, true);
+    const where = { storeId: scope.store.id, participant: { accessRevokedAt: null, role: 'PARTICIPANT' as const },
+      ...(membershipId ? { participantMembershipId: membershipId } : {}), ...(kind ? { kind } : {}),
+      ...(from || to ? { createdAt: await movementRange(scope, from, to) } : {}) };
     const total = await scope.tx.pointsEntry.count({ where });
     const rows = await scope.tx.pointsEntry.findMany({ where,
-      include: { actor: { select: { displayName: true } }, submission: { select: { activityName: true } } },
+      include: { actor: { select: { displayName: true } }, submission: { select: { activityName: true } },
+        participant: { select: { profile: { select: { displayName: true } } } } },
       orderBy: [{ createdAt: 'desc' }, { id: 'desc' }], skip: page.skip, take: page.pageSize });
     return { items: rows.map(row => ({ id: row.id, storeId: row.storeId, participantMembershipId: row.participantMembershipId,
-      submissionId: row.submissionId, kind: 'ACTIVITY_CREDIT', amount: row.amount.toString(), createdAt: row.createdAt.toISOString(),
-      actor: row.actor, activityName: row.submission.activityName!, path: `/lojas/${row.storeId}/registros/${row.submissionId}` })),
+      submissionId: row.submissionId, kind: row.kind as PointsKind, amount: row.amount.toString(), createdAt: row.createdAt.toISOString(),
+      actor: row.actor, participant: row.participant.profile, activityName: row.submission.activityName!,
+      reviewEventId: row.reviewEventId, compensatesEntryId: row.compensatesEntryId,
+      path: `/lojas/${row.storeId}/registros/${row.submissionId}${row.reviewEventId ? `?evento=${row.reviewEventId}` : ''}` })),
     total, page: page.page, pageSize: page.pageSize };
   });
 }

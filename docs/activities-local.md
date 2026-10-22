@@ -36,7 +36,7 @@ Abra `/lojas`, crie uma loja, cadastre uma atividade e convide outra conta.
 O lojista não pontua na própria loja. Atividade nova começa em aprovação manual
 e exige escolher pontos; nenhuma pontuação ou atividade da prévia é importada.
 O participante abre a atividade e envia legenda/foto opcionais após revisar a
-regra. O lojista consulta os registros recebidos. Aprovação manual será T08;
+regra. O lojista consulta os registros recebidos. Aprovação manual está em [T08 local](points-local.md);
 os registros manuais permanecem pendentes nesta etapa.
 
 | Recurso | Desenvolvimento | Integração |
@@ -78,7 +78,7 @@ Build, typegen, migrações e todos os servidores são serializados no checkout.
   da mesma coleção/autor/revisão. Seleção local, inválida ou processando bloqueia
   confirmação. Recebimento fecha uploads e preserva a evidência contra remoção
   genérica. Manual protege contra expurgo durante análise; automático aplica 180
-  dias desde publicação. T08 integrará os estados seguintes.
+  dias desde publicação. T08 integra os estados seguintes, complementos e compensações.
 - Snapshot recebido é imutável, incluindo regra, pontos, data e legenda. Saldo
   disponível e pendente são strings decimais, sem conversão acumulada para Number.
   O crédito inicial tem chave única e índice parcial por registro; o banco exige
@@ -111,7 +111,7 @@ consumo manual; `media:once:t07` e `media:purge:t07` operam a mídia isolada.
 
 ## Fronteiras e verificação
 
-Análise, contestação, anulação/reabertura, compensações e extrato completo são T08.
+Análise, contestação, anulação/reabertura, compensações e extrato completo estão em [T08 local](points-local.md).
 Resgate/estoque/ticket são T09/T10; álbuns T11; painéis completos T12. T07 não
 fornece endpoint público para crédito, assunto solto ou publicação arbitrária.
 

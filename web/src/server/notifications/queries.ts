@@ -12,6 +12,7 @@ export const notificationSelect = {
     actor: { select: { displayName: true } }, store: { select: { name: true } },
     comment: { select: { conversation: { select: { id: true, subjectType: true, subjectId: true } } } },
     submission: { select: { id: true, status: true } },
+    reviewEvent: { select: { id: true } },
   } },
 } satisfies Prisma.NotificationSelect;
 
@@ -27,6 +28,10 @@ export function notificationAudience(identity: Identity, storeId?: string): Pris
       { kind: 'INVITATION_ACCEPTED', invitationId: { not: null }, recipientMembership: { role: 'MERCHANT' } },
       { kind: 'COMMENT_CREATED', comment: { conversation: { participantMembership: { accessRevokedAt: null } } } },
       { kind: 'SUBMISSION_RECEIVED', submission: { status: { not: 'DRAFT' } }, recipientMembership: { role: 'MERCHANT' } },
+      { kind: 'SUBMISSION_REVIEWED', reviewEventId: { not: null }, submission: { status: { not: 'DRAFT' } },
+        recipientMembership: { role: 'PARTICIPANT' } },
+      { kind: 'SUBMISSION_RESPONDED', reviewEventId: { not: null }, submission: { status: { not: 'DRAFT' } },
+        recipientMembership: { role: 'MERCHANT' } },
     ],
   } };
 }
@@ -44,10 +49,10 @@ export async function notificationTarget(notification: SelectedNotification, tx:
   const { event } = notification;
   const common = { storeId: event.storeId, participantMembershipId: event.participantMembershipId };
   if (event.kind === 'INVITATION_ACCEPTED') return { ...common, type: 'membership', path: `/lojas/${event.storeId}/pessoas` };
-  if (event.kind === 'SUBMISSION_RECEIVED') {
+  if (['SUBMISSION_RECEIVED', 'SUBMISSION_REVIEWED', 'SUBMISSION_RESPONDED'].includes(event.kind)) {
     if (!event.submission || event.submission.status === 'DRAFT') unavailable();
     return { ...common, type: 'submission', subjectId: event.submission.id,
-      path: `/lojas/${event.storeId}/registros/${event.submission.id}` };
+      path: `/lojas/${event.storeId}/registros/${event.submission.id}${event.reviewEvent ? `?evento=${event.reviewEvent.id}` : ''}` };
   }
   const conversation = event.comment?.conversation;
   if (!conversation) unavailable();

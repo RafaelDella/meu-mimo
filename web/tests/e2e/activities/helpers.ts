@@ -19,7 +19,7 @@ export function activity(overrides: Partial<ActivityView> = {}): ActivityView {
 export function submission(current: ActivityView, id: string): SubmissionView {
   return { id, storeId: ids.first, activityId, participantMembershipId: store().membershipId, participant: { displayName: 'Ana' }, status: 'DRAFT', pointsState: 'NONE', caption: '',
     createdAt: now, receivedAt: null, approvedAt: null, localDate: null, timezone: null, periodKey: null, periodStart: null, periodEnd: null, occurrenceNumber: null,
-    activity: structuredClone(current), snapshot: null, collectionId, evidenceAssetId: null, conversation: null,
+    activity: structuredClone(current), snapshot: null, analysis: null, collectionId, evidenceAssetId: null, conversation: null,
     review: { expectedVersion: current.version, localDate: current.availability?.localDate ?? '2026-10-22', timezone: 'America/Sao_Paulo', now } };
 }
 export type State = {
@@ -80,7 +80,7 @@ export async function mockActivities(page: Page, options: { merchant?: boolean; 
       await json(route, { storeId: ids.first, participantMembershipId: store().membershipId, available: '9007199254740993',
         pending: String(values.filter(value => value.status === 'PENDING').reduce((total, value) => total + value.snapshot!.points, 0)),
         today: { localDate: '2026-10-22', timezone: 'America/Sao_Paulo', submitted: values.filter(value => value.status !== 'DRAFT').length,
-          approved: values.filter(value => value.status === 'APPROVED').length, credited: '0' } });
+          approved: values.filter(value => value.status === 'APPROVED').length, credited: '0', adjusted: '0' } });
     } else if (path === `${api}/pontos/movimentos`) await json(route, { items: [], page: 1, pageSize: 20, total: 0 });
     else if (path.includes('/midia/')) await media(route, url, state);
     else if (path.endsWith('/comentarios')) await json(route, { conversation: [...state.drafts.values()].find(value => value.conversation)?.conversation,

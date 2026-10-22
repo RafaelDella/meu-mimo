@@ -7,7 +7,7 @@ import type { StoreScope } from '../stores/transaction.ts';
 import { requireMembership, withStoreTransaction } from '../stores/transaction.ts';
 import { resourceId, unavailable } from '../stores/validation.ts';
 
-export type MediaScope = StoreScope & { collection: MediaCollection };
+export type MediaScope = StoreScope & { collection: MediaCollection; allowPausedEvidence: boolean };
 export type MediaAssetScope = MediaScope & { asset: MediaAsset };
 
 export async function requireMediaCollection(scope: StoreScope, collectionId: string): Promise<MediaScope> {
@@ -18,12 +18,14 @@ export async function requireMediaCollection(scope: StoreScope, collectionId: st
   await scope.tx.$queryRaw`SELECT id FROM app."MediaCollection" WHERE id = ${id}::uuid FOR UPDATE`;
   const collection = await scope.tx.mediaCollection.findFirst({ where: { id, storeId: scope.store.id } });
   if (!collection) unavailable();
+  let allowPausedEvidence = false;
   if (collection.purpose === 'EVIDENCE') {
     const origin = await scope.tx.activitySubmission.findUnique({ where: { id: collection.subjectId },
       select: { status: true, authorProfileId: true } });
     if (origin?.status === 'DRAFT' && origin.authorProfileId !== scope.identity.userId) unavailable();
+    allowPausedEvidence = origin?.status === 'CONTESTED' && scope.store.state === 'PAUSED';
   }
-  return { ...scope, collection };
+  return { ...scope, collection, allowPausedEvidence };
 }
 
 export function withMediaCollection<T>(identity: Identity, storeId: string, collectionId: string,
@@ -53,7 +55,8 @@ export function assertMediaUpload(scope: MediaScope, asset?: MediaAsset): void {
   if ((scope.collection.purpose === 'EVIDENCE' && actor.id !== scope.collection.participantMembershipId) ||
       (scope.collection.purpose === 'MEMORY' && actor.role !== 'MERCHANT')) unavailable();
   if (scope.collection.uploadsClosedAt ||
-      (scope.collection.purpose === 'EVIDENCE' && (actor.closedAt || scope.store.state !== 'ACTIVE')) ||
+      (scope.collection.purpose === 'EVIDENCE' && (actor.closedAt ||
+        (scope.store.state !== 'ACTIVE' && !scope.allowPausedEvidence))) ||
       (asset && (asset.revision !== scope.collection.revision || asset.removedAt))) {
     throw new AppError('media_read_only', 409, 'Este envio de mídia está fechado. O histórico continua disponível.');
   }

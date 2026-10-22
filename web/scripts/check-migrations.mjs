@@ -6,6 +6,7 @@ import path from 'node:path';
 import pg from 'pg';
 import { artifactRoot, readState, webRoot } from './local-runtime.mjs';
 import { checkActivitiesMigration } from './check-activities-migration.mjs';
+import { checkReviewsMigration } from './check-reviews-migration.mjs';
 
 const state = readState();
 const databaseName = `meumimo_t02_migrations_${randomUUID().replaceAll('-', '')}`;
@@ -52,12 +53,13 @@ try {
   await database.query('INSERT INTO app."Profile" (id, "displayName") VALUES ($1, $2)', [id, 'Pessoa fictícia']);
   await database.query('INSERT INTO app."Store" (id, "createdByProfileId", name) VALUES ($1, $2, $3)', [storeId, id, 'Lojinha anterior']);
   await database.query('INSERT INTO app."Membership" (id, "storeId", "profileId", role) VALUES ($1, $2, $3, $4)', [membershipId, storeId, id, 'MERCHANT']);
-  for (const name of names.slice(1)) cpSync(path.join(source, name), path.join(migrations, name), { recursive: true });
+  const beforeReviews = names.filter(name => name < '20261022235900');
+  for (const name of beforeReviews.slice(1)) cpSync(path.join(source, name), path.join(migrations, name), { recursive: true });
   deploy();
   const preserved = await database.query('SELECT "displayName" FROM app."Profile" WHERE id = $1', [id]);
   assert.equal(preserved.rows[0].displayName, 'Pessoa fictícia');
   const applied = await database.query('SELECT count(*)::int AS count FROM app._prisma_migrations WHERE finished_at IS NOT NULL');
-  assert.equal(applied.rows[0].count, names.length);
+  assert.equal(applied.rows[0].count, beforeReviews.length);
   const policies = await database.query("SELECT count(*)::int AS count FROM pg_tables WHERE schemaname = 'app' AND rowsecurity = true");
   assert.equal(policies.rows[0].count, 21);
   const priorStore = await database.query('SELECT state, timezone, name FROM app."Store" WHERE id = $1', [storeId]);
@@ -149,6 +151,21 @@ try {
   await assert.rejects(runtime.query('UPDATE app."Profile" SET "suspendedAt" = now() WHERE id = $1', [id]), { code: '42501' });
   await assert.rejects(runtime.query('CREATE TABLE app.forbidden (id int)'), { code: '42501' });
   await checkActivitiesMigration(runtime, { storeId, merchantId: id, participantId, profileId: secondProfile, otherStoreId });
+  // O crédito T07 existe antes da evolução de análise e deve sobreviver intacto.
+  for (const name of names.filter(name => name >= '20261022235900')) {
+    cpSync(path.join(source, name), path.join(migrations, name), { recursive: true });
+  }
+  deploy();
+  assert.equal((await database.query('SELECT count(*)::int AS count FROM app._prisma_migrations WHERE finished_at IS NOT NULL')).rows[0].count, names.length);
+  assert.equal((await database.query("SELECT count(*)::int AS count FROM pg_tables WHERE schemaname='app' AND rowsecurity=true")).rows[0].count, 22);
+  for (const role of ['anon', 'authenticated']) {
+    await database.query('BEGIN');
+    try {
+      await database.query(`SET LOCAL ROLE ${role}`);
+      await assert.rejects(database.query('SELECT * FROM app."SubmissionReviewEvent"'), { code: '42501' });
+    } finally { await database.query('ROLLBACK'); }
+  }
+  await checkReviewsMigration(runtime, { storeId, merchantId: id, participantId, profileId: secondProfile, otherStoreId });
   process.stdout.write('Migrações: banco vazio, evolução com dados preservados, RLS e privilégios efetivos comprovados.\n');
 } finally {
   await runtime?.end();

@@ -4,11 +4,11 @@ import { webRoot } from './local-runtime.mjs';
 import { mediaEnvironment } from './media-environment.mjs';
 
 const args = process.argv.slice(2);
-const task = ['t06', 't07'].includes(args[0]) ? args.shift() : 't06';
+const task = ['t06', 't07', 't08'].includes(args[0]) ? args.shift() : 't06';
 const [target = 'development', mode] = args;
-if (args.length > 2 || (mode && !['--once', '--purge-once', '--manual'].includes(mode))) throw new Error('Use media-local.mjs [t06|t07] development|integration [--once|--purge-once|--manual].');
+if (args.length > 2 || (mode && !['--once', '--purge-once', '--manual'].includes(mode))) throw new Error('Use media-local.mjs [t06|t07|t08] development|integration [--once|--purge-once|--manual].');
 const environment = Object.fromEntries(Object.entries(process.env).filter(([key]) =>
-  !/^(T0[24567]_|SUPABASE_|MEDIA_|FFMPEG_|FFPROBE_|MIGRATION_|SHADOW_)/i.test(key)));
+  !/^(T0[245678]_|SUPABASE_|MEDIA_|FFMPEG_|FFPROBE_|MIGRATION_|SHADOW_)/i.test(key)));
 Object.assign(environment, mediaEnvironment(target, task));
 const child = spawn(process.execPath, ['--conditions=react-server', path.join(webRoot, 'scripts/media-worker.mjs'),
   ...(mode ? [mode] : [])], { cwd: webRoot, env: environment, stdio: 'inherit', windowsHide: true });

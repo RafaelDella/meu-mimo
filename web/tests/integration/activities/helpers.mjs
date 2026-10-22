@@ -75,7 +75,7 @@ export async function activityFixture(t) {
     finally { await fixture.database.query(`ALTER TABLE app."${table}" DROP CONSTRAINT "${name}"`); }
   }
   async function photo(draft, person = ana) {
-    assert.equal(process.env.MEDIA_PREFIX, 't07-integration');
+    assert.equal(process.env.MEDIA_PREFIX, `${process.env.T02_TASK}-integration`);
     const directory = process.env.T06_MEDIA_FIXTURES;
     assert.ok(directory, 'A integração exige imagens sintéticas preparadas para T07.');
     const bytes = await readFile(path.join(directory, 'photo.png'));

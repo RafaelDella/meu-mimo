@@ -128,3 +128,8 @@ não sobrescreva o checkout inteiro com um backup antigo.
 Ao retomar trabalho, leia `AGENTS.md` e o documento responsável, confira
 `git status --short` e rode os checks pertinentes. Um relato anterior de sucesso
 não substitui a inspeção do checkout atual.
+
+Para análise, complemento, compensações e extrato real, siga [T08 local](points-local.md).
+O preparo seleciona desenvolvimento T08; integração usa `meumimo_t08`, prefixo
+Storage próprio e Next 4310/mídia 4311. Os workers usam os comandos T08;
+builds e execuções continuam em série com as tarefas anteriores.

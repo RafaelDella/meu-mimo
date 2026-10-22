@@ -37,8 +37,10 @@ function MediaUploadContent({ context, transport, onSelectionChange }: {
   const selection = upload.items.filter(item => item.file && !item.invalid && ['selected', 'error'].includes(item.phase)).map(item => item.id);
   useEffect(() => {
     const unavailable = !upload.page || upload.loading || !!upload.loadError || upload.denied;
-    onSelectionChange?.({ ready: !unavailable && upload.items.every(item => !item.invalid && item.asset?.state === 'READY'),
-      busy: !!upload.busyId, selectedCount: upload.items.length, assetIds: upload.items.map(item => item.id), unavailable });
+    const current = upload.items.filter(item => upload.page?.collection.purpose !== 'EVIDENCE' ||
+      !item.asset || item.asset.revision === upload.page.collection.revision);
+    onSelectionChange?.({ ready: !unavailable && current.every(item => !item.invalid && item.asset?.state === 'READY'),
+      busy: !!upload.busyId, selectedCount: current.length, assetIds: current.map(item => item.id), unavailable });
   }, [upload.items, upload.page, upload.loading, upload.loadError, upload.denied, upload.busyId, onSelectionChange]);
   useEffect(() => {
     if (!upload.loading && focusAfterLoad.current) { focusAfterLoad.current = false; title.current?.focus(); }
@@ -82,6 +84,9 @@ function MediaUploadContent({ context, transport, onSelectionChange }: {
           retry={() => { void send([item.id]); }} remove={() => { void remove(item.id); }} pause={upload.pause}
           resume={file => upload.resume(item.id, file)} denied={upload.privacyFailure} />)}</ol>
       <Button variant="secondary" disabled={!!upload.busyId} onClick={refresh}>Atualizar arquivos</Button>
+      {upload.hasMore && <Button variant="secondary" disabled={!!upload.busyId} onClick={() => {
+        focusAfterLoad.current = true; upload.loadMore();
+      }}>Carregar arquivos anteriores</Button>}
     </>}
   </section>;
 }
