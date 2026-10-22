@@ -158,11 +158,16 @@ preparação em [lojas locais](../../stores-local.md). Nenhum serviço publicado
 ### T05 · Conversas e notificações persistidas
 
 **Responsável:** backend de relação. **Depende de:** T04.
-**Arquivos:** `web/src/server/{conversations,notifications,outbox}/**`, `web/src/components/conversation/**`, `web/tests/integration/{conversations,notifications}/**`, `web/prisma/**`. **Recursos:** padrão T05; entrega de eventos exclusivamente de teste.
+**Arquivos:** `web/src/server/{conversations,notifications,outbox}/**`, `web/src/components/conversation/**`, `web/tests/integration/{conversations,notifications}/**`, `web/prisma/**`. **Recursos:** padrão T05; entrega local no PostgreSQL. Convite aceito é produtor real de T04; testes usam somente dados fictícios.
 
-- [ ] Definir comentários por registro/ticket e audiência participante–lojista; habilitar a resposta à contestação nas próximas tarefas, sem criar chat coletivo.
-- [ ] Persistir evento de domínio/outbox na mesma transação da mudança que origina uma novidade; entrega repetida não duplica a notificação. Realtime, se escolhido, apenas sinaliza nova consulta autorizada.
-- [ ] Verificar autorização da conversa, deduplicação, falha/repetição de entrega e consulta que recupera evento perdido. Não enviar e-mail, push ou mensagens externas nesta tarefa.
+- [x] Definir comentários por registro/ticket e audiência participante–lojista; registrador interno preparado para T07/T09 e componente reutilizável com prévia explicitamente fictícia. Não há criação pública de assunto ou chat coletivo.
+- [x] Persistir evento/outbox na transação de aceite ou comentário; entrega repetida/concorrente não duplica aviso. Consulta persistida recupera entrega atrasada; Realtime continua opcional.
+- [x] Verificar autorização, deduplicação, falha após inserir aviso e antes de confirmar, retry e leitura/destino atuais. Nenhuma mensagem externa enviada.
+
+Desenho/limite500 confirmados pelo idealizador. Evidências no
+[plano T05](2026-10-22-t05-relacao.md) e operação em [T05 local](../../relation-local.md).
+T07–T10 ligam conversas aos recursos reais e definem fechamento da escrita;
+T12 entrega central completa, preferências e agrupamento. Operação publicada é T14.
 
 ### T06 · Mídia privada e prova de fotos/vídeos
 

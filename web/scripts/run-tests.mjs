@@ -9,7 +9,8 @@ if (!['unit', 'integration'].includes(mode) || process.argv.length > 3) {
   throw new Error('Modo de testes inválido: use unit ou integration.');
 }
 const excluded = new Set(['e2e', 'fixtures', 'integration']);
-if (mode === 'integration' && process.env.T02_TASK !== 't04') excluded.add('stores');
+if (mode === 'integration' && !['t04', 't05'].includes(process.env.T02_TASK)) excluded.add('stores');
+if (mode === 'integration' && process.env.T02_TASK !== 't05') { excluded.add('conversations'); excluded.add('notifications'); }
 const root = mode === 'integration' ? path.join(testsRoot, 'integration') : testsRoot;
 if (mode === 'integration') {
   try { await access(root); } catch { throw new Error('Nenhuma suíte de integração implementada.'); }
@@ -27,6 +28,6 @@ async function collect(directory) {
 
 const files = await collect(root);
 if (!files.length) throw new Error(`Nenhum teste encontrado no modo ${mode}.`);
-const result = spawnSync(process.execPath, ['--test', '--test-concurrency=1', ...files], { stdio: 'inherit', windowsHide: true });
+const result = spawnSync(process.execPath, [...(mode === 'integration' ? ['--conditions=react-server'] : []), '--test', '--test-concurrency=1', ...files], { stdio: 'inherit', windowsHide: true });
 if (result.error) throw result.error;
 process.exitCode = result.status ?? 1;

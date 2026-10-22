@@ -12,6 +12,7 @@ import {
 import { allowedFields, operationConflict, operationId, pagination, resourceId, unavailable } from '../stores/validation.ts';
 import { invitationView } from '../stores/views.ts';
 import { invitationHash, invitationInvalid, invitationToken, matchesInvitationHash } from './token.ts';
+import { enqueueInvitationAccepted } from '../outbox/events.ts';
 
 export async function listInvitations(identity: Identity, storeId: string, query = new URLSearchParams()): Promise<PageResult<InvitationView>> {
   const page = pagination(query);
@@ -109,6 +110,7 @@ export async function acceptInvitation(identity: Identity, token: string): Promi
       acceptedAt: now, acceptedByProfileId: identity.userId, acceptedMembershipId: membership.id,
     } });
     await storeAudit(scope, 'invitation.accepted', invitation.id);
+    await enqueueInvitationAccepted(scope.tx, invitation.id);
     return { storeId: scope.store.id, membershipId: membership.id, role: membership.role };
   });
 }

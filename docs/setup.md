@@ -356,3 +356,33 @@ Recursos, comandos, detalhes de callback e limitações em [T04 local](stores-lo
 e [registro de implementação](superpowers/plans/2026-10-22-t04-lojas.md).
 O workflow agora executa T04 após T02; execução remota não foi observada.
 As referências históricas de T02 acima descrevem o estado antes de T04.
+
+## Execução de T05
+
+O idealizador aprovou o desenho e o limite de 500 caracteres Unicode por
+comentário. A orquestração do toolkit usou análise do domínio/entrega, revisão
+do desenho, três escritores exclusivos e integração serial. Revisores novos
+examinaram segurança/backend e UI/TypeScript/acessibilidade somente por leitura.
+Os achados confirmados de UI receberam regressões antes das correções.
+
+Prisma/SQL geraram a quinta migração: quatro tabelas, vínculos de loja/relação,
+restrições de origem/limite e grants/RLS. A cadeia foi aplicada nos bancos locais
+T02/T04/T05, sem reset; prova vazia/evolutiva preservou dados e conferiu 13 tabelas
+com RLS e permissões efetivas. Worker Node24 usa --conditions=react-server e
+credencial restrita, sem instalar dependência adicional.
+
+Context7 voltou a retornar API de outra geração do Prisma. Tipos instalados e
+documentação oficial v7 prevaleceram; PostgreSQL17 documenta SKIP LOCKED usado
+no consumidor. Fontes no [plano T05](superpowers/plans/2026-10-22-t05-relacao.md).
+Consultas não incluíram código privado, dados pessoais ou segredos.
+
+HTTP T05: 65/65 casos, incluindo 48 regressões; modos T02/T04 também passaram
+isoladamente. O CLI --once entregou um evento fictício e sua repetição não criou
+outro aviso. Testes de browser usam composição fictícia; aparelhos reais,
+mensageiro, leitor de tela e CI remoto continuam não observados.
+Comandos e fronteiras em [T05 local](relation-local.md). Nenhuma publicação.
+
+Após corrigir os achados de interface, check7+9 e96 casos Chromium passaram.
+As quatro regressões reproduziram as falhas antes do ajuste; revisão focal não
+encontrou novo achado. O scan de292 arquivos versionáveis/estáticos não encontrou
+segredos locais. Evidências detalhadas permanecem no plano de T05.

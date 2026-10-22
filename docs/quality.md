@@ -11,6 +11,7 @@
 | `npm run web:typecheck` | Geração de tipos de rotas e `tsc --noEmit`, incluindo testes TS |
 | `npm run web:test` | Testes nativos de fronteira e regras, com AST TypeScript/TSX real |
 | `npm run web:test:integration` | Inicia produção em 4302 e testa HTTP contra a stack Supabase real preparada; sem reutilizar servidor |
+| `npm --prefix web run test:integration:t05` | Domínio T05 em 4310, regressões T02/T04 e conversas/outbox/notificações reais com falhas e entrega concorrente |
 | `npm --prefix web run db:migrate:check` | Banco vazio, evolução com dados fictícios preservados, RLS e permissões efetivas |
 | `npm run web:build` | Build real de produção Next |
 | `npm run web:test:e2e` | Smoke do build em Chromium a 320/390 px; requer browser instalado |
@@ -89,6 +90,15 @@ foco após confirmar pausa/encerramento/revogação, respostas atrasadas, troca 
 conta por BroadcastChannel e ocultação durante revalidação. Os testes de UI usam
 respostas controladas; a identidade/persistência são comprovadas na suíte HTTP.
 Evidências, revisão e limites no [plano T04](superpowers/plans/2026-10-22-t04-lojas.md).
+
+T05 acrescenta 17 cenários HTTP reais de conversas/notificações e uma composição
+de conversa em memória. O consumidor é testado diretamente e por CLI separado,
+com runtime restrito; os testes de falha não disputam com worker em background.
+Constraints temporárias de fixtures provocam rollback no produtor e na entrega,
+inclusive após inserir aviso e antes de marcar evento. Consultas comprovam
+recuperação de entrega atrasada e autorização atual de item, contador e destino.
+Estados visuais não substituem essas provas de serviço/persistência. Execução,
+revisão e regressões no [plano T05](superpowers/plans/2026-10-22-t05-relacao.md).
 
 Defina comportamento e falhas relevantes antes de implementar. Para corrigir
 um defeito, reproduza e prove a regressão quando viável. Não escreva testes que

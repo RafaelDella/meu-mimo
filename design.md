@@ -470,7 +470,7 @@ Projetar estados de álbum vazio, envio por arquivo, validação/processamento, 
 
 - Registros de atividades e tickets têm reações e comentários curtos no próprio item.
 - Proposta de reações iniciais: ❤️, 👏, 🥹, 🔥, 😂 e 🌷. Uma reação por pessoa em cada item, com opção de trocar ou remover.
-- Mostrar autor, horário, texto e estado de envio dos comentários. Definir visualmente uma área curta de resposta; proposta inicial de até 500 caracteres.
+- Mostrar autor, horário, texto e estado de envio dos comentários. Confirmado em T05: texto simples e imutável de até 500 caracteres Unicode, com erro e repetição segura após conexão incerta. Edição/exclusão não entram nesta etapa.
 - Comentários do lojista podem reconhecer a conquista, esclarecer uma contestação ou combinar a entrega do mimo.
 - Reações não aprovam registros e não liberam pontos. O botão “Aprovar” é uma ação separada e explícita.
 - Quem participa de várias lojas tem uma conversa independente com cada lojista. Não há chat coletivo entre os participantes de uma loja.

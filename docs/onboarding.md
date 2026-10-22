@@ -85,6 +85,10 @@ Para lojas/participações/convites, siga [T04 local](stores-local.md).
 O domínio usa bancos separados da identidade e testes em 4310; o Auth continua
 na mesma stack local. Não execute os drivers de integração em paralelo.
 
+Para conversas/outbox/notificações, siga [T05 local](relation-local.md).
+O consumidor de desenvolvimento roda em terminal separado; a integração testa
+falhas/concorrência de modo determinístico e não inicia worker em background.
+
 ## Conferir a interface de T03
 
 Com `npm run web:dev`, abra `http://127.0.0.1:4301/visual-check`.

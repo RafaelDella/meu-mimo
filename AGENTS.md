@@ -19,6 +19,7 @@ persistência; componentes compartilhados em `web/src/components/ui/`.
 T02 acrescenta identidade/API com Supabase Auth e PostgreSQL/Prisma locais;
 os comandos e a separação de credenciais estão em `docs/onboarding.md`.
 T04 entrega lojas, participações e convites; recursos e comandos em `docs/stores-local.md`.
+T05 prepara conversas e outbox/notificações; comandos e fronteiras em `docs/relation-local.md`.
 Storage/mídia e o restante do domínio permanecem no roadmap.
 O plano da fundação e as dependências estão em
 [M0](docs/superpowers/plans/2026-10-22-m0-fundacao.md).
@@ -46,6 +47,8 @@ Os comandos de `prototype/package.json` continuam válidos naquela pasta.
 T03 usa 4303). Builds, typegen e servidores continuam serializados no checkout.
 Integração real usa `web:test:integration`, stack `meumimo-t02` e aplicação 4302;
 T04 usa `npm --prefix web run test:integration:t04`, domínio `meumimo_t04` e 4310.
+T05 usa `test:integration:t05`, domínio `meumimo_t05` e a mesma porta em série;
+o consumidor local tem comando próprio e credencial restrita.
 Prepare serviços e migrações conforme o onboarding. Não exponha as portas fora
 de loopback, não use o shim npm `docker` e não passe credenciais de fixture ou
 migração ao Next. Desenvolvimento, shadow e integração usam bancos separados.

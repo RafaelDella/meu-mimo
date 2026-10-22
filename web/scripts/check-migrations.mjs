@@ -58,7 +58,7 @@ try {
   const applied = await database.query('SELECT count(*)::int AS count FROM app._prisma_migrations WHERE finished_at IS NOT NULL');
   assert.equal(applied.rows[0].count, names.length);
   const policies = await database.query("SELECT count(*)::int AS count FROM pg_tables WHERE schemaname = 'app' AND rowsecurity = true");
-  assert.equal(policies.rows[0].count, 9);
+  assert.equal(policies.rows[0].count, 13);
   const priorStore = await database.query('SELECT state, timezone, name FROM app."Store" WHERE id = $1', [storeId]);
   assert.deepEqual(priorStore.rows[0], { state: 'ACTIVE', timezone: 'America/Sao_Paulo', name: 'Lojinha anterior' });
   const priorMembership = await database.query('SELECT "closedAt", role FROM app."Membership" WHERE id = $1', [membershipId]);
@@ -77,7 +77,7 @@ try {
       await database.query(`SET LOCAL ROLE ${role}`);
       await assert.rejects(database.query('SELECT * FROM app."Profile"'), { code: '42501' });
     } finally { await database.query('ROLLBACK'); }
-    for (const table of ['Invitation', 'StoreAudit']) {
+    for (const table of ['Invitation', 'StoreAudit', 'Conversation', 'Comment', 'OutboxEvent', 'Notification']) {
       await database.query('BEGIN');
       try {
         await database.query(`SET LOCAL ROLE ${role}`);
@@ -97,6 +97,25 @@ try {
   await runtime.query('UPDATE app."Invitation" SET "revokedAt" = now() WHERE id = $1', [invitationId]);
   await assert.rejects(runtime.query('UPDATE app."Invitation" SET "tokenHash" = $1 WHERE id = $2', ['b'.repeat(64), invitationId]), { code: '42501' });
   await assert.rejects(runtime.query('DELETE FROM app."Invitation" WHERE id = $1', [invitationId]), { code: '42501' });
+  const participantId = randomUUID();
+  const conversationId = randomUUID();
+  const commentId = randomUUID();
+  const eventId = randomUUID();
+  const notificationId = randomUUID();
+  await runtime.query('INSERT INTO app."Membership" (id, "storeId", "profileId", role) VALUES ($1,$2,$3,$4)',
+    [participantId, storeId, secondProfile, 'PARTICIPANT']);
+  await runtime.query('INSERT INTO app."Conversation" (id,"storeId","participantMembershipId","subjectType","subjectId") VALUES ($1,$2,$3,$4,$5)',
+    [conversationId, storeId, participantId, 'TICKET', randomUUID()]);
+  await runtime.query('INSERT INTO app."Comment" (id,"conversationId","authorProfileId",text) VALUES ($1,$2,$3,$4)',
+    [commentId, conversationId, id, 'Comentário fictício']);
+  await assert.rejects(runtime.query('UPDATE app."Comment" SET text = $1 WHERE id = $2', ['Alterado', commentId]), { code: '42501' });
+  await assert.rejects(runtime.query('UPDATE app."Conversation" SET "subjectId" = $1 WHERE id = $2', [randomUUID(), conversationId]), { code: '42501' });
+  await runtime.query('INSERT INTO app."OutboxEvent" (id,key,kind,"storeId","participantMembershipId","actorProfileId","recipientMembershipId","commentId") VALUES ($1,$2,$3,$4,$5,$6,$7,$8)',
+    [eventId, `comment.created:${commentId}`, 'COMMENT_CREATED', storeId, participantId, id, participantId, commentId]);
+  await runtime.query('INSERT INTO app."Notification" (id,"eventId") VALUES ($1,$2)', [notificationId, eventId]);
+  await runtime.query('UPDATE app."Notification" SET "readAt" = now() WHERE id = $1', [notificationId]);
+  await assert.rejects(runtime.query('UPDATE app."OutboxEvent" SET "recipientMembershipId" = $1 WHERE id = $2', [membershipId, eventId]), { code: '42501' });
+  await assert.rejects(runtime.query('DELETE FROM app."Notification" WHERE id = $1', [notificationId]), { code: '42501' });
   await assert.rejects(runtime.query('UPDATE app."Membership" SET role = $1 WHERE id = $2', ['PARTICIPANT', membershipId]), { code: '42501' });
   assert.equal((await runtime.query('SELECT id FROM app."Profile" WHERE id = $1', [id])).rowCount, 1);
   await assert.rejects(runtime.query('INSERT INTO app."AdminGrant" ("profileId") VALUES ($1)', [id]), { code: '42501' });

@@ -39,6 +39,8 @@ autorização, dependentes da stack local descrita no [onboarding](docs/onboardi
 T04 acrescenta [Minhas lojas](http://127.0.0.1:4301/lojas), criação, pessoas,
 configurações, convites e edição do nome da conta. Prepare os bancos conforme
 [lojas locais](docs/stores-local.md).
+T05 prepara comentários privados e novidades persistidas; o consumidor local e
+as APIs estão descritos em [conversas e novidades](docs/relation-local.md).
 O servidor da prévia em 4173 continua independente.
 
 Para verificar o navegador depois de `npm run check`:
@@ -59,7 +61,8 @@ resgate de tickets, extrato e bilhete, com dados de demonstração salvos no nav
 `web/` fornece a fundação Next.js/React/TypeScript, as composições estáticas de
 T03, identidade local T02 e lojas/participações/convites T04 com Supabase
 Auth/PostgreSQL/Prisma. A prévia visual não salva dados nem desconta pontos.
-Atividades, pontos, mídia, sincronização e notificações permanecem no roadmap.
+T05 acrescenta APIs de conversa e notificações persistidas com outbox. Atividades,
+pontos, mídia, Realtime e a central completa de novidades permanecem no roadmap.
 
 A aplicação completa está descrita nos documentos abaixo. A adoção do toolkit
 prepara o desenvolvimento e mantém o estágio atual explícito.

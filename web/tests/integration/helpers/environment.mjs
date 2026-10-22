@@ -19,17 +19,17 @@ function localURL(value, port) {
 
 export function integrationEnvironment() {
   const task = process.env.T02_TASK ?? 't02';
-  assert.ok(['t02', 't04'].includes(task));
+  assert.ok(['t02', 't04', 't05'].includes(task));
   const origin = localURL(required('T02_TEST_ORIGIN'), task === 't02' ? 4302 : 4310);
   const supabaseURL = localURL(required('SUPABASE_URL'), 54321);
   const mailURL = localURL(required('T02_MAIL_URL'), 54324);
   const databaseURL = required('T02_DATABASE_URL');
-  assertLocalDatabase(databaseURL, task === 't02' ? 'postgres' : 'meumimo_t04');
+  assertLocalDatabase(databaseURL, task === 't02' ? 'postgres' : `meumimo_${task}`);
   const database = new URL(databaseURL);
   assert.ok(['postgres:', 'postgresql:'].includes(database.protocol));
   assert.ok(['127.0.0.1', 'localhost', '[::1]'].includes(database.hostname));
   assert.equal(database.port, '54322');
-  assert.equal(database.pathname, task === 't02' ? '/postgres' : '/meumimo_t04');
+  assert.equal(database.pathname, task === 't02' ? '/postgres' : `/meumimo_${task}`);
   const authDatabaseURL = process.env.T02_AUTH_DATABASE_URL ?? databaseURL;
   assertLocalDatabase(authDatabaseURL, 'postgres');
   assert.equal(required('T02_PROJECT_ID'), 'meumimo-t02', 'Identifique explicitamente a stack descartável.');

@@ -1,7 +1,7 @@
 # Meu Mimo — proposta técnica e decisões de dados
 
 Atualizado em 22 de outubro de 2026. Complementa `design.md` e `requisitos.md`.
-Registra decisões, propostas futuras e o escopo local implementado em T01–T04.
+Registra decisões, propostas futuras e o escopo local implementado em T01–T05.
 
 ## 1. Decisões e base da implementação
 
@@ -82,6 +82,30 @@ marcar `Store.domainStartedAt` atomicamente na primeira operação, bloquear fus
 consultar pendências reais antes de encerrar; até essa integração o marcador
 impede encerramento por segurança. Não há contadores fictícios de pendências.
 
+### 1.3. Conversas e novidades em T05
+
+O desenho de T05 e comentários privados/imutáveis de até500 caracteres Unicode
+foram confirmados em 22/10/2026. Conversation associa assunto tipado de registro
+ou ticket a uma participação; Comment tem autor/instante e UUID de repetição.
+O registro da conversa é interno e usa a mesma transação do recurso de origem,
+a ser integrado por T07/T09. Não há endpoint público para criar assunto solto.
+Fechamento preserva consulta e a conversa necessária a pendências; revogação
+continua negando acesso. A origem define commentsClosedAt para fechar escrita.
+
+OutboxEvent é persistido na transação do produtor. Convite aceito é o primeiro
+produtor real de T04; comentários também geram evento para a outra pessoa.
+Notification tem evento único e leitura independente. O consumidor PostgreSQL
+bloqueia evento com SKIP LOCKED, insere aviso e confirma processamento na mesma
+transação; rollback permite retomada sem posse fora da transação. Repetição e
+consumidores concorrentes não duplicam aviso. Falhas recebem retry/backoff e
+código sanitizado, sem texto do comentário ou token no diagnóstico.
+
+As consultas revalidam destinatário, vínculos e recurso; a ordenação pela
+entrega recupera eventos antigos processados mais tarde. Destinos são tipados e
+derivados; T07/T09 integrarão as telas reais de registro/ticket. Realtime é
+opcional e não foi necessário ao consumidor SQL; central/preferências e demais
+interações ficam em T12. Comandos e fronteiras em [T05 local](docs/relation-local.md).
+
 ## 2. Organização da aplicação
 
 ```mermaid
@@ -134,14 +158,15 @@ Referências técnicas: [Prisma com Supabase](https://supabase.com/docs/guides/d
 ### 3.1. Fundação local de T02
 
 O schema privado `app` iniciou com Profile, Store, Membership e AdminGrant;
-T04 acrescenta os estados de loja/participação, Invitation e StoreAudit. AuthSession
+T04 acrescenta os estados de loja/participação, Invitation e StoreAudit; T05,
+Conversation, Comment, OutboxEvent e Notification. AuthSession
 mantém revogação/contexto restrito, AuthRateBucket persiste a janela atômica
 e SecurityAudit registra evento/ator/instante sem senha, token ou e-mail.
-As quatro migrações em `web/prisma/migrations/` incluem o SQL de permissões.
+As cinco migrações em `web/prisma/migrations/` incluem o SQL de permissões.
 Auth/Storage mantêm seus schemas gerenciados pelo Supabase.
 
 Runtime usa `meumimo_runtime`, sem superuser/bypass de RLS ou escrita em
-AdminGrant. T04 concede criação de loja/vínculo/convite e atualização restrita
+AdminGrant. T04/T05 concedem criação de entidades do domínio e atualização restrita
 às colunas do domínio; papel e revogação de acesso não são alteráveis. `anon`/`authenticated` não acessam `app`, que
 também fica fora da Data API. RLS restringe o papel de conexão; identidade e
 escopo de loja continuam obrigatórios na API Prisma. O pool local usa no

@@ -63,7 +63,7 @@ try {
   const result = await new Promise((resolve, reject) => {
     const tests = spawn(process.execPath, ['scripts/run-tests.mjs', 'integration'], {
       cwd: webRoot, windowsHide: true, stdio: 'inherit', env: {
-        ...process.env, ...state.integration,
+        ...process.env, ...state.runtime, ...state.integration,
         AUTH_RATE_LIMIT_SECRET: state.runtime.AUTH_RATE_LIMIT_SECRET,
       },
     });

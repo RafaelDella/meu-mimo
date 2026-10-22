@@ -59,3 +59,7 @@ jobs:
       - run: npm --prefix web run db:migrate:dev:t04
       - run: npm --prefix web run db:migrate:integration:t04
       - run: npm --prefix web run test:integration:t04
+      - run: npm --prefix web run local:prepare:t05
+      - run: npm --prefix web run db:migrate:dev:t05
+      - run: npm --prefix web run db:migrate:integration:t05
+      - run: npm --prefix web run test:integration:t05

@@ -26,6 +26,20 @@ enum StoreState {
   @@schema("app")
 }
 
+enum ConversationSubject {
+  SUBMISSION
+  TICKET
+
+  @@schema("app")
+}
+
+enum NotificationKind {
+  INVITATION_ACCEPTED
+  COMMENT_CREATED
+
+  @@schema("app")
+}
+
 model Profile {
   id             String          @id @db.Uuid
   displayName    String?
@@ -39,6 +53,8 @@ model Profile {
   createdInvitations Invitation[] @relation("InvitationCreator")
   acceptedInvitations Invitation[] @relation("InvitationAcceptor")
   storeAudits StoreAudit[]
+  authoredComments Comment[]
+  outboxEvents OutboxEvent[]
 
   @@schema("app")
 }
@@ -60,6 +76,8 @@ model Store {
   memberships        Membership[]
   invitations        Invitation[]
   audits             StoreAudit[]
+  conversations Conversation[]
+  outboxEvents OutboxEvent[]
 
   @@index([createdByProfileId])
   @@schema("app")
@@ -76,8 +94,12 @@ model Membership {
   store           Store          @relation(fields: [storeId], references: [id], onDelete: Restrict)
   profile         Profile        @relation(fields: [profileId], references: [id], onDelete: Restrict)
   acceptedInvitations Invitation[]
+  participantConversations Conversation[]
+  participantEvents OutboxEvent[] @relation("EventParticipant")
+  receivedEvents OutboxEvent[] @relation("EventRecipient")
 
   @@unique([storeId, profileId])
+  @@unique([id, storeId])
   @@index([profileId, accessRevokedAt])
   @@index([storeId, accessRevokedAt])
   @@schema("app")
@@ -98,6 +120,7 @@ model Invitation {
   creator              Profile @relation("InvitationCreator", fields: [createdByProfileId], references: [id], onDelete: Restrict)
   acceptor             Profile? @relation("InvitationAcceptor", fields: [acceptedByProfileId], references: [id], onDelete: Restrict)
   acceptedMembership   Membership? @relation(fields: [acceptedMembershipId], references: [id], onDelete: Restrict)
+  outboxEvents OutboxEvent[]
 
   @@index([storeId, createdAt, id])
   @@schema("app")
@@ -114,6 +137,76 @@ model StoreAudit {
   actor          Profile @relation(fields: [actorProfileId], references: [id], onDelete: Restrict)
 
   @@index([storeId, createdAt, id])
+  @@schema("app")
+}
+
+model Conversation {
+  id String @id @default(uuid()) @db.Uuid
+  storeId String @db.Uuid
+  participantMembershipId String @db.Uuid
+  subjectType ConversationSubject
+  subjectId String @db.Uuid
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  commentsClosedAt DateTime? @db.Timestamptz(6)
+  store Store @relation(fields: [storeId], references: [id], onDelete: Restrict)
+  participantMembership Membership @relation(fields: [participantMembershipId], references: [id], onDelete: Restrict)
+  comments Comment[]
+
+  @@unique([subjectType, subjectId])
+  @@index([storeId, participantMembershipId])
+  @@schema("app")
+}
+
+model Comment {
+  id String @id @db.Uuid
+  conversationId String @db.Uuid
+  authorProfileId String @db.Uuid
+  text String
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Restrict)
+  author Profile @relation(fields: [authorProfileId], references: [id], onDelete: Restrict)
+  outboxEvents OutboxEvent[]
+
+  @@index([conversationId, createdAt, id])
+  @@schema("app")
+}
+
+model OutboxEvent {
+  id String @id @default(uuid()) @db.Uuid
+  key String @unique
+  kind NotificationKind
+  storeId String @db.Uuid
+  participantMembershipId String @db.Uuid
+  actorProfileId String @db.Uuid
+  recipientMembershipId String @db.Uuid
+  invitationId String? @db.Uuid
+  commentId String? @db.Uuid
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  availableAt DateTime @default(now()) @db.Timestamptz(6)
+  processedAt DateTime? @db.Timestamptz(6)
+  attempts Int @default(0)
+  lastErrorCode String?
+  store Store @relation(fields: [storeId], references: [id], onDelete: Restrict)
+  participantMembership Membership @relation("EventParticipant", fields: [participantMembershipId], references: [id], onDelete: Restrict)
+  actor Profile @relation(fields: [actorProfileId], references: [id], onDelete: Restrict)
+  recipientMembership Membership @relation("EventRecipient", fields: [recipientMembershipId], references: [id], onDelete: Restrict)
+  invitation Invitation? @relation(fields: [invitationId], references: [id], onDelete: Restrict)
+  comment Comment? @relation(fields: [commentId], references: [id], onDelete: Restrict)
+  notification Notification?
+
+  @@index([processedAt, availableAt, id])
+  @@index([recipientMembershipId, createdAt, id])
+  @@schema("app")
+}
+
+model Notification {
+  id String @id @default(uuid()) @db.Uuid
+  eventId String @unique @db.Uuid
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  readAt DateTime? @db.Timestamptz(6)
+  event OutboxEvent @relation(fields: [eventId], references: [id], onDelete: Restrict)
+
+  @@index([createdAt, id])
   @@schema("app")
 }
 

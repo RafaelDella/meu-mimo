@@ -10,10 +10,10 @@ export const statePath = path.join(artifactRoot, 'integration.json');
 mkdirSync(artifactRoot, { recursive: true });
 
 export function taskResources(task = 't02') {
-  if (!['t02', 't04'].includes(task)) throw new Error('Use somente t02 ou t04.');
+  if (!['t02', 't04', 't05'].includes(task)) throw new Error('Use somente t02, t04 ou t05.');
   const directory = path.resolve(webRoot, `../.artifacts/${task}-runtime`);
   return { task, directory, statePath: path.join(directory, 'integration.json'),
-    database: task === 't02' ? 'postgres' : 'meumimo_t04',
+    database: task === 't02' ? 'postgres' : `meumimo_${task}`,
     development: `meumimo_${task}_dev`, shadow: `meumimo_${task}_shadow`,
     port: task === 't02' ? 4302 : 4310 };
 }
@@ -65,7 +65,7 @@ export function readState(task = 't02') {
   assertLocalDatabase(state.migration.development, resources.development);
   assertLocalDatabase(state.migration.shadow, resources.shadow);
   assertLocalDatabase(state.runtime.DATABASE_URL, resources.database);
-  if (task === 't04') assertLocalDatabase(state.integration.T02_AUTH_DATABASE_URL, 'postgres');
+  if (task !== 't02') assertLocalDatabase(state.integration.T02_AUTH_DATABASE_URL, 'postgres');
   return state;
 }
 
