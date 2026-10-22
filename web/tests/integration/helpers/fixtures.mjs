@@ -69,6 +69,10 @@ export async function createFixture(t) {
         rateKeys.add(createHmac('sha256', process.env.AUTH_RATE_LIMIT_SECRET)
           .update('meumimo:t04:domain-rate:v1\0').update(kind).update('\0').update(profile).digest('hex'));
       }
+      for (const profile of profiles) for (const kind of ['reserve', 'part']) {
+        rateKeys.add(createHmac('sha256', process.env.AUTH_RATE_LIMIT_SECRET)
+          .update(`media-${kind}\0${profile}`).digest('hex'));
+      }
       const scope = '"storeId" = ANY($1::uuid[]) OR "actorProfileId" = ANY($2::uuid[]) OR "participantMembershipId" IN (SELECT id FROM app."Membership" WHERE "profileId" = ANY($2::uuid[])) OR "recipientMembershipId" IN (SELECT id FROM app."Membership" WHERE "profileId" = ANY($2::uuid[]))';
       const scopeValues = [[...storeIds], profiles];
       await database.query(`DELETE FROM app."Notification" WHERE "eventId" IN (SELECT id FROM app."OutboxEvent" WHERE ${scope})`, scopeValues);
@@ -76,6 +80,16 @@ export async function createFixture(t) {
       const conversationScope = '"storeId" = ANY($1::uuid[]) OR "participantMembershipId" IN (SELECT id FROM app."Membership" WHERE "profileId" = ANY($2::uuid[]))';
       await database.query(`DELETE FROM app."Comment" WHERE "authorProfileId" = ANY($2::uuid[]) OR "conversationId" IN (SELECT id FROM app."Conversation" WHERE ${conversationScope})`, scopeValues);
       await database.query(`DELETE FROM app."Conversation" WHERE ${conversationScope}`, scopeValues);
+      const mediaScope = '"authorProfileId" = ANY($2::uuid[]) OR "collectionId" IN (SELECT id FROM app."MediaCollection" WHERE ' + conversationScope + ')';
+      const media = await database.query(`SELECT id FROM app."MediaAsset" WHERE ${mediaScope}`, scopeValues);
+      if (media.rowCount) {
+        assert.equal(environment.task, 't06', 'Mídia de fixture só pode existir no domínio reservado T06.');
+        const { listAssetObjects, deleteObjects } = await import('../../../src/server/media-worker/storage.ts');
+        for (const item of media.rows) await deleteObjects(await listAssetObjects(item.id));
+      }
+      await database.query(`DELETE FROM app."MediaPart" WHERE "assetId" IN (SELECT id FROM app."MediaAsset" WHERE ${mediaScope})`, scopeValues);
+      await database.query(`DELETE FROM app."MediaAsset" WHERE ${mediaScope}`, scopeValues);
+      await database.query(`DELETE FROM app."MediaCollection" WHERE ${conversationScope}`, scopeValues);
       await database.query('DELETE FROM app."StoreAudit" WHERE "actorProfileId" = ANY($1::uuid[]) OR "storeId" = ANY($2::uuid[])', [profiles, [...storeIds]]);
       await database.query('DELETE FROM app."Invitation" WHERE "createdByProfileId" = ANY($1::uuid[]) OR "acceptedByProfileId" = ANY($1::uuid[]) OR "storeId" = ANY($2::uuid[])', [profiles, [...storeIds]]);
       await database.query('DELETE FROM app."SecurityAudit" WHERE "actorProfileId" = ANY($1::uuid[])', [profiles]);

@@ -386,3 +386,56 @@ Após corrigir os achados de interface, check7+9 e96 casos Chromium passaram.
 As quatro regressões reproduziram as falhas antes do ajuste; revisão focal não
 encontrou novo achado. O scan de292 arquivos versionáveis/estáticos não encontrou
 segredos locais. Evidências detalhadas permanecem no plano de T05.
+
+## Execução de T06
+
+O idealizador confirmou desenho/D07 e, em resposta separada, D08. O toolkit
+orientou reconhecimentos do domínio e processamento, revisão do desenho,
+escritores com arquivos exclusivos e integração serial pelo root. Revisores
+independentes de segurança e UI trabalharam somente por leitura; a rodada focal
+conferiu as correções. Não houve mudança de cliente, modelo ou configuração global.
+
+Sharp 0.35.5 passou a dependência direta; as demais versões foram preservadas.
+FFmpeg/ffprobe 9.0.2 Essentials foram preparados em diretório ignorado no Windows,
+sem instalação global, após conferir o SHA-256 fixado do arquivo completo.
+O download pode retomar partes, mas não extrai um pacote incompleto ou sem hash
+válido. Fontes: [FFmpeg](https://www.ffmpeg.org/download.html),
+[distribuidor Gyan](https://www.gyan.dev/ffmpeg/builds/) e
+[Sharp](https://sharp.pixelplumbing.com/api-output/).
+No CI Ubuntu 24.04, o job instala FFmpeg da distribuição e Chromium explicitamente;
+execução remota não foi observada. A opção de rotação foi conferida também na
+[documentação oficial 6.1](https://github.com/FFmpeg/FFmpeg/blob/n6.1/doc/ffmpeg.texi).
+
+Context7 foi descoberto e consultado para Storage privado/assinaturas. O SDK
+Supabase instalado e a documentação oficial de
+[acesso](https://supabase.com/docs/guides/storage/security/access-control) e
+[download](https://supabase.com/docs/guides/storage/serving/downloads) embasaram o
+gateway com autorização atual em cada parte/GET/Range. Nenhum código privado,
+dado pessoal ou segredo foi enviado nas consultas. Service role permanece apenas
+no processo local separado; o Next usa banco restrito e o segredo interno do gateway.
+
+A sexta migração acrescentou três tabelas, CHECKs, FKs compostas, grants/RLS,
+preservando as FKs manuais de T05. A cadeia foi aplicada aos bancos locais
+T02/T04/T05/T06 sem reset; a prova vazia/evolutiva preservou dados e conferiu
+16 tabelas com RLS e permissões efetivas. O bucket continua privado e políticas
+restritivas negam acesso direto a anon/authenticated.
+
+Falhas reproduzidas e corrigidas: prefixo Storage para UUID em caixa diferente;
+descarte após 429 sem reserva; original diferente no mesmo tamanho/MIME ao
+retomar; remoção de mídia pronta sem confirmação. A revisão também acrescentou
+a instalação de Chromium no job HTTP e corrigiu temporário Sharp no Windows.
+Outra regressão reproduziu original cru abandonado após queda sem finally;
+a manutenção passou a reconciliar temporários antigos e preservar leases ativos.
+Uma prova adicional encerrou e reiniciou o broker, recuperou 503/partes persistidas
+sem duplicação e processou a fila em outro processo.
+
+Comandos, formatos, limites operacionais e fronteiras de T07/T09/T11/T14 em
+[mídia local](media-local.md). Evidências finais e pendências móveis no
+[plano T06](superpowers/plans/2026-10-22-t06-midia.md). Arquivos de teste são
+sintéticos; câmera/galeria, leitor de tela e reprodução em aparelhos reais
+continuam não observados. Nenhum serviço pago ou publicação.
+
+Verificação final T06: check com 7+9 testes, lint/tipos/build, 101 cenários
+HTTP/pipeline (65 regressões e 36 de mídia/D08), 136 Chromium e manutenção por
+CLI aprovados. O scan de 353 arquivos versionáveis/estáticos não encontrou
+segredos locais. A revisão focal final não trouxe novo achado concreto.

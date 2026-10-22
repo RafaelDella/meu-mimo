@@ -87,8 +87,8 @@ T00 organiza estas decisões com o idealizador; as que não forem resolvidas blo
 | D04 | Início da semana, retroatividade, estados que ocupam ocorrência, alteração de fuso e limites técnicos de texto/paginação/requisições. Limites de autenticação precisam de decisão antes do respectivo fluxo. | T02 para autenticação; T04–T12 conforme o recurso |
 | D05 | Contestação após gasto, saldo negativo por estorno, reabertura e recomposição; preservar tickets emitidos conforme a regra aprovada. | T08 |
 | D06 | Estoque no cancelamento, pedido recusado, disputa sobre realização e procedimento de suporte no piloto. | T09–T10 |
-| D07 | Quantidade/tamanho/formato de fotos e vídeos, duração, miniaturas, orientação/remoção de localização, processamento e reprodução Android/iPhone. Fazer prova técnica com arquivos fictícios; armazenamento não garante conversão. | T06 |
-| D08 | Retenção de mídia/histórico, órfãos, relações encerradas e tickets cancelados; tratamento de pedido de exportação/exclusão e histórico compartilhado. Fluxo completo de exclusão pode evoluir depois, mas o contrato de dados é P0. | T06, T11, T14 |
+| D07 · confirmada em T06 | Limites de fotos/vídeos, versões de evidência, lote/álbum, miniaturas e gateway local separado confirmados em requisitos §6.1. Prova sintética local não comprova câmera/galeria ou reprodução em Android/iPhone reais. | T06/T11; prova móvel ainda pendente |
+| D08 · confirmada em T06 | Órfãos 24h, originais até 24h após processamento, evidência 180 dias com proteção e álbum até 12 meses após encerramento. Histórico até 24 meses, backups até 30 dias e procedimento de exportação/exclusão em T14. Proteção conservadora até integrar a origem. | T06, T11, T14 |
 | D09 | Aparelhos/versões suportados, disponibilidade, limite de custo, tolerância de perda (RPO), prazo de recuperação (RTO) e operação do piloto. | T14–T15 |
 | D10 | Periodicidade, elegibilidade, corte/fuso, regeneração e compartilhamento opcional da retrospectiva. | E04; não bloqueia o MVP |
 
@@ -174,9 +174,16 @@ T12 entrega central completa, preferências e agrupamento. Operação publicada 
 **Responsável:** backend de mídia. **Depende de:** T05, D07–D08.
 **Arquivos:** `web/src/server/media/**`, `web/src/components/media/**`, `web/tests/integration/media/**`, `web/tests/fixtures/media/**`, `web/prisma/**`; políticas de aplicação na cadeia de migrações. **Recursos:** padrão T06 e processamento de mídia de teste conforme decisão; sem mídia pessoal.
 
-- [ ] Implementar autorização de upload/consulta, metadados, vínculos de propósito evidência/memória, estados por arquivo e limpeza de órfãos conforme retenção. Objetos ficam privados mesmo durante envio.
-- [ ] Tratar orientação e metadados de localização nas imagens disponibilizadas; validar formatos/tamanhos e miniaturas. Testar vídeos nos aparelhos escolhidos e decidir processamento necessário antes de depender dele.
-- [ ] Verificar câmera negada, galeria, upload interrompido/retomado com autorização revalidada, formato inválido, arquivo duplicado, URL expirada e acesso direto por outro participante. Conferir imagem, miniatura e reprodução privadas.
+- [x] Implementar autorização de upload/consulta, metadados, vínculos internos de propósito evidência/memória e estados por arquivo. Objetos ficam privados mesmo durante envio; origem real integra em T07/T09/T11.
+- [x] Tratar orientação/localização nas imagens; validar formatos/tamanhos, miniaturas e transcodificação MP4/MOV com arquivos sintéticos. Consulta/Range reautoriza a sessão e a audiência atuais.
+- [x] Provar upload interrompido/retomado, conflito/duplicação, formato inválido, URL expirada, revogação e acesso direto por outro participante. Câmera cancelada/galeria são estados simulados na composição, separados da prova HTTP.
+- [x] Confirmar D08 e provar limpeza de órfãos/originais, temporários abandonados e retenção protegida. Marcação lógica precede expurgo idempotente; retomada/lease atual impedem limpar trabalho ativo. Origem integra proteção e encerramento em T07/T09/T11.
+- [ ] Conferir câmera/galeria e reprodução em Android/iPhone reais da matriz D09. Chromium e vídeos sintéticos não comprovam aparelhos físicos.
+
+Desenho/D07 e D08 aprovados; implementação local verificada.
+Implementação e evidências em [plano T06](2026-10-22-t06-midia.md) e operação em
+[T06 local](../../media-local.md). A prova de câmera/galeria e reprodução em
+Android/iPhone reais permanece no aceite móvel D09/T14.
 
 ### T07 · Atividades e envio de conquistas com crédito consistente
 

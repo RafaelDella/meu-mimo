@@ -89,6 +89,12 @@ Para conversas/outbox/notificações, siga [T05 local](relation-local.md).
 O consumidor de desenvolvimento roda em terminal separado; a integração testa
 falhas/concorrência de modo determinístico e não inicia worker em background.
 
+Para fotos/vídeos, siga [T06 local](media-local.md). O processo de mídia e o Next
+têm ambientes separados. A integração inicia o gateway em 4311 e o Next em
+4310, com Storage privado e arquivos sintéticos; não execute drivers em paralelo.
+D07 e D08 foram confirmadas. A origem deverá atualizar proteção/encerramento
+na mesma transação do domínio; a proteção padrão é conservadora.
+
 ## Conferir a interface de T03
 
 Com `npm run web:dev`, abra `http://127.0.0.1:4301/visual-check`.

@@ -34,7 +34,7 @@ jobs:
       - run: npm run web:test:e2e
 
   identity-integration:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -63,3 +63,15 @@ jobs:
       - run: npm --prefix web run db:migrate:dev:t05
       - run: npm --prefix web run db:migrate:integration:t05
       - run: npm --prefix web run test:integration:t05
+      - name: Preparar ferramentas de vídeo da distribuição
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y ffmpeg
+          ffmpeg -version
+          ffprobe -version
+      - run: npm --prefix web run local:prepare:t06
+      - run: npm --prefix web run db:migrate:dev:t06
+      - run: npm --prefix web run db:migrate:integration:t06
+      - run: npm --prefix web run media:fixtures
+      - run: npm --prefix web exec -- playwright install --with-deps chromium
+      - run: npm --prefix web run test:integration:t06

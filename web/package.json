@@ -20,6 +20,17 @@
     "test:integration": "node scripts/integration.mjs",
     "test:integration:t04": "node scripts/integration.mjs t04",
     "test:integration:t05": "node scripts/integration.mjs t05",
+    "test:integration:t06": "node scripts/integration.mjs t06",
+    "local:prepare:t06": "node scripts/prepare-media.mjs",
+    "media:tools": "node scripts/media-tools.mjs",
+    "media:fixtures": "node scripts/media-fixtures.mjs",
+    "db:migrate:dev:t06": "node scripts/prisma-local.mjs development t06",
+    "db:migrate:integration:t06": "node scripts/prisma-local.mjs integration t06",
+    "media:dev": "node scripts/media-local.mjs development",
+    "media:once:t06": "node scripts/media-local.mjs integration --once",
+    "media:purge:t06": "node scripts/media-local.mjs integration --purge-once",
+    "outbox:dev:t06": "node scripts/outbox-local.mjs t06 development",
+    "outbox:once:t06": "node scripts/outbox-local.mjs t06 integration --once",
     "local:prepare:t05": "node scripts/prepare-local.mjs t05",
     "db:migrate:dev:t05": "node scripts/prisma-local.mjs development t05",
     "db:migrate:integration:t05": "node scripts/prisma-local.mjs integration t05",
@@ -50,7 +61,8 @@
     "pg": "8.23.1",
     "react": "19.3.1",
     "react-dom": "19.3.1",
-    "server-only": "0.0.1"
+    "server-only": "0.0.1",
+    "sharp": "0.35.5"
   },
   "devDependencies": {
     "@eslint/js": "9.39.5",

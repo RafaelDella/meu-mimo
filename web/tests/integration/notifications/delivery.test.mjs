@@ -84,7 +84,7 @@ test('CLI local once consome o evento com runtime restrito e repetir não cria o
   const comment = await f.post(f.ana, 'Entrega pelo processo separado.');
   const event = await f.eventFor(comment);
   const run = () => promisify(execFile)(process.execPath,
-    ['scripts/outbox-local.mjs', 't05', 'integration', '--once'], { windowsHide: true, timeout: 20_000 });
+    ['scripts/outbox-local.mjs', process.env.T02_TASK ?? 't05', 'integration', '--once'], { windowsHide: true, timeout: 20_000 });
   const first = await run();
   assert.ok(JSON.parse(first.stdout.trim()).delivered >= 1);
   const again = await run();

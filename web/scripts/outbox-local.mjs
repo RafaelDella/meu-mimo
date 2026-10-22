@@ -8,7 +8,7 @@ if (!['development', 'integration'].includes(target) || (mode && mode !== '--onc
 }
 const resources = taskResources(task);
 const state = readState(task);
-const runtime = { ...state.runtime };
+const runtime = Object.fromEntries(Object.entries(state.runtime).filter(([key]) => !key.startsWith('MEDIA_')));
 if (target === 'development') {
   const url = new URL(runtime.DATABASE_URL);
   url.pathname = `/${resources.development}`;
@@ -17,7 +17,7 @@ if (target === 'development') {
 }
 assertLocalDatabase(runtime.DATABASE_URL, target === 'development' ? resources.development : resources.database);
 const environment = Object.fromEntries(Object.entries(process.env).filter(([key]) =>
-  !/^(T0[245]_|SUPABASE_|MIGRATION_|SHADOW_)/i.test(key)));
+  !/^(T0[2456]_|SUPABASE_|MEDIA_|FFMPEG_|FFPROBE_|MIGRATION_|SHADOW_)/i.test(key)));
 Object.assign(environment, runtime);
 const child = spawn(process.execPath, ['--conditions=react-server', path.join(webRoot, 'scripts/outbox-worker.mjs'),
   ...(mode ? [mode] : [])], { cwd: webRoot, env: environment, stdio: 'inherit', windowsHide: true });

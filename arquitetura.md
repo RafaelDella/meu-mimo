@@ -1,7 +1,8 @@
 # Meu Mimo — proposta técnica e decisões de dados
 
 Atualizado em 22 de outubro de 2026. Complementa `design.md` e `requisitos.md`.
-Registra decisões, propostas futuras e o escopo local implementado em T01–T05.
+Registra decisões, propostas futuras e o escopo local de T01–T06. D07 e D08
+foram confirmadas em T06; integração com as origens permanece no roadmap.
 
 ## 1. Decisões e base da implementação
 
@@ -18,7 +19,7 @@ Interpretação adotada para “Prisma DB para migração”: **Prisma ORM e sua
 | Banco | PostgreSQL 17.11 na stack Supabase local de T02 | Persistência relacional e transações |
 | Acesso e migrações | Prisma ORM e migrações versionadas; confirmados | Modelos, consultas e evolução do banco |
 | Identidade | Supabase Auth local em T02, com e-mail/senha, verificação, recuperação e MFA administrativo | Autenticação e sessões |
-| Fotos e vídeos | Supabase Storage privado; confirmado como serviço, pipeline pendente em D07 | Upload e acesso autorizado |
+| Fotos e vídeos | Supabase Storage privado; D07 e processo local separado confirmados em T06 | Upload retomável, derivados e consulta reautorizada |
 | Eventos ao vivo | Supabase Realtime com audiência autorizada; proposta para T05 | Avisar a interface sobre mudanças confirmadas |
 | Qualidade | Validação de entrada, testes de regras, integração e navegação; requisito | Cobrir autorização, concorrência e uso pelo celular |
 | Publicação | Vercel; opção futura, sem implantação autorizada | Hospedar a aplicação Next.js |
@@ -106,6 +107,36 @@ derivados; T07/T09 integrarão as telas reais de registro/ticket. Realtime é
 opcional e não foi necessário ao consumidor SQL; central/preferências e demais
 interações ficam em T12. Comandos e fronteiras em [T05 local](docs/relation-local.md).
 
+### 1.4. Mídia privada em T06
+
+D07/desenho foram aprovados em 22/10/2026: limites em requisitos §6.1.
+MediaCollection associa propósito/origem tipada à loja e participação. Evidência
+tem uma foto por revisão e preserva as anteriores; memória admite 20 itens.
+MediaAsset usa UUID da operação e metadados imutáveis; MediaPart persiste offset,
+tamanho e checksum. Registro de coleção, revisão e publicação são internos à
+transação da origem, a integrar com T07/T09/T11.
+
+Next mantém credencial restrita e autorização de sessão/contexto. O processo de
+mídia em loopback recebe service role separadamente para o bucket privado
+reservado; a conexão Prisma desse processo continua restrita. O Storage usa o
+banco postgres e não consulta diretamente app em bancos de domínio separados.
+Gateway com MAC curto evita supor que prefixos ou token nativo de upload de duas
+horas sejam autorização atual. Não se recriam schemas gerenciados do Supabase.
+
+Upload em partes de 5 MiB tem repetição por offset/checksum, com revalidação
+antes/depois do Storage. Processamento fora da transação usa lease e confirmação
+condicional; Sharp/FFmpeg produzem imagem/miniatura sem localização e MP4
+H.264/AAC quando houver áudio. Derivados prontos ainda são rascunhos do autor;
+publicação interna libera apenas a audiência da origem. URL própria de 300 s é
+vinculada à sessão e GET/Range revalida permissão/estado, sem redirecionamento.
+
+Remoção explícita ou por prazo oculta antes do expurgo, que é idempotente e
+reconcilia objetos privados tardios. D08 limpa órfãos após 24h sem atividade e
+originais após confirmar os derivados. Evidência publicada tem 180 dias; álbum
+tem prazo de 12 meses após encerramento informado pela origem. retentionHold
+inicia true: não se infere ausência de análise/contestação. Comandos, versões, credenciais,
+limites de formatos e provas móveis em [T06 local](docs/media-local.md).
+
 ## 2. Organização da aplicação
 
 ```mermaid
@@ -162,7 +193,8 @@ T04 acrescenta os estados de loja/participação, Invitation e StoreAudit; T05,
 Conversation, Comment, OutboxEvent e Notification. AuthSession
 mantém revogação/contexto restrito, AuthRateBucket persiste a janela atômica
 e SecurityAudit registra evento/ator/instante sem senha, token ou e-mail.
-As cinco migrações em `web/prisma/migrations/` incluem o SQL de permissões.
+T06 acrescenta MediaCollection, MediaAsset e MediaPart. As seis migrações em
+`web/prisma/migrations/` incluem SQL de permissões; 16 tabelas têm RLS.
 Auth/Storage mantêm seus schemas gerenciados pelo Supabase.
 
 Runtime usa `meumimo_runtime`, sem superuser/bypass de RLS ou escrita em
@@ -190,8 +222,8 @@ implantação em ambiente real foi executada.
 
 ## 4. Modelo conceitual de dados
 
-A tabela descreve o modelo completo proposto. T02/T04 implementam o
-subconjunto das seções 1.2 e 3.1; os demais modelos permanecem futuros.
+A tabela descreve o modelo completo proposto. T02/T04/T05/T06 implementam os
+subconjuntos das seções 1.2–1.4 e 3.1; os demais modelos permanecem futuros.
 
 | Entidade | Dados e responsabilidade principais |
 |---|---|

@@ -40,6 +40,29 @@ enum NotificationKind {
   @@schema("app")
 }
 
+enum MediaPurpose {
+  EVIDENCE
+  MEMORY
+  @@schema("app")
+}
+
+enum MediaType {
+  PHOTO
+  VIDEO
+  @@schema("app")
+}
+
+enum MediaState {
+  UPLOADING
+  QUEUED
+  PROCESSING
+  READY
+  FAILED
+  REMOVING
+  REMOVED
+  @@schema("app")
+}
+
 model Profile {
   id             String          @id @db.Uuid
   displayName    String?
@@ -54,6 +77,7 @@ model Profile {
   acceptedInvitations Invitation[] @relation("InvitationAcceptor")
   storeAudits StoreAudit[]
   authoredComments Comment[]
+  mediaAssets MediaAsset[]
   outboxEvents OutboxEvent[]
 
   @@schema("app")
@@ -77,6 +101,7 @@ model Store {
   invitations        Invitation[]
   audits             StoreAudit[]
   conversations Conversation[]
+  mediaCollections MediaCollection[]
   outboxEvents OutboxEvent[]
 
   @@index([createdByProfileId])
@@ -95,6 +120,7 @@ model Membership {
   profile         Profile        @relation(fields: [profileId], references: [id], onDelete: Restrict)
   acceptedInvitations Invitation[]
   participantConversations Conversation[]
+  mediaCollections MediaCollection[]
   participantEvents OutboxEvent[] @relation("EventParticipant")
   receivedEvents OutboxEvent[] @relation("EventRecipient")
 
@@ -216,6 +242,76 @@ model AdminGrant {
   revokedAt DateTime? @db.Timestamptz(6)
   profile   Profile   @relation(fields: [profileId], references: [id], onDelete: Restrict)
 
+  @@schema("app")
+}
+
+model MediaCollection {
+  id String @id @default(uuid()) @db.Uuid
+  storeId String @db.Uuid
+  participantMembershipId String @db.Uuid
+  purpose MediaPurpose
+  subjectId String @db.Uuid
+  revision Int @default(1)
+  uploadsClosedAt DateTime? @db.Timestamptz(6)
+  retentionHold Boolean @default(true)
+  retentionUntil DateTime? @db.Timestamptz(6)
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  store Store @relation(fields: [storeId], references: [id], onDelete: Restrict)
+  participantMembership Membership @relation(fields: [participantMembershipId], references: [id], onDelete: Restrict)
+  assets MediaAsset[]
+
+  @@unique([purpose, subjectId])
+  @@unique([id, storeId])
+  @@index([storeId, participantMembershipId])
+  @@schema("app")
+}
+
+model MediaAsset {
+  id String @id @db.Uuid
+  collectionId String @db.Uuid
+  authorProfileId String @db.Uuid
+  revision Int
+  mediaType MediaType
+  mimeType String
+  byteLength Int
+  sha256 String
+  state MediaState @default(UPLOADING)
+  uploadedBytes Int @default(0)
+  failureCode String?
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  lastActivityAt DateTime @default(now()) @db.Timestamptz(6)
+  leaseToken String? @db.Uuid
+  leaseUntil DateTime? @db.Timestamptz(6)
+  attempts Int @default(0)
+  availableAt DateTime @default(now()) @db.Timestamptz(6)
+  outputVersion String? @db.Uuid
+  processedAt DateTime? @db.Timestamptz(6)
+  publishedAt DateTime? @db.Timestamptz(6)
+  removedAt DateTime? @db.Timestamptz(6)
+  purgedAt DateTime? @db.Timestamptz(6)
+  width Int?
+  height Int?
+  durationMs Int?
+  displayBytes Int?
+  thumbnailBytes Int?
+  collection MediaCollection @relation(fields: [collectionId], references: [id], onDelete: Restrict)
+  author Profile @relation(fields: [authorProfileId], references: [id], onDelete: Restrict)
+  parts MediaPart[]
+
+  @@index([collectionId, revision, createdAt, id])
+  @@index([state, availableAt, leaseUntil])
+  @@schema("app")
+}
+
+model MediaPart {
+  assetId String @db.Uuid
+  offset Int
+  byteLength Int
+  sha256 String
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  asset MediaAsset @relation(fields: [assetId], references: [id], onDelete: Restrict)
+
+  @@id([assetId, offset])
   @@schema("app")
 }
 

@@ -353,6 +353,10 @@ Prever permissão negada, câmera indisponível, cancelamento da seleção, form
 
 A foto não precisa de filtros ou editor criativo nesta versão. Preservar legenda e seleção local após uma falha de envio, dentro das possibilidades do dispositivo, e nunca apresentar crédito antes da confirmação do registro.
 
+Confirmado em T06: uma foto opcional por envio/versão, até 10 MB, JPEG/PNG/WebP.
+Complemento solicitado pode receber nova foto preservando as anteriores no
+histórico do mesmo registro. Não cria outra ocorrência nem outro crédito.
+
 ## 12. Telas do administrador da plataforma
 
 Área operacional separada das lojas, desenhada primeiro para celular, com menu compacto, cards e filtros. No desktop, pode ganhar navegação lateral e tabelas. O visual é mais sóbrio dentro da identidade da marca.
@@ -453,7 +457,12 @@ Cada resgate pode ter seu próprio álbum com várias fotos e vídeos enviados p
 - O lojista pode remover mídias próprias com confirmação. A remoção não cancela o mimo e não altera o extrato; seguir a política de retenção e os registros administrativos necessários.
 - Toda publicação permanece visível apenas ao lojista e ao participante daquele resgate. Mídias ainda em envio, validação ou seleção não aparecem como momentos publicados.
 
-Projetar estados de álbum vazio, envio por arquivo, validação/processamento, pronto, erro e tentativa novamente. Limites de quantidade, tamanho, duração e formatos serão definidos antes da implementação e devem ser informados na seleção.
+Projetar estados de álbum vazio, envio por arquivo, validação/processamento, pronto,
+erro e tentativa novamente. Confirmado em T06: até 20 itens, lotes de até 10,
+fotos JPEG/PNG/WebP até 10 MB e vídeos MP4/MOV até 100 MB/60 segundos. Informar
+esses limites na seleção. Pausar um envio conserva o progresso confirmado;
+retomar exige permissão atual e, após recarregar, selecionar o mesmo original.
+Rascunhos ficam privados para quem envia; só a confirmação da origem os publica.
 
 ## 15. Interações e notificações
 

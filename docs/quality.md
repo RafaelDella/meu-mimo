@@ -12,6 +12,7 @@
 | `npm run web:test` | Testes nativos de fronteira e regras, com AST TypeScript/TSX real |
 | `npm run web:test:integration` | Inicia produção em 4302 e testa HTTP contra a stack Supabase real preparada; sem reutilizar servidor |
 | `npm --prefix web run test:integration:t05` | Domínio T05 em 4310, regressões T02/T04 e conversas/outbox/notificações reais com falhas e entrega concorrente |
+| `npm --prefix web run test:integration:t06` | Domínio T06 em 4310, processo de mídia 4311, Storage privado, pipeline real e regressões T02/T04/T05 |
 | `npm --prefix web run db:migrate:check` | Banco vazio, evolução com dados fictícios preservados, RLS e permissões efetivas |
 | `npm run web:build` | Build real de produção Next |
 | `npm run web:test:e2e` | Smoke do build em Chromium a 320/390 px; requer browser instalado |
@@ -99,6 +100,16 @@ inclusive após inserir aviso e antes de marcar evento. Consultas comprovam
 recuperação de entrega atrasada e autorização atual de item, contador e destino.
 Estados visuais não substituem essas provas de serviço/persistência. Execução,
 revisão e regressões no [plano T05](superpowers/plans/2026-10-22-t05-relacao.md).
+
+T06 acrescenta 36 testes HTTP/pipeline: partes idempotentes, audiência,
+Storage direto negado, checksum real, formatos/EXIF/rotação, MP4/MOV/silêncio,
+Range e reprodução com Chromium autenticado, CAS de lease e expurgo de remoção
+explícita, D08 com relógio/lease, temporários após queda e caminho canônico para
+UUID recebido em maiúsculas. Arquivos são
+sintéticos gerados localmente. Uma prova adicional encerrou e reiniciou o broker,
+retomou partes persistidas sem duplicação e processou a fila em outro processo.
+A UI em memória é separada das provas de serviço. Câmera/galeria e reprodução
+em aparelhos reais continuam pendentes.
 
 Defina comportamento e falhas relevantes antes de implementar. Para corrigir
 um defeito, reproduza e prove a regressão quando viável. Não escreva testes que

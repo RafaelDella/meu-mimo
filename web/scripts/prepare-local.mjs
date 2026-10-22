@@ -44,6 +44,8 @@ const runtime = {
   APP_ORIGIN: `http://127.0.0.1:${resources.port}`, SUPABASE_URL: status.API_URL,
   SUPABASE_PUBLISHABLE_KEY: status.PUBLISHABLE_KEY ?? status.ANON_KEY,
   DATABASE_URL: urlFor(resources.database, true), AUTH_RATE_LIMIT_SECRET: rateSecret,
+  ...(resources.task === 't06' ? { MEDIA_GATEWAY_URL: 'http://127.0.0.1:4311',
+    MEDIA_INTERNAL_SECRET: previous?.runtime.MEDIA_INTERNAL_SECRET ?? randomBytes(32).toString('hex') } : {}),
 };
 const integration = {
   T02_PROJECT_ID: 'meumimo-t02', T02_TEST_ORIGIN: runtime.APP_ORIGIN,

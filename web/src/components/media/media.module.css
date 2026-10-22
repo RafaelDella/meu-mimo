@@ -1,0 +1,20 @@
+.panel { min-width: 0; padding: clamp(16px, 4vw, 28px); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow-wrap: anywhere; }
+.panel h2 { font: 400 1.75rem/1.25 var(--font-heading); margin-top: 0; }
+.panel :where(h2, input):focus-visible { outline: 3px solid var(--focus); outline-offset: 4px; }
+.panel p { max-width: 65ch; }
+.panel :where(button, input) { max-width: 100%; }
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem; margin-block: 1rem; }
+.selection { border-block: 1px solid var(--border); padding-block: .5rem 1rem; margin-block: 1rem; }
+.hidden { position: absolute; width: 1px; height: 1px; padding: 0; border: 0; clip-path: inset(50%); overflow: hidden; white-space: nowrap; }
+.items { list-style: none; margin-block: 1rem; padding: 0; display: grid; gap: 1.25rem; }
+.item { min-width: 0; border: 1px solid var(--border-control); border-radius: 1rem; padding: 1rem 12px; }
+.item h3 { font-size: 1.25rem; margin-block: 0 .5rem; }
+.item progress { width: min(100%, 24rem); height: 1rem; accent-color: var(--action); }
+.detail { color: var(--text-muted); font-size: .875rem; }
+.error { color: var(--error-text); }
+.error:empty { margin: 0; }
+.fileLabel { display: grid; gap: .5rem; font-weight: 600; }
+.fileLabel input { width: 100%; min-height: 48px; }
+.content { padding-top: 1rem; border-top: 1px solid var(--border); }
+.content :where(img, video) { display: block; width: 100%; max-width: 40rem; height: auto; max-height: 70svh; object-fit: contain; border-radius: .75rem; }
+@media (prefers-reduced-motion: reduce) { .panel *, .panel *::before, .panel *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }

@@ -58,7 +58,7 @@ try {
   const applied = await database.query('SELECT count(*)::int AS count FROM app._prisma_migrations WHERE finished_at IS NOT NULL');
   assert.equal(applied.rows[0].count, names.length);
   const policies = await database.query("SELECT count(*)::int AS count FROM pg_tables WHERE schemaname = 'app' AND rowsecurity = true");
-  assert.equal(policies.rows[0].count, 13);
+  assert.equal(policies.rows[0].count, 16);
   const priorStore = await database.query('SELECT state, timezone, name FROM app."Store" WHERE id = $1', [storeId]);
   assert.deepEqual(priorStore.rows[0], { state: 'ACTIVE', timezone: 'America/Sao_Paulo', name: 'Lojinha anterior' });
   const priorMembership = await database.query('SELECT "closedAt", role FROM app."Membership" WHERE id = $1', [membershipId]);
@@ -77,7 +77,7 @@ try {
       await database.query(`SET LOCAL ROLE ${role}`);
       await assert.rejects(database.query('SELECT * FROM app."Profile"'), { code: '42501' });
     } finally { await database.query('ROLLBACK'); }
-    for (const table of ['Invitation', 'StoreAudit', 'Conversation', 'Comment', 'OutboxEvent', 'Notification']) {
+    for (const table of ['Invitation', 'StoreAudit', 'Conversation', 'Comment', 'OutboxEvent', 'Notification', 'MediaCollection', 'MediaAsset', 'MediaPart']) {
       await database.query('BEGIN');
       try {
         await database.query(`SET LOCAL ROLE ${role}`);
@@ -116,6 +116,31 @@ try {
   await runtime.query('UPDATE app."Notification" SET "readAt" = now() WHERE id = $1', [notificationId]);
   await assert.rejects(runtime.query('UPDATE app."OutboxEvent" SET "recipientMembershipId" = $1 WHERE id = $2', [membershipId, eventId]), { code: '42501' });
   await assert.rejects(runtime.query('DELETE FROM app."Notification" WHERE id = $1', [notificationId]), { code: '42501' });
+  const collectionId = randomUUID();
+  const assetId = randomUUID();
+  await runtime.query('INSERT INTO app."MediaCollection" (id,"storeId","participantMembershipId",purpose,"subjectId") VALUES ($1,$2,$3,$4,$5)',
+    [collectionId, storeId, participantId, 'MEMORY', randomUUID()]);
+  await runtime.query('INSERT INTO app."MediaAsset" (id,"collectionId","authorProfileId",revision,"mediaType","mimeType","byteLength",sha256) VALUES ($1,$2,$3,1,$4,$5,1,$6)',
+    [assetId, collectionId, id, 'PHOTO', 'image/jpeg', 'c'.repeat(64)]);
+  await runtime.query('INSERT INTO app."MediaPart" ("assetId", "offset", "byteLength", sha256) VALUES ($1,0,1,$2)', [assetId, 'c'.repeat(64)]);
+  await runtime.query('UPDATE app."MediaAsset" SET "uploadedBytes" = 1, state = $1 WHERE id = $2', ['QUEUED', assetId]);
+  await runtime.query('UPDATE app."MediaCollection" SET "uploadsClosedAt" = now() WHERE id = $1', [collectionId]);
+  assert.equal((await runtime.query('SELECT id FROM app."MediaAsset" WHERE id = $1', [assetId])).rowCount, 1);
+  for (const [sql, values] of [
+    ['UPDATE app."MediaAsset" SET "authorProfileId" = $1 WHERE id = $2', [secondProfile, assetId]],
+    ['UPDATE app."MediaAsset" SET sha256 = $1 WHERE id = $2', ['d'.repeat(64), assetId]],
+    ['UPDATE app."MediaCollection" SET "subjectId" = $1 WHERE id = $2', [randomUUID(), collectionId]],
+    ['UPDATE app."MediaPart" SET sha256 = $1 WHERE "assetId" = $2', ['d'.repeat(64), assetId]],
+    ['DELETE FROM app."MediaAsset" WHERE id = $1', [assetId]],
+  ]) await assert.rejects(runtime.query(sql, values), { code: '42501' });
+  await runtime.query('DELETE FROM app."MediaPart" WHERE "assetId" = $1', [assetId]);
+  const otherStoreId = randomUUID();
+  await runtime.query('INSERT INTO app."Store" (id,"createdByProfileId") VALUES ($1,$2)', [otherStoreId, id]);
+  await assert.rejects(runtime.query('INSERT INTO app."MediaCollection" (id,"storeId","participantMembershipId",purpose,"subjectId") VALUES ($1,$2,$3,$4,$5)',
+    [randomUUID(), otherStoreId, participantId, 'MEMORY', randomUUID()]), { code: '23503' });
+  const preservedConstraints = await runtime.query("SELECT count(*)::int AS count FROM pg_constraint WHERE conname = ANY($1::text[])",
+    [['Conversation_membership_store_fkey', 'OutboxEvent_participant_store_fkey', 'OutboxEvent_recipient_store_fkey', 'MediaCollection_membership_store_fkey']]);
+  assert.equal(preservedConstraints.rows[0].count, 4);
   await assert.rejects(runtime.query('UPDATE app."Membership" SET role = $1 WHERE id = $2', ['PARTICIPANT', membershipId]), { code: '42501' });
   assert.equal((await runtime.query('SELECT id FROM app."Profile" WHERE id = $1', [id])).rowCount, 1);
   await assert.rejects(runtime.query('INSERT INTO app."AdminGrant" ("profileId") VALUES ($1)', [id]), { code: '42501' });
