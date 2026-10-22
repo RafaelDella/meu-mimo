@@ -3,6 +3,7 @@
 @import "./ui.css";
 @import "./visual-check.css";
 @import "./account.css";
+@import "./stores.css";
 
 * { box-sizing: border-box; }
 html { background: var(--background); color: var(--text); }

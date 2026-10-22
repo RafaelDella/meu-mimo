@@ -1,19 +1,23 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import type { FormEvent } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { MfaPanel } from './mfa-panel';
-import { AccountRequestError, accountRequest, accountSession, friendlyError } from './account-api';
+import { AccountRequestError, accountRequest, accountSession, friendlyError, notifySessionChanged } from './account-api';
 import type { AccountSession } from './account-api';
+import { ProfilePanel } from './profile-panel';
 
 type Mode = 'login' | 'signup' | 'recovery';
 
 export function AccountPanel() {
   const [session, setSession] = useState<AccountSession | null>(null);
+  const sessionRef = useRef<AccountSession | null>(null);
   const [loading, setLoading] = useState(true);
+  const [checking, setChecking] = useState(false);
   const [busy, setBusy] = useState(false);
   const [mode, setMode] = useState<Mode>('login');
   const [email, setEmail] = useState('');
@@ -23,19 +27,45 @@ export function AccountPanel() {
 
   useEffect(() => {
     const controller = new AbortController();
-    accountRequest('session', 'GET', undefined, controller.signal)
-      .then(value => { if (!controller.signal.aborted) setSession(accountSession(value)); })
-      .catch(cause => {
-        if (controller.signal.aborted) return;
-        if (!(cause instanceof AccountRequestError) ||
-            !['identity_missing', 'session_invalid'].includes(cause.code)) setError(friendlyError(cause));
-      })
-      .finally(() => { if (!controller.signal.aborted) setLoading(false); });
-    return () => controller.abort();
+    let revision = 0;
+    function check(background = false) {
+      const request = ++revision;
+      if (background) setChecking(true);
+      accountRequest('session', 'GET', undefined, controller.signal).then(value => {
+        if (controller.signal.aborted || request !== revision) return;
+        const next = accountSession(value);
+        if (sessionRef.current?.sessionId !== next.sessionId) { setEmail(''); setPassword(''); }
+        sessionRef.current = next; setSession(next);
+      }).catch(cause => {
+        if (controller.signal.aborted || request !== revision) return;
+        if (sessionRef.current) { setEmail(''); setMessage(''); setError(''); }
+        sessionRef.current = null; setSession(null); setPassword('');
+        if (!(cause instanceof AccountRequestError) || !['identity_missing', 'session_invalid'].includes(cause.code)) setError(friendlyError(cause));
+      }).finally(() => {
+        if (!controller.signal.aborted && request === revision) { setLoading(false); setChecking(false); }
+      });
+    }
+    void Promise.resolve().then(() => { if (!controller.signal.aborted) check(); });
+    const recheck = () => check(true);
+    const visible = () => { if (document.visibilityState === 'visible') recheck(); };
+    window.addEventListener('focus', recheck);
+    window.addEventListener('pageshow', recheck);
+    window.addEventListener('meumimo:session-changed', recheck);
+    document.addEventListener('visibilitychange', visible);
+    const channel = typeof BroadcastChannel === 'undefined' ? null : new BroadcastChannel('meumimo-session');
+    if (channel) channel.onmessage = recheck;
+    return () => {
+      controller.abort(); channel?.close();
+      window.removeEventListener('focus', recheck); window.removeEventListener('pageshow', recheck);
+      window.removeEventListener('meumimo:session-changed', recheck); document.removeEventListener('visibilitychange', visible);
+    };
   }, []);
 
   async function refreshSession() {
-    setSession(accountSession(await accountRequest('session')));
+    const next = accountSession(await accountRequest('session'));
+    sessionRef.current = next;
+    setSession(next);
+    setEmail('');
   }
 
   async function perform(operation: () => Promise<void>) {
@@ -68,6 +98,7 @@ export function AccountPanel() {
       setPassword('');
       if (mode === 'login') {
         await refreshSession();
+        notifySessionChanged();
         setMessage('Que bom ter você de volta!');
         const destination = result.returnTo;
         if (typeof destination === 'string' && destination.startsWith('/') && !destination.startsWith('//') &&
@@ -87,7 +118,7 @@ export function AccountPanel() {
   return (
     <section className="account-card" aria-labelledby="account-title" aria-busy={loading || busy}>
       <h2 id="account-title">{session ? 'Sua conta' : 'Vamos começar?'}</h2>
-      <p className="account-feedback" role="status" aria-live="polite" aria-atomic="true">{loading ? 'Conferindo sua conta…' : message}</p>
+      <p className="account-feedback" role="status" aria-live="polite" aria-atomic="true">{loading || checking ? 'Conferindo sua conta…' : message}</p>
       <p className="account-error" id="account-error" role="alert" aria-atomic="true">{error}</p>
       {!session && (
         <nav className="account-tabs" aria-label="Acesso à conta">
@@ -97,7 +128,7 @@ export function AccountPanel() {
         </nav>
       )}
       {(!session || session.recovery) && (
-        <form className="account-form" onSubmit={submit} aria-describedby="account-error">
+        <form className="account-form" onSubmit={submit} aria-describedby="account-error" hidden={checking} inert={checking} style={checking ? { display: 'none' } : undefined}>
           {session?.recovery ? <p>Escolha uma nova senha para voltar ao seu cantinho.</p> : (
             <Input label="E-mail" name="email" type="email" value={email} onChange={event => setEmail(event.target.value)} autoComplete="username" maxLength={254} required disabled={loading || busy} />
           )}
@@ -111,18 +142,22 @@ export function AccountPanel() {
         </form>
       )}
       {session && (
-        <div className="account-status">
+        <div className="account-status" hidden={checking} inert={checking}>
           {!session.recovery && <StatusBadge tone="success" text="Você está na sua conta" />}
+          {!session.recovery && <p><Link className="primary-link" href="/lojas">Minhas lojas</Link></p>}
+          {!session.recovery && <ProfilePanel key={`${session.userId}:${session.sessionId}`} />}
           <div className="account-actions">
             <Button variant="secondary" disabled={busy} onClick={() => void perform(async () => {
               await accountRequest('logout', 'POST', {});
+              notifySessionChanged();
+              sessionRef.current = null;
               setSession(null);
               setEmail('');
               setPassword('');
               setMessage('Você saiu da sua conta.');
             })}>Sair da conta</Button>
           </div>
-          {!session.recovery && <MfaPanel verified={session.assuranceLevel === 'aal2'} onVerified={refreshSession} />}
+          {!session.recovery && <MfaPanel key={`${session.userId}:${session.sessionId}`} verified={session.assuranceLevel === 'aal2'} onVerified={refreshSession} />}
         </div>
       )}
     </section>

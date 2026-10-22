@@ -56,7 +56,7 @@ Para desenvolver, execute `npm run web:dev` e abra
 [conta](http://127.0.0.1:4301/conta). Os e-mails chegam somente ao
 [Mailpit local](http://127.0.0.1:54324). Abra o link no mesmo navegador que
 iniciou o cadastro/recuperação, pois o callback exige PKCE e contexto assinado.
-O destino de convite é preservado, mas o domínio de convites pertence a T04.
+O destino de convite é preservado; [T04](stores-local.md) implementa seu domínio.
 
 ## Migrações e papéis
 
@@ -67,7 +67,8 @@ para `app` nem recrie os schemas internos de Auth/Storage.
 
 O runtime usa `meumimo_runtime`, sem superuser, criação de banco/papel ou
 bypass de RLS. Pode criar perfis verificados, sessões, buckets e auditoria;
-somente lê lojas, participações e grants. Não pode inserir AdminGrant nem
+T04 também permite criar lojas/participações/convites e atualizar somente suas
+colunas autorizadas. Grants permanecem somente leitura. Não pode inserir AdminGrant nem
 alterar a suspensão de segurança. O schema `app` fica fora da Data API e
 sem acesso para `anon`/`authenticated`. RLS restringe o papel de conexão;
 os filtros de pessoa/loja continuam na aplicação, porque Prisma não recebe
@@ -108,8 +109,9 @@ permanecem no ambiente de testes; não use dados pessoais nessa stack.
 Login permite 5 tentativas/minuto por conta e origem validada da aplicação;
 recuperação, 3/hora por destinatário. A origem não é um IP enviado pelo
 cliente. IP confiável/proxy, controles globais e retenção operacional serão
-reavaliados antes de publicar em T14. Paginação e demais limites D04 ainda
-dependem de decisão. O teto de 50 itens de uma consulta não aprova essa política.
+reavaliados antes de publicar em T14. Paginação 20/máximo 50, leitura 120/minuto
+e mutação 30/minuto por conta foram confirmados para T04. Upload e demais
+políticas D04 continuam pendentes.
 
 O Supabase local usa JWT de 5 minutos para testar renovação. Cookies são
 HttpOnly, SameSite=Lax e Secure quando a origem usa HTTPS. Recuperação exige

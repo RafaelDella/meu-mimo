@@ -9,6 +9,15 @@ export const artifactRoot = path.resolve(webRoot, '../.artifacts/t02-runtime');
 export const statePath = path.join(artifactRoot, 'integration.json');
 mkdirSync(artifactRoot, { recursive: true });
 
+export function taskResources(task = 't02') {
+  if (!['t02', 't04'].includes(task)) throw new Error('Use somente t02 ou t04.');
+  const directory = path.resolve(webRoot, `../.artifacts/${task}-runtime`);
+  return { task, directory, statePath: path.join(directory, 'integration.json'),
+    database: task === 't02' ? 'postgres' : 'meumimo_t04',
+    development: `meumimo_${task}_dev`, shadow: `meumimo_${task}_shadow`,
+    port: task === 't02' ? 4302 : 4310 };
+}
+
 export function dockerEnvironment() {
   const environment = { ...process.env };
   if (process.platform === 'win32') {
@@ -43,16 +52,20 @@ export function supabase(args) {
   });
 }
 
-export function readState() {
-  if (!existsSync(statePath)) throw new Error('Execute npm run local:prepare depois de iniciar a stack local.');
-  const state = JSON.parse(readFileSync(statePath, 'utf8'));
+export function readState(task = 't02') {
+  const resources = taskResources(task);
+  if (!existsSync(resources.statePath)) throw new Error('Execute local:prepare para a tarefa depois de iniciar a stack local.');
+  const state = JSON.parse(readFileSync(resources.statePath, 'utf8'));
   if (state.integration.T02_PROJECT_ID !== 'meumimo-t02' ||
-      state.runtime.APP_ORIGIN !== 'http://127.0.0.1:4302') throw new Error('Estado local inesperado.');
-  assertLocalDatabase(state.integration.T02_DATABASE_URL, 'postgres');
-  assertLocalDatabase(state.migration.integration, 'postgres');
-  assertLocalDatabase(state.migration.development, 'meumimo_t02_dev');
-  assertLocalDatabase(state.migration.shadow, 'meumimo_t02_shadow');
-  assertLocalDatabase(state.runtime.DATABASE_URL, 'postgres');
+      state.runtime.APP_ORIGIN !== `http://127.0.0.1:${resources.port}` ||
+      state.runtime.SUPABASE_URL !== 'http://127.0.0.1:54321' ||
+      state.integration.SUPABASE_URL !== state.runtime.SUPABASE_URL) throw new Error('Estado local inesperado.');
+  assertLocalDatabase(state.integration.T02_DATABASE_URL, resources.database);
+  assertLocalDatabase(state.migration.integration, resources.database);
+  assertLocalDatabase(state.migration.development, resources.development);
+  assertLocalDatabase(state.migration.shadow, resources.shadow);
+  assertLocalDatabase(state.runtime.DATABASE_URL, resources.database);
+  if (task === 't04') assertLocalDatabase(state.integration.T02_AUTH_DATABASE_URL, 'postgres');
   return state;
 }
 

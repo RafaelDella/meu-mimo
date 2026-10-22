@@ -8,6 +8,8 @@ import { BrowserSession, expectStatus } from './http-client.mjs';
 export async function createFixture(t) {
   const environment = integrationEnvironment();
   const database = new pg.Pool({ connectionString: environment.databaseURL, max: 2, connectionTimeoutMillis: 5000 });
+  const authDatabase = environment.authDatabaseURL === environment.databaseURL ? database :
+    new pg.Pool({ connectionString: environment.authDatabaseURL, max: 1, connectionTimeoutMillis: 5000 });
   const auth = createClient(environment.supabaseURL, environment.serviceRoleKey, {
     auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
   });
@@ -53,7 +55,7 @@ export async function createFixture(t) {
   async function cleanup() {
     try {
       if (emails.size) {
-        const result = await database.query('SELECT id FROM auth.users WHERE email = ANY($1::text[])', [[...emails]]);
+        const result = await authDatabase.query('SELECT id FROM auth.users WHERE email = ANY($1::text[])', [[...emails]]);
         for (const row of result.rows) userIds.add(row.id);
         assert.ok(process.env.AUTH_RATE_LIMIT_SECRET, 'A limpeza exige o segredo da stack de testes.');
         for (const email of emails) for (const kind of ['login', 'recovery']) {
@@ -63,6 +65,12 @@ export async function createFixture(t) {
         }
       }
       const profiles = [...userIds];
+      for (const profile of profiles) for (const kind of ['read', 'write']) {
+        rateKeys.add(createHmac('sha256', process.env.AUTH_RATE_LIMIT_SECRET)
+          .update('meumimo:t04:domain-rate:v1\0').update(kind).update('\0').update(profile).digest('hex'));
+      }
+      await database.query('DELETE FROM app."StoreAudit" WHERE "actorProfileId" = ANY($1::uuid[]) OR "storeId" = ANY($2::uuid[])', [profiles, [...storeIds]]);
+      await database.query('DELETE FROM app."Invitation" WHERE "createdByProfileId" = ANY($1::uuid[]) OR "acceptedByProfileId" = ANY($1::uuid[]) OR "storeId" = ANY($2::uuid[])', [profiles, [...storeIds]]);
       await database.query('DELETE FROM app."SecurityAudit" WHERE "actorProfileId" = ANY($1::uuid[])', [profiles]);
       await database.query('DELETE FROM app."AuthSession" WHERE "profileId" = ANY($1::uuid[])', [profiles]);
       await database.query('DELETE FROM app."AdminGrant" WHERE "profileId" = ANY($1::uuid[])', [profiles]);
@@ -77,6 +85,7 @@ export async function createFixture(t) {
       }
     } finally {
       await database.end();
+      if (authDatabase !== database) await authDatabase.end();
     }
   }
 
@@ -84,6 +93,6 @@ export async function createFixture(t) {
   await database.query('SELECT 1');
   return {
     environment, database, auth, client, createUser, login, createStore, addMembership, newEmail,
-    trackEmail: email => emails.add(email), trackUser: id => userIds.add(id), trackRateKey: key => rateKeys.add(key),
+    trackEmail: email => emails.add(email), trackUser: id => userIds.add(id), trackStore: id => storeIds.add(id), trackRateKey: key => rateKeys.add(key),
   };
 }

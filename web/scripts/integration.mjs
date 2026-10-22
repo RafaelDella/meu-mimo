@@ -3,10 +3,11 @@ import { createWriteStream } from 'node:fs';
 import net from 'node:net';
 import path from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
-import { artifactRoot, readState, webRoot } from './local-runtime.mjs';
+import { readState, taskResources, webRoot } from './local-runtime.mjs';
 import { bindLocalStack } from './bind-local-stack.mjs';
 
-const state = readState();
+const resources = taskResources(process.argv[2] ?? 't02');
+const state = readState(resources.task);
 await bindLocalStack();
 // Depois de religar o DB, o pool do Auth pode descartar uma conexão antiga.
 // Exigir duas leituras administrativas saudáveis antes de iniciar os casos.
@@ -25,10 +26,10 @@ while (Date.now() < authDeadline && healthyReads < 2) {
   if (healthyReads < 2) await delay(250);
 }
 if (healthyReads < 2) throw new Error('Auth não conseguiu consultar o banco local; integração não iniciada.');
-const port = 4302;
+const port = resources.port;
 await new Promise((resolve, reject) => {
   const probe = net.createServer();
-  probe.once('error', () => reject(new Error('A porta 4302 está ocupada; não reutilizaremos outro servidor.')));
+  probe.once('error', () => reject(new Error(`A porta ${port} está ocupada; não reutilizaremos outro servidor.`)));
   probe.listen(port, '127.0.0.1', () => probe.close(resolve));
 });
 
@@ -36,7 +37,7 @@ await new Promise((resolve, reject) => {
 const serverEnv = Object.fromEntries(Object.entries(process.env).filter(([key]) =>
   !/^(T02_|SUPABASE_|MIGRATION_|SHADOW_)/i.test(key)));
 Object.assign(serverEnv, state.runtime, { NODE_ENV: 'production' });
-const log = createWriteStream(path.join(artifactRoot, 'next-integration.log'), { mode: 0o600 });
+const log = createWriteStream(path.join(resources.directory, 'next-integration.log'), { mode: 0o600 });
 const server = spawn(process.execPath, [path.join(webRoot, 'node_modules/next/dist/bin/next'),
   'start', '--hostname', '127.0.0.1', '--port', String(port)], {
   cwd: webRoot, env: serverEnv, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'],

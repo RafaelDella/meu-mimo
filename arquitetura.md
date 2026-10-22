@@ -1,7 +1,7 @@
 # Meu Mimo — proposta técnica e decisões de dados
 
 Atualizado em 22 de outubro de 2026. Complementa `design.md` e `requisitos.md`.
-Registra decisões, propostas futuras e o escopo local implementado em T01–T03.
+Registra decisões, propostas futuras e o escopo local implementado em T01–T04.
 
 ## 1. Decisões e base da implementação
 
@@ -9,7 +9,7 @@ Registra decisões, propostas futuras e o escopo local implementado em T01–T03
 
 Interpretação adotada para “Prisma DB para migração”: **Prisma ORM e suas ferramentas de migração sobre PostgreSQL**.
 
-**D01 confirmada pelo idealizador em M0, em 22/10/2026:** Next.js/React/TypeScript em `web/`, PostgreSQL com Prisma e Supabase para Auth/Storage, com desenvolvimento e testes locais. Essa confirmação não contrata serviços nem autoriza publicação. **D02 confirmada em T02:** e-mail/senha com e-mail verificado, recuperação, retorno seguro ao convite e MFA/TOTP obrigatório para administração provisionada separadamente. Os limites D04 de autenticação e a preparação local foram autorizados; as demais decisões continuam pendentes.
+**D01 confirmada pelo idealizador em M0, em 22/10/2026:** Next.js/React/TypeScript em `web/`, PostgreSQL com Prisma e Supabase para Auth/Storage, com desenvolvimento e testes locais. Essa confirmação não contrata serviços nem autoriza publicação. **D02 confirmada em T02:** e-mail/senha com e-mail verificado, recuperação, retorno seguro ao convite e MFA/TOTP obrigatório para administração provisionada separadamente. A preparação local, D03 e os limites D04 de autenticação/T04 foram autorizados; as demais regras D04 e D05–D09 continuam propostas.
 
 | Camada | Seleção e estado | Responsabilidade |
 |---|---|---|
@@ -58,6 +58,29 @@ O ensaio `npm install --dry-run --ignore-scripts --no-audit --no-fund --package-
 Cada pacote npm terá seu lockfile e seus comandos. A raiz continuará atendendo a demonstração em 4173; a nova aplicação usará 4301. Lint, tipos e build executam em série no mesmo checkout. T02/T03 também ficam em série por padrão, pois portas e `distDir` distintos não isolam fontes, `next-env.d.ts` e arquivos incrementais. O plano concreto está em [M0 e fundação](docs/superpowers/plans/2026-10-22-m0-fundacao.md).
 
 Fontes: [registro npm](https://registry.npmjs.org/), [instalação do Next](https://nextjs.org/docs/app/getting-started/installation), [CLI e geração de tipos](https://nextjs.org/docs/app/api-reference/cli/next), [Prisma Migrate v7](https://www.prisma.io/docs/orm/v7/prisma-migrate/workflows/development-and-production), [Supabase com Prisma](https://supabase.com/docs/guides/database/prisma) e [Supabase local](https://supabase.com/docs/guides/local-development/cli/getting-started). Context7 foi consultado para Next, Prisma e Supabase; a documentação versionada do Prisma v7 prevalece sobre páginas genéricas que já descrevem outra linha.
+
+### 1.2. Lojas e convites em T04
+
+D03 e os limites D04 aplicáveis foram confirmados em 22/10/2026, conforme
+`requisitos.md`, seção 6.1. T04 acrescenta criação e edição de lojas, vínculo
+único por conta/loja, um responsável por loja, convite portador revogável com
+sete dias, perfil próprio e estados de pausa/encerramento. O domínio usa Prisma
+e credencial restrita; o Auth preserva a fundação T02. Os
+[comandos e recursos locais](docs/stores-local.md) separam os bancos de domínio,
+desenvolvimento, shadow e Auth.
+
+`StoreAudit` registra ações com autor e instante. Token de convite fica em hash;
+HMAC privado e chave de operação permitem recuperar a mesma URL após resposta
+perdida. Transações revalidam sessão/perfil e bloqueiam loja antes de vínculo e
+convite. Restrições únicas protegem papel e repetição; pausa/revogação/aceite
+concorrentes são serializados pelo mesmo bloqueio de loja. Rotação da chave e
+limites globais do endpoint público são preparação obrigatória antes de T14.
+
+`Membership.closedAt` preserva leitura histórica; `accessRevokedAt` continua
+negando acesso. Não existem registros/tickets/saldo neste pacote. T07–T10 devem
+marcar `Store.domainStartedAt` atomicamente na primeira operação, bloquear fuso e
+consultar pendências reais antes de encerrar; até essa integração o marcador
+impede encerramento por segurança. Não há contadores fictícios de pendências.
 
 ## 2. Organização da aplicação
 
@@ -110,15 +133,16 @@ Referências técnicas: [Prisma com Supabase](https://supabase.com/docs/guides/d
 
 ### 3.1. Fundação local de T02
 
-O schema privado `app` contém Profile, Store, Membership e AdminGrant; não
-modela os estados de negócio ainda dependentes de D03–D09. AuthSession
+O schema privado `app` iniciou com Profile, Store, Membership e AdminGrant;
+T04 acrescenta os estados de loja/participação, Invitation e StoreAudit. AuthSession
 mantém revogação/contexto restrito, AuthRateBucket persiste a janela atômica
 e SecurityAudit registra evento/ator/instante sem senha, token ou e-mail.
-As três migrações em `web/prisma/migrations/` incluem o SQL de permissões.
+As quatro migrações em `web/prisma/migrations/` incluem o SQL de permissões.
 Auth/Storage mantêm seus schemas gerenciados pelo Supabase.
 
 Runtime usa `meumimo_runtime`, sem superuser/bypass de RLS ou escrita em
-AdminGrant, Store e Membership. `anon`/`authenticated` não acessam `app`, que
+AdminGrant. T04 concede criação de loja/vínculo/convite e atualização restrita
+às colunas do domínio; papel e revogação de acesso não são alteráveis. `anon`/`authenticated` não acessam `app`, que
 também fica fora da Data API. RLS restringe o papel de conexão; identidade e
 escopo de loja continuam obrigatórios na API Prisma. O pool local usa no
 máximo 5 conexões, timeout de conexão 5 s e ociosidade 10 s.
@@ -141,8 +165,8 @@ implantação em ambiente real foi executada.
 
 ## 4. Modelo conceitual de dados
 
-A tabela descreve o modelo completo proposto. T02 implementa somente o
-subconjunto mínimo da seção 3.1; os demais modelos permanecem futuros.
+A tabela descreve o modelo completo proposto. T02/T04 implementam o
+subconjunto das seções 1.2 e 3.1; os demais modelos permanecem futuros.
 
 | Entidade | Dados e responsabilidade principais |
 |---|---|

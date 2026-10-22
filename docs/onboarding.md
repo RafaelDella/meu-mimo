@@ -76,9 +76,14 @@ T01 e as composições estáticas continuam sem exigir banco ou credenciais.
 Para cadastro, login, recuperação, MFA e APIs privadas, siga
 [identidade local](identity-local.md): engine Docker Linux, stack reservada,
 bootstrap e migrações Prisma. D02 e os limites de autenticação D04 foram
-confirmados pelo idealizador. As outras propostas continuam pendentes.
+confirmados pelo idealizador; D03 e os limites D04 aplicáveis a T04 também foram
+confirmados. As demais propostas continuam pendentes.
 `web:test:integration` executa HTTP contra os serviços reais, separado do
 check sem serviços; ausência de estado, serviço ou suíte é falha.
+
+Para lojas/participações/convites, siga [T04 local](stores-local.md).
+O domínio usa bancos separados da identidade e testes em 4310; o Auth continua
+na mesma stack local. Não execute os drivers de integração em paralelo.
 
 ## Conferir a interface de T03
 

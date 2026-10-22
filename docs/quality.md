@@ -81,6 +81,15 @@ depois, o refresh é realizado pelo provedor e seus cookies são conferidos.
 
 ## Aceite por mudança
 
+T04 acrescenta 22 testes HTTP reais (48 contando a regressão de identidade) e
+46 casos Chromium (74 no total, em 320/390). Cobrem criação/convite repetidos e
+concorrentes, dois participantes isolados, limites por conta, pausa/encerramento,
+cadastro/callback de convite e perfil próprio. UI inclui 503 → 429 → recuperação,
+foco após confirmar pausa/encerramento/revogação, respostas atrasadas, troca de
+conta por BroadcastChannel e ocultação durante revalidação. Os testes de UI usam
+respostas controladas; a identidade/persistência são comprovadas na suíte HTTP.
+Evidências, revisão e limites no [plano T04](superpowers/plans/2026-10-22-t04-lojas.md).
+
 Defina comportamento e falhas relevantes antes de implementar. Para corrigir
 um defeito, reproduza e prove a regressão quando viável. Não escreva testes que
 apenas repitam alterações triviais ou apague proteções para passar nos checks.

@@ -18,7 +18,10 @@ test('participante só lê sua relação; lojista lê as relações de sua próp
 
   const storeResponse = await ana.client.get(`/api/lojas/${store.id}`);
   expectStatus(storeResponse, 200);
-  assert.deepEqual(await storeResponse.json(), { id: store.id, name: store.name, role: 'PARTICIPANT' });
+  assert.deepEqual(await storeResponse.json(), {
+    id: store.id, name: store.name, role: 'PARTICIPANT', presentation: '', timezone: 'America/Sao_Paulo',
+    state: 'ACTIVE', membershipId: anaMembership.id, membershipClosedAt: null,
+  });
   const own = await ana.client.get(`/api/lojas/${store.id}/participacoes/${anaMembership.id}`);
   expectStatus(own, 200);
   const ownData = await own.json();
@@ -32,8 +35,8 @@ test('participante só lê sua relação; lojista lê as relações de sua próp
 
   const listing = await merchant.client.get(`/api/lojas/${store.id}/participacoes`);
   expectStatus(listing, 200);
-  const { memberships } = await listing.json();
-  assert.deepEqual(memberships.map(item => item.profileId).sort(), [merchant.id, ana.id, bia.id].sort());
+  const { items: memberships } = await listing.json();
+  assert.deepEqual(memberships.map(item => item.profileId).sort(), [ana.id, bia.id].sort());
   assert.ok(memberships.every(item => item.storeId === store.id && !('email' in item.profile)));
 });
 

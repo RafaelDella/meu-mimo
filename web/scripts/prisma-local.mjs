@@ -3,15 +3,17 @@ import path from 'node:path';
 import { readState, webRoot } from './local-runtime.mjs';
 
 const action = process.argv[2];
-const state = readState();
+const task = process.argv[3] ?? 't02';
+const state = readState(task);
 const commands = {
-  create: ['migrate', 'dev', '--create-only', '--name', 'identity_foundation'],
+  create: ['migrate', 'dev', '--create-only', '--name', task === 't02' ? 'identity_foundation' : 'stores_invitations'],
   development: ['migrate', 'deploy'],
   integration: ['migrate', 'deploy'],
   status: ['migrate', 'status'],
+  diff: ['migrate', 'diff', '--from-config-datasource', '--to-schema', 'prisma/schema.prisma', '--script'],
 };
-if (!Object.hasOwn(commands, action)) throw new Error('Use create, development, integration ou status.');
-const target = ['create', 'development'].includes(action) ? state.migration.development : state.migration.integration;
+if (!Object.hasOwn(commands, action)) throw new Error('Use create, development, integration, status ou diff.');
+const target = ['create', 'development', 'diff'].includes(action) ? state.migration.development : state.migration.integration;
 execFileSync(process.execPath, [path.join(webRoot, 'node_modules/prisma/build/index.js'), ...commands[action]], {
   cwd: webRoot, windowsHide: true, stdio: 'inherit', env: {
     ...process.env, MIGRATION_DATABASE_URL: target, SHADOW_DATABASE_URL: state.migration.shadow,

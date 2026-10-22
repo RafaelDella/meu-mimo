@@ -55,3 +55,7 @@ jobs:
         env:
           NEXT_TELEMETRY_DISABLED: '1'
       - run: npm run web:test:integration
+      - run: npm --prefix web run local:prepare:t04
+      - run: npm --prefix web run db:migrate:dev:t04
+      - run: npm --prefix web run db:migrate:integration:t04
+      - run: npm --prefix web run test:integration:t04

@@ -337,3 +337,22 @@ desenvolvimento de `web/` tem cinco avisos altos na cadeia braces/micromatch/
 fast-glob do preset ESLint Next. Não há correção compatível indicada no relatório;
 não foi aplicado downgrade forçado. Relatórios, estado local, mensagens e
 credenciais de teste ficam ignorados em `.artifacts/`/serviços locais.
+
+## Execução de T04
+
+D03, convites, limites D04 aplicáveis e complemento foram confirmados pelo
+idealizador. O Vibe Coding Toolkit orientou três escritores com arquivos
+exclusivos (backend, UI e testes), integração serial e painel independente
+somente leitura de segurança e UI. Revisão focal conferiu as correções.
+Versões e dependências de T02 foram preservadas; nenhuma dependência nova.
+
+Context7 e a documentação oficial v7 do Prisma foram consultados; Context7
+retornou API de outra geração, então os tipos instalados e a documentação
+versionada prevaleceram. Não houve envio de código privado/segredos.
+
+Conferidos check 7+9, 26 HTTP T02, 48 HTTP T04, 74 Chromium e migração
+vazia/evolutiva com dados preservados, unicidade e permissões efetivas.
+Recursos, comandos, detalhes de callback e limitações em [T04 local](stores-local.md)
+e [registro de implementação](superpowers/plans/2026-10-22-t04-lojas.md).
+O workflow agora executa T04 após T02; execução remota não foi observada.
+As referências históricas de T02 acima descrevem o estado antes de T04.

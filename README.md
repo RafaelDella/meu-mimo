@@ -36,6 +36,9 @@ A [nova interface](http://127.0.0.1:4301/visual-check) reúne Lojinha, detalhe d
 mimo e resumo do lojista, com componentes acessíveis e dados fictícios.
 T02 acrescenta [conta](http://127.0.0.1:4301/conta) e APIs de identidade e
 autorização, dependentes da stack local descrita no [onboarding](docs/onboarding.md).
+T04 acrescenta [Minhas lojas](http://127.0.0.1:4301/lojas), criação, pessoas,
+configurações, convites e edição do nome da conta. Prepare os bancos conforme
+[lojas locais](docs/stores-local.md).
 O servidor da prévia em 4173 continua independente.
 
 Para verificar o navegador depois de `npm run check`:
@@ -54,9 +57,9 @@ Se a porta estiver ocupada, encerre somente seu servidor antes do teste.
 O [protótipo](prototype/README.md) oferece atividades diárias, pontos, catálogo,
 resgate de tickets, extrato e bilhete, com dados de demonstração salvos no navegador.
 `web/` fornece a fundação Next.js/React/TypeScript, as composições estáticas de
-T03 e a identidade local de T02 com Supabase Auth/PostgreSQL/Prisma. A prévia
-visual não salva dados nem desconta pontos. Convites, atividades, pontos,
-sincronização e notificações da aplicação completa permanecem no roadmap.
+T03, identidade local T02 e lojas/participações/convites T04 com Supabase
+Auth/PostgreSQL/Prisma. A prévia visual não salva dados nem desconta pontos.
+Atividades, pontos, mídia, sincronização e notificações permanecem no roadmap.
 
 A aplicação completa está descrita nos documentos abaixo. A adoção do toolkit
 prepara o desenvolvimento e mantém o estágio atual explícito.

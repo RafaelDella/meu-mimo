@@ -518,7 +518,7 @@ Projetar estados de álbum vazio, envio por arquivo, validação/processamento, 
 ### 16.2. Convites
 
 - O link serve para entrar na loja após autenticação e aceite; não transforma a loja em conteúdo público.
-- Proposta inicial: um convite por pessoa, aceito uma única vez, com validade de sete dias. O lojista pode gerar novos convites para quantas pessoas desejar.
+- Confirmado em D03: link revogável, válido por sete dias e consumido pelo primeiro aceite autenticado, sem vínculo prévio a e-mail. O lojista pode gerar novos convites para quantas pessoas desejar. Repetir o aceite não duplica a participação.
 - Antes do aceite, mostrar quem está convidando e permitir trocar a conta conectada.
 - Prever convite expirado, revogado, inválido, já aceito e convite para loja encerrada.
 - Se a pessoa já participa, oferecer “Abrir loja” sem duplicar participação. Se for o próprio lojista, oferecer “Gerenciar loja”.
@@ -526,11 +526,13 @@ Projetar estados de álbum vazio, envio por arquivo, validação/processamento, 
 
 ### 16.3. Encerramento sem apagar pendências
 
-Proposta para o MVP:
+Regras confirmadas em D03:
 
-- **Pausar loja:** impedir novos registros e resgates; manter consulta ao histórico e tratamento dos tickets já emitidos.
+- **Pausar loja:** impedir gerar/aceitar convites, novos registros e resgates; manter consulta ao histórico e tratamento dos tickets já emitidos. O responsável pode retomar a loja.
 - **Encerrar participação:** interromper novos ganhos e resgates naquela relação; preservar consulta privada a histórico e tickets e a conversa necessária para cumprir pendências.
 - **Encerrar loja:** sair das listas ativas e interromper novas participações e ações de ganho/resgate; preservar histórico e realização/cancelamento dos tickets existentes.
+- Resolver registros em análise/contestação antes de encerrar loja ou participação. Convite não reabre loja ou participação encerrada em T04.
+- T04 ainda não tem registros/tickets: não mostrar contagens ou saldos inventados. O primeiro registro/ticket deve marcar o início do domínio e bloquear mudança de fuso; encerramento depende da consulta real de pendências em T07–T10.
 - Antes dessas ações, mostrar quantidade de pendências, saldo e consequência. Não apresentar “Excluir” para uma ação que apenas arquiva ou encerra.
 - Exclusão de conta/dados exige fluxo próprio, separado dessas ações. Prever seu acesso nas configurações, com tratamento específico a definir antes de disponibilizá-lo.
 
@@ -704,7 +706,7 @@ Referências consultadas: descrição anexada pelo idealizador, interface public
 | Uma conclusão por dia em São Paulo | Tratar como configuração da demonstração; na aplicação, frequência e fuso pertencem à loja/atividade |
 | Tickets “Carinho reservado” | Manter linguagem afetiva como apresentação de “Aguardando combinar”; acompanhar combinado, realização e cancelamento |
 | Contador de resgates | Na navegação, contar tickets ainda a realizar; manter total histórico dentro de Meus mimos |
-| 240 pontos iniciais | São dados de demonstração. Proposta: participação real começa com zero; qualquer bônus futuro exige uma movimentação explícita |
+| 240 pontos iniciais | São dados de demonstração. Confirmado: participação real começa com zero; qualquer bônus futuro exige uma movimentação explícita |
 | Dados salvos no navegador | Adequados à demonstração; na aplicação, banco e servidor são a fonte dos pontos, vínculos e tickets |
 | Reiniciar demonstração | Restrito à demonstração; não vira ação de apagar saldo/histórico real |
 | Moldura de telefone no desktop | Preservar para apresentação; a aplicação final ganha composição responsiva própria |

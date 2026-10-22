@@ -16,7 +16,7 @@ const definitions = [
   { service: 'inbucket', port: '8025/tcp', hostPort: '54324', files: [] },
 ];
 
-function localSocket() {
+export function localSocket() {
   const env = dockerEnvironment();
   const engine = process.platform === 'win32' ? 'docker.exe' : 'docker';
   const run = args => execFileSync(engine, args, {
@@ -41,7 +41,7 @@ function localSocket() {
   throw new Error('O bind de T02 aceita somente um pipe ou socket Docker local.');
 }
 
-function dockerApi(socketPath) {
+export function dockerApi(socketPath) {
   let prefix = '';
   async function request(method, route, { body, archive = false, missing = false } = {}) {
     const payload = body === undefined ? undefined :

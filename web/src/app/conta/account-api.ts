@@ -56,3 +56,12 @@ export function accountSession(value: Record<string, unknown>): AccountSession {
 export function friendlyError(error: unknown) {
   return error instanceof AccountRequestError ? error.message : 'Não foi possível continuar agora. Tente novamente.';
 }
+
+export function notifySessionChanged() {
+  window.dispatchEvent(new Event('meumimo:session-changed'));
+  if (typeof BroadcastChannel !== 'undefined') {
+    const channel = new BroadcastChannel('meumimo-session');
+    channel.postMessage('changed');
+    channel.close();
+  }
+}

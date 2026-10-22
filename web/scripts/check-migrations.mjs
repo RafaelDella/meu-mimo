@@ -46,7 +46,11 @@ try {
   database = new pg.Client({ connectionString: target.toString() });
   await database.connect();
   const id = randomUUID();
+  const storeId = randomUUID();
+  const membershipId = randomUUID();
   await database.query('INSERT INTO app."Profile" (id, "displayName") VALUES ($1, $2)', [id, 'Pessoa fictícia']);
+  await database.query('INSERT INTO app."Store" (id, "createdByProfileId", name) VALUES ($1, $2, $3)', [storeId, id, 'Lojinha anterior']);
+  await database.query('INSERT INTO app."Membership" (id, "storeId", "profileId", role) VALUES ($1, $2, $3, $4)', [membershipId, storeId, id, 'MERCHANT']);
   for (const name of names.slice(1)) cpSync(path.join(source, name), path.join(migrations, name), { recursive: true });
   deploy();
   const preserved = await database.query('SELECT "displayName" FROM app."Profile" WHERE id = $1', [id]);
@@ -54,7 +58,17 @@ try {
   const applied = await database.query('SELECT count(*)::int AS count FROM app._prisma_migrations WHERE finished_at IS NOT NULL');
   assert.equal(applied.rows[0].count, names.length);
   const policies = await database.query("SELECT count(*)::int AS count FROM pg_tables WHERE schemaname = 'app' AND rowsecurity = true");
-  assert.equal(policies.rows[0].count, 7);
+  assert.equal(policies.rows[0].count, 9);
+  const priorStore = await database.query('SELECT state, timezone, name FROM app."Store" WHERE id = $1', [storeId]);
+  assert.deepEqual(priorStore.rows[0], { state: 'ACTIVE', timezone: 'America/Sao_Paulo', name: 'Lojinha anterior' });
+  const priorMembership = await database.query('SELECT "closedAt", role FROM app."Membership" WHERE id = $1', [membershipId]);
+  assert.deepEqual(priorMembership.rows[0], { closedAt: null, role: 'MERCHANT' });
+  const secondProfile = randomUUID();
+  await database.query('INSERT INTO app."Profile" (id) VALUES ($1)', [secondProfile]);
+  await assert.rejects(database.query('INSERT INTO app."Membership" (id, "storeId", "profileId", role) VALUES ($1, $2, $3, $4)',
+    [randomUUID(), storeId, secondProfile, 'MERCHANT']), { code: '23505' });
+  await assert.rejects(database.query('INSERT INTO app."Membership" (id, "storeId", "profileId", role) VALUES ($1, $2, $3, $4)',
+    [randomUUID(), storeId, id, 'PARTICIPANT']), { code: '23505' });
   const flags = await database.query("SELECT rolsuper, rolcreatedb, rolcreaterole, rolbypassrls FROM pg_roles WHERE rolname = 'meumimo_runtime'");
   assert.ok(Object.values(flags.rows[0]).every(value => value === false));
   for (const role of ['anon', 'authenticated']) {
@@ -63,11 +77,27 @@ try {
       await database.query(`SET LOCAL ROLE ${role}`);
       await assert.rejects(database.query('SELECT * FROM app."Profile"'), { code: '42501' });
     } finally { await database.query('ROLLBACK'); }
+    for (const table of ['Invitation', 'StoreAudit']) {
+      await database.query('BEGIN');
+      try {
+        await database.query(`SET LOCAL ROLE ${role}`);
+        await assert.rejects(database.query(`SELECT * FROM app."${table}"`), { code: '42501' });
+      } finally { await database.query('ROLLBACK'); }
+    }
   }
   const runtimeURL = new URL(state.runtime.DATABASE_URL);
   runtimeURL.pathname = `/${databaseName}`;
   runtime = new pg.Client({ connectionString: runtimeURL.toString() });
   await runtime.connect();
+  await runtime.query('UPDATE app."Profile" SET "displayName" = $1 WHERE id = $2', ['Nome atualizado', id]);
+  const invitationId = randomUUID();
+  await runtime.query('INSERT INTO app."Invitation" (id, "storeId", "createdByProfileId", "tokenHash", "expiresAt") VALUES ($1, $2, $3, $4, now() + interval \'7 days\')',
+    [invitationId, storeId, id, 'a'.repeat(64)]);
+  assert.equal((await runtime.query('SELECT id FROM app."Invitation" WHERE id = $1', [invitationId])).rowCount, 1);
+  await runtime.query('UPDATE app."Invitation" SET "revokedAt" = now() WHERE id = $1', [invitationId]);
+  await assert.rejects(runtime.query('UPDATE app."Invitation" SET "tokenHash" = $1 WHERE id = $2', ['b'.repeat(64), invitationId]), { code: '42501' });
+  await assert.rejects(runtime.query('DELETE FROM app."Invitation" WHERE id = $1', [invitationId]), { code: '42501' });
+  await assert.rejects(runtime.query('UPDATE app."Membership" SET role = $1 WHERE id = $2', ['PARTICIPANT', membershipId]), { code: '42501' });
   assert.equal((await runtime.query('SELECT id FROM app."Profile" WHERE id = $1', [id])).rowCount, 1);
   await assert.rejects(runtime.query('INSERT INTO app."AdminGrant" ("profileId") VALUES ($1)', [id]), { code: '42501' });
   await assert.rejects(runtime.query('UPDATE app."Profile" SET "suspendedAt" = now() WHERE id = $1', [id]), { code: '42501' });

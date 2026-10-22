@@ -83,7 +83,7 @@ T00 organiza estas decisões com o idealizador; as que não forem resolvidas blo
 | --- | --- | --- |
 | D01 · confirmada em M0 | Next.js/React/TypeScript em `web/`, PostgreSQL/Prisma e Supabase Auth/Storage para desenvolvimento/teste local. Versões e escolhas técnicas registradas em arquitetura §1.1 após consulta a fontes oficiais; ambiente local ainda precisa ser comprovado. Nenhum custo/publicação autorizado. | T01–T02 |
 | D02 | Login, recuperação/verificação da conta, retorno seguro ao convite e proteção/provisionamento administrativo sem autocadastro. | T02 |
-| D03 | Catálogo/atividades compartilhados ou exclusivos; saldo inicial; validade/uso/revogação de convite; efeitos de pausa/encerramento. | T04, T07, T09 |
+| D03 · confirmada em T04 | Um responsável, catálogo/atividades compartilhados, saldo zero, link portador de uso único por sete dias e efeitos de pausa/encerramento em requisitos §6.1. | T04, T07, T09 |
 | D04 | Início da semana, retroatividade, estados que ocupam ocorrência, alteração de fuso e limites técnicos de texto/paginação/requisições. Limites de autenticação precisam de decisão antes do respectivo fluxo. | T02 para autenticação; T04–T12 conforme o recurso |
 | D05 | Contestação após gasto, saldo negativo por estorno, reabertura e recomposição; preservar tickets emitidos conforme a regra aprovada. | T08 |
 | D06 | Estoque no cancelamento, pedido recusado, disputa sobre realização e procedimento de suporte no piloto. | T09–T10 |
@@ -146,10 +146,14 @@ Os caminhos abaixo são alvos propostos, relativos à raiz, e incluem testes do 
 **Responsável:** fluxo de conta/loja. **Depende de:** T02, T03 e D03–D04 aplicáveis.
 **Arquivos:** `web/src/server/{stores,memberships,invitations}/**`, `web/src/app/{conta,convites,lojas}/**`, `web/src/components/{navigation,stores}/**`, `web/tests/{integration,e2e}/stores/**`, `web/prisma/**` se necessário. **Recursos:** padrão T04; identidades de teste.
 
-- [ ] Entregar C01–C03/C05, L01/L09–L11 e navegação por papel; uma conta cria e participa de várias lojas com busca/paginação.
-- [ ] Aceitar convite preservando destino; tratar inválido, expirado, revogado, aceito, próprio lojista e participante já vinculado sem duplicação.
-- [ ] Aplicar pausa/encerramento desde os serviços, preservando consulta e tratamento de pendências conforme contrato; limpar/isolar cache, rascunhos e preferências ao trocar conta/loja.
-- [ ] Verificar conta com uma loja própria e duas participações; dois participantes da mesma loja; convite aberto via mensageiro; logout/login no mesmo aparelho sem dados anteriores.
+- [x] Entregar base C01–C03/C05, L01/L09–L11 e navegação por papel; múltiplas lojas com busca/paginação. Mídia em T06 e conteúdo completo da lojinha em T12.
+- [x] Aceitar convite preservando destino; tratar inválido, expirado, revogado, aceito, próprio lojista e participante já vinculado sem duplicação.
+- [x] Aplicar pausa/encerramento desde os serviços e preservar consulta. T07–T10 integram análise/tickets reais; o marcador bloqueia encerramento até essa integração. Isolar estado de conta/loja.
+- [x] Provar por HTTP conta com loja própria e duas participações e privacidade entre participantes. Conferir logout/troca de conta na UI controlada.
+- [ ] Conferir convite aberto via mensageiro em Android/iPhone reais no aceite móvel T14. Em T04, provado retorno HTTP após cadastro/confirmação/login, sem aceite automático.
+
+Implementação e evidências no [plano T04](2026-10-22-t04-lojas.md);
+preparação em [lojas locais](../../stores-local.md). Nenhum serviço publicado.
 
 ### T05 · Conversas e notificações persistidas
 

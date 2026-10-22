@@ -51,7 +51,7 @@ Decisões adicionais confirmadas: adotar **Prisma para acesso e migrações de e
 
 Os 240 pontos, atividades de 30/20/15 pontos e preços de 120/300/180/450 pontos são exemplos da demonstração. Eles não fixam a economia das lojas reais.
 
-Proposta inicial: nova participação começa com saldo zero. Se houver bônus de boas-vindas no futuro, ele precisa ter regra explícita, autor/origem e movimento no extrato. Nunca iniciar contas reais com saldo vindo do estado de demonstração do navegador.
+Confirmado em D03: nova participação começa com saldo zero. Se houver bônus de boas-vindas no futuro, ele precisa ter regra explícita, autor/origem e movimento no extrato. Nunca iniciar contas reais com saldo vindo do estado de demonstração do navegador.
 
 Somente o servidor confirma créditos, débitos, saldo e estoque. Preferências visuais podem ficar no navegador; pontos e tickets não dependem da integridade de `localStorage`.
 
@@ -159,11 +159,11 @@ Referências das metas e critérios de qualidade: [Core Web Vitals](https://web.
 
 ## 6. Decisões ainda necessárias
 
-Estas questões não foram confirmadas pelo idealizador; os documentos distinguem propostas de decisões aceitas.
+Este levantamento de M0 é atualizado pelo registro abaixo; decisões confirmadas e propostas restantes têm estados distintos.
 
-1. Método de autenticação e recuperação, verificação da conta e proteção adicional da administração.
-2. Atividades e mimos compartilhados para toda a loja ou possibilidade de ofertas exclusivas por participante.
-3. Política de frequência, início da semana, retroatividade e alteração de fuso.
+1. Acesso, recuperação/verificação e proteção administrativa: confirmados em D02.
+2. Atividades/mimos compartilhados para toda a loja: confirmados em D03; ofertas exclusivas não entram neste MVP.
+3. Frequência, início da semana e retroatividade: pendentes. Mudança de fuso antes do primeiro registro/ticket: confirmada em D04.
 4. Confirmação das regras de saldo negativo e tratamento de contestação após resgate.
 5. Regras de estoque quando um resgate é cancelado, especialmente se o mimo já tiver sido preparado.
 6. Limites e formatos de fotos, prazo de retenção e política para registros anulados e relações encerradas.
@@ -180,17 +180,17 @@ Não é necessário transformar todas essas decisões em telas novas. Muitas def
 
 Em 22/10/2026, o idealizador confirmou D01: Next.js/React/TypeScript em `web/`, PostgreSQL com Prisma e Supabase para Auth/Storage, desenvolvimento e testes locais, sem contratação ou publicação. As seleções de versões e os limites da verificação estão em `arquitetura.md`, seção 1.1.
 
-As recomendações abaixo foram preparadas pelo orquestrador com análise independente de produto. **D02 foi confirmada pelo idealizador em 22/10/2026: e-mail/senha com verificação, recuperação, retorno seguro ao convite e administração separada com MFA/TOTP obrigatório. Os limites de autenticação D04 também foram confirmados. As demais propostas D03–D09 aguardam decisão.** Registrar uma pendência com sua dependência atende M0; não autoriza implementar a política por suposição. O runtime local de T02 foi preparado após autorização do idealizador.
+As recomendações abaixo foram preparadas pelo orquestrador com análise independente de produto. **D02, D03 e os limites D04 de autenticação e T04 foram confirmados pelo idealizador em 22/10/2026.** As demais regras D04 e D05–D09 continuam propostas. Registrar uma pendência com sua dependência atende M0; não autoriza implementar a política por suposição. O runtime local foi preparado após autorização do idealizador.
 
 | Decisão | Proposta concreta para revisão | Responsável pela decisão e tarefa dependente |
 |---|---|---|
 | D02 · acesso | Confirmada em 22/10/2026: e-mail/senha com e-mail verificado, recuperação de senha e retorno a caminho interno validado do convite. Administração provisionada fora do cadastro, com papel verificado no servidor e MFA/TOTP obrigatório para acesso administrativo. | Idealizador; implementação local em T02; evidências no plano da fundação |
-| D03 · loja e convite | Um responsável; lojista não pontua na própria loja; atividades/catálogo compartilhados; saldo inicial zero; convite revogável, uso único e validade de sete dias, com aceite autenticado/idempotente. Pausa impede novos convites, registros e resgates, permitindo resolver análises anteriores. | Idealizador; T04, T07, T09 |
-| D03 · encerramento | Exigir resolver registros em análise/contestação antes de encerrar loja ou participação. Tickets emitidos não impedem encerramento e continuam acessíveis para realização/cancelamento. Essa resolução de análises pendentes é uma proposta adicional à seção 16.3 do design. | Idealizador; T04 e T10 |
+| D03 · loja e convite | Confirmado: um responsável; lojista não pontua na própria loja; atividades/catálogo compartilhados; saldo inicial zero. Link revogável, uso único e sete dias, consumido pelo primeiro aceite autenticado/idempotente, sem vínculo prévio a e-mail. Participante existente abre a loja sem duplicação; proprietário acessa gestão. Pausa impede gerar/aceitar convites, registros e resgates e pode ser retomada. | Idealizador; T04, T07, T09 |
+| D03 · encerramento | Confirmado: resolver registros em análise/contestação antes de encerrar loja ou participação. Tickets emitidos não impedem encerramento e continuam acessíveis para realização/cancelamento. Loja/participação encerrada não reabre por convite em T04. | Idealizador; T04 e T07–T10 |
 | D04 · períodos | Semana de segunda-feira 00h até a segunda seguinte no fuso da loja; sem retroatividade no MVP. Única = uma ocorrência por participação; diária = uma por data local; semanal = até N no período, com N inteiro entre 1 e 100 e possibilidade de vários registros no mesmo dia. | Idealizador; T07–T08 |
-| D04 · ocorrência/fuso | Envio recebido ocupa a ocorrência, inclusive se contestado/anulado; complemento e reabertura usam o mesmo registro. Alterar fuso somente antes do primeiro registro/ticket; depois, bloquear mudança no MVP. | Idealizador; configuração de T04 e recorrência de T07 |
-| D04 · limites | Nomes/títulos: 80 caracteres; descrições: 1.000; apresentação: 280; bilhete: 2.000; comentários/motivos: 500. Pontos e custos inteiros de 1 a 1.000.000. Paginação padrão 20, máximo 50, ordenação estável. | Idealizador; T04–T12 conforme recurso |
-| D04 · requisições | Autenticação confirmada em 22/10/2026: recuperação 3 pedidos/hora/destinatário e login 5 tentativas/minuto/combinação conta+origem, com respostas neutras e espera explícita, sujeitos à validação técnica. Leitura 120/minuto, mutação 30/minuto e autorização de upload 20/minuto continuam propostas. | Idealizador; limites de autenticação liberados para T02; demais limites pendentes em T04/T06 |
+| D04 · ocorrência/fuso | Confirmado para T04: alterar fuso somente antes do primeiro registro/ticket; depois, bloquear no MVP. Proposta para T07: envio recebido ocupa ocorrência, inclusive contestado/anulado; complemento/reabertura usam o mesmo registro. | Idealizador; configuração T04 e recorrência T07 |
+| D04 · limites | Confirmados: nomes até 80 caracteres, apresentação 280, descrições 1.000, paginação padrão 20/máximo 50 e ordenação estável. Propostos: bilhete 2.000, comentários/motivos 500, pontos/custos inteiros de 1 a 1.000.000. | Idealizador; T04–T12 conforme recurso |
+| D04 · requisições | Confirmados: recuperação 3 pedidos/hora/destinatário e login 5 tentativas/minuto/conta+origem; T04 leitura 120/minuto e mutação 30/minuto por conta, com espera explícita. Autorização de upload 20/minuto continua proposta para T06. | Idealizador; T02/T04 liberados; upload pendente T06 |
 | D05 · correções | Contestação mantém crédito existente. Anulação estorna uma vez, admite saldo negativo, preserva tickets e impede novos resgates sem saldo suficiente. Manter aprovação não credita novamente; reabertura recompõe somente o crédito da ocasião. | Idealizador; T08 |
 | D06 · tickets/estoque | Decrementar estoque na emissão. Cancelamento antes da realização devolve pontos uma vez; reposição de item limitado exige escolha explícita do lojista, desligada por padrão. Pedido em análise impede realizar; recusa motivada restaura estado anterior. Disputa após realização usa procedimento operacional a definir para o piloto. | Idealizador; T09–T10 e procedimento em T14 |
 | D07 · mídia | Uma foto opcional por registro; álbum de até 20 itens, até 10 por lote. Foto de até 10 MB, JPEG/PNG/WebP; HEIC/HEIF somente se processamento comprovado. Versão de entrega até 2.048 px e miniatura de 480 px, com orientação correta e localização removida. | Idealizador e prova técnica; T06/T11 |

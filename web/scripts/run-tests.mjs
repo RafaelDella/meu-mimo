@@ -9,6 +9,7 @@ if (!['unit', 'integration'].includes(mode) || process.argv.length > 3) {
   throw new Error('Modo de testes inválido: use unit ou integration.');
 }
 const excluded = new Set(['e2e', 'fixtures', 'integration']);
+if (mode === 'integration' && process.env.T02_TASK !== 't04') excluded.add('stores');
 const root = mode === 'integration' ? path.join(testsRoot, 'integration') : testsRoot;
 if (mode === 'integration') {
   try { await access(root); } catch { throw new Error('Nenhuma suíte de integração implementada.'); }

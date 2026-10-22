@@ -18,6 +18,14 @@ enum MembershipRole {
   @@schema("app")
 }
 
+enum StoreState {
+  ACTIVE
+  PAUSED
+  CLOSED
+
+  @@schema("app")
+}
+
 model Profile {
   id             String          @id @db.Uuid
   displayName    String?
@@ -28,6 +36,9 @@ model Profile {
   adminGrant     AdminGrant?
   authSessions   AuthSession[]
   securityAudits SecurityAudit[]
+  createdInvitations Invitation[] @relation("InvitationCreator")
+  acceptedInvitations Invitation[] @relation("InvitationAcceptor")
+  storeAudits StoreAudit[]
 
   @@schema("app")
 }
@@ -37,8 +48,18 @@ model Store {
   createdByProfileId String       @db.Uuid
   name               String?
   createdAt          DateTime     @default(now()) @db.Timestamptz(6)
+  presentation       String       @default("")
+  timezone           String       @default("America/Sao_Paulo")
+  state              StoreState   @default(ACTIVE)
+  pausedAt           DateTime?    @db.Timestamptz(6)
+  closedAt           DateTime?    @db.Timestamptz(6)
+  domainStartedAt    DateTime?    @db.Timestamptz(6)
+  operationId        String?      @unique @db.Uuid
+  creationDigest     String?
   createdBy          Profile      @relation(fields: [createdByProfileId], references: [id], onDelete: Restrict)
   memberships        Membership[]
+  invitations        Invitation[]
+  audits             StoreAudit[]
 
   @@index([createdByProfileId])
   @@schema("app")
@@ -50,13 +71,49 @@ model Membership {
   profileId       String         @db.Uuid
   role            MembershipRole
   accessRevokedAt DateTime?      @db.Timestamptz(6)
+  closedAt        DateTime?      @db.Timestamptz(6)
   createdAt       DateTime       @default(now()) @db.Timestamptz(6)
   store           Store          @relation(fields: [storeId], references: [id], onDelete: Restrict)
   profile         Profile        @relation(fields: [profileId], references: [id], onDelete: Restrict)
+  acceptedInvitations Invitation[]
 
-  @@unique([storeId, profileId, role])
+  @@unique([storeId, profileId])
   @@index([profileId, accessRevokedAt])
   @@index([storeId, accessRevokedAt])
+  @@schema("app")
+}
+
+model Invitation {
+  id                   String @id @db.Uuid
+  storeId              String @db.Uuid
+  createdByProfileId   String @db.Uuid
+  tokenHash            String @unique
+  createdAt            DateTime @default(now()) @db.Timestamptz(6)
+  expiresAt            DateTime @db.Timestamptz(6)
+  revokedAt            DateTime? @db.Timestamptz(6)
+  acceptedAt           DateTime? @db.Timestamptz(6)
+  acceptedByProfileId  String? @db.Uuid
+  acceptedMembershipId String? @db.Uuid
+  store                Store @relation(fields: [storeId], references: [id], onDelete: Restrict)
+  creator              Profile @relation("InvitationCreator", fields: [createdByProfileId], references: [id], onDelete: Restrict)
+  acceptor             Profile? @relation("InvitationAcceptor", fields: [acceptedByProfileId], references: [id], onDelete: Restrict)
+  acceptedMembership   Membership? @relation(fields: [acceptedMembershipId], references: [id], onDelete: Restrict)
+
+  @@index([storeId, createdAt, id])
+  @@schema("app")
+}
+
+model StoreAudit {
+  id             String @id @default(uuid()) @db.Uuid
+  storeId        String @db.Uuid
+  actorProfileId String @db.Uuid
+  action         String
+  targetId       String? @db.Uuid
+  createdAt      DateTime @default(now()) @db.Timestamptz(6)
+  store          Store @relation(fields: [storeId], references: [id], onDelete: Restrict)
+  actor          Profile @relation(fields: [actorProfileId], references: [id], onDelete: Restrict)
+
+  @@index([storeId, createdAt, id])
   @@schema("app")
 }
 
