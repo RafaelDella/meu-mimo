@@ -17,8 +17,20 @@ export async function expireMediaBatch(options: { limit?: number } = {}): Promis
   const result = { orphaned: 0, expired: 0 };
   for (let index = 0, limit = batchLimit(options.limit); index < limit; index++) {
     const kind = await getDb().$transaction(async tx => {
+      // A manutenção concorre com publicação/encerramento sem inverter Store→coleção→asset.
+      const stores = await tx.$queryRaw<{ id: string }[]>`
+        SELECT s.id FROM app."Store" s WHERE EXISTS (
+          SELECT 1 FROM app."MediaCollection" c JOIN app."MediaAsset" a ON a."collectionId"=c.id
+          WHERE c."storeId"=s.id AND a."removedAt" IS NULL
+          AND (a."leaseUntil" IS NULL OR a."leaseUntil" <= clock_timestamp()) AND (
+            (a."publishedAt" IS NULL AND a."lastActivityAt" <= clock_timestamp()-interval '24 hours') OR
+            (a."publishedAt" IS NOT NULL AND NOT c."retentionHold" AND (
+              (c.purpose='EVIDENCE' AND a."publishedAt" <= clock_timestamp()-interval '180 days') OR
+              (c.purpose='MEMORY' AND c."retentionUntil" <= clock_timestamp())))))
+        ORDER BY s.id FOR UPDATE OF s SKIP LOCKED LIMIT 1`;
+      if (!stores.length) return null;
       const collections = await tx.$queryRaw<{ id: string }[]>`
-        SELECT c.id FROM app."MediaCollection" c WHERE EXISTS (
+        SELECT c.id FROM app."MediaCollection" c WHERE c."storeId"=${stores[0].id}::uuid AND EXISTS (
           SELECT 1 FROM app."MediaAsset" a WHERE a."collectionId"=c.id AND a."removedAt" IS NULL
           AND (a."leaseUntil" IS NULL OR a."leaseUntil" <= clock_timestamp()) AND (
             (a."publishedAt" IS NULL AND a."lastActivityAt" <= clock_timestamp()-interval '24 hours') OR

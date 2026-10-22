@@ -3,6 +3,7 @@ import type { Redemption, RedemptionEvent } from '../../generated/prisma/client.
 import type { TicketEventPage, TicketTransitionBody, TicketTransitionLookup, TicketTransitionMutation } from '../../contracts/redemptions.ts';
 import type { Identity } from '../auth/types.ts';
 import { AppError } from '../errors.ts';
+import { syncAlbumRetention } from '../albums/retention.ts';
 import { enqueueRedemptionUpdated } from '../outbox/events.ts';
 import { refundRedemption } from '../points/ledger.ts';
 import { consumeStoreLimit } from '../stores/limits.ts';
@@ -79,6 +80,7 @@ export async function transitionTicket(identity: Identity, storeId: string, tick
     if (restocked) await scope.tx.reward.update({ where: { id: ticket.rewardId }, data: {
       stock: stockAfter, stockRevision: { increment: 1 },
     } });
+    if (input.action === 'FULFILL' || input.action === 'CANCEL') await syncAlbumRetention(scope, { ticketId: ticket.id });
     await enqueueRedemptionUpdated(scope.tx, event.id);
     return transitionResult(scope, updated, event);
   });

@@ -601,3 +601,41 @@ Comandos e contratos em [tickets locais](tickets-local.md).
 O idealizador autorizou a sequência até T15 e pediu primeiro a versão web local
 com PostgreSQL configurado. Provedores, custos, publicação e aparelhos físicos
 foram adiados; nenhuma dessas conferências será atribuída aos testes locais.
+
+## Execução de T11
+
+Desenho confirmado e T10 commitada antes da implementação. O Toolkit organizou
+contratos do root, dados/SQL, domínio/API e interface com escritores exclusivos;
+root adaptou runtime e fixtures, escreveu HTTP e serializou recursos mutáveis.
+Revisões independentes de SQL/segurança e React/qualidade foram somente leitura.
+
+Prisma validou/gerou os modelos; a prova real passou com treze migrações,
+preservação das coleções/históricos e privilégios efetivos. A migração aditiva
+T11 foi aplicada aos bancos persistentes T11 dev/integração. PostgreSQL permanece na
+stack Docker existente, com namespaces Storage e conexões separados. Nenhuma
+migração aplicada anterior mudou; T11 também ficou imutável após a aplicação.
+
+A suíte HTTP passou 276/276, sem skips: 27 casos de álbum e 249 regressões.
+As provas incluem três fotos/dois vídeos reais sintéticos, publicação parcial,
+replay após remoção, capacidade, dez legendas de 500 caracteres, corridas,
+rollback de cinco efeitos e prazo original com hold. Regressões T06 agora usam
+crédito/resgate/álbum pelas APIs; não existe autorização especial para fixtures.
+
+Revisão reproduziu e corrigiu leitura de metadados vencidos com UUID nil válida,
+ocultação da galeria após remoção mesmo com GET503, prévia dos prontos e metadados
+publicados. O ciclo StrictMode foi reproduzido no Next dev e passou após corrigir
+o cancelamento de leitura. Rótulos de legenda ficaram associados a campos
+separados; testes usam modalidade de teclado e esperam a imagem renovada carregar.
+
+Os 108 Chromium novos passaram em 320/390, incluindo regressões RED/GREEN.
+As regressões anteriores foram distribuídas em grupos sequenciais para reiniciar
+o navegador, sem retries automáticos ou reaproveitar servidores. Resultado final,
+capturas, revisão e limites estão no [plano T11](superpowers/plans/2026-10-22-t11-album.md).
+Comandos em [álbum local](albums-local.md). T12 continua a composição dos painéis,
+bilhete e interações; leitor de tela real, aparelhos, CI remoto e publicação não
+foram observados nesta entrega.
+
+Fechamento de navegador T11: 562 cenários cobertos;108 novos e453 regressões passaram
+na execução em grupos. Um histórico antigo teve rede suspensa no ambiente e
+passou na repetição focal em 320/390, sem mudança de código. Sem alegação de suíte
+integral sem falhas em uma única execução.

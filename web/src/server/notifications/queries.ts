@@ -14,6 +14,8 @@ export const notificationSelect = {
     submission: { select: { id: true, status: true } },
     reviewEvent: { select: { id: true } },
     redemption: { select: { id: true } },
+    albumEvent: { select: { id: true, kind: true, storeId: true, redemptionId: true,
+      album: { select: { participantMembershipId: true } } } },
     redemptionEvent: { select: { id: true, kind: true, redemptionId: true, storeId: true,
       pointsEntry: { select: { kind: true, redemptionId: true } } } },
   } },
@@ -40,6 +42,8 @@ export function notificationAudience(identity: Identity, storeId?: string): Pris
         recipientMembership: { role: 'MERCHANT' } },
       { kind: 'REDEMPTION_UPDATED', redemptionId: { not: null }, redemptionEvent: { kind: { in: ['AGREE', 'FULFILL', 'REJECT_CANCELLATION', 'CANCEL'] } },
         recipientMembership: { role: 'PARTICIPANT' } },
+      { kind: 'ALBUM_PUBLISHED', redemptionId: { not: null }, albumEvent: { kind: 'PUBLISH' },
+        recipientMembership: { role: 'PARTICIPANT' } },
     ],
   } };
 }
@@ -57,6 +61,14 @@ export async function notificationTarget(notification: SelectedNotification, tx:
   const { event } = notification;
   const common = { storeId: event.storeId, participantMembershipId: event.participantMembershipId };
   if (event.kind === 'INVITATION_ACCEPTED') return { ...common, type: 'membership', path: `/lojas/${event.storeId}/pessoas` };
+  if (event.kind === 'ALBUM_PUBLISHED') {
+    const publication = event.albumEvent;
+    if (!event.redemption || !publication || publication.kind !== 'PUBLISH' || publication.storeId !== event.storeId ||
+        publication.redemptionId !== event.redemption.id ||
+        publication.album.participantMembershipId !== event.participantMembershipId) unavailable();
+    return { ...common, type: 'ticket', subjectId: event.redemption.id,
+      path: `/lojas/${event.storeId}/tickets/${event.redemption.id}?publicacao=${publication.id}` };
+  }
   if (event.kind === 'REDEMPTION_ISSUED' || event.kind === 'REDEMPTION_UPDATED') {
     if (!event.redemption) unavailable();
     const transition = event.redemptionEvent;

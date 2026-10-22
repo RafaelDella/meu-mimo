@@ -2,7 +2,9 @@
 
 Desenho, D07 e D08 aprovados em 22/10/2026, com confirmação separada de retenção.
 T06 usa [identidade](identity-local.md), [lojas](stores-local.md) e Storage
-reais, com assuntos de registro/ticket explicitamente fictícios nos testes.
+reais. A prova inicial T06 usava assuntos fictícios; a cadeia atual integra
+evidências T07/T08 e álbuns T11 a origens reais. Os testes MEMORY usam crédito,
+resgate e álbum pelas APIs, sem exceção de autorização para fixtures.
 
 ## Preparar e verificar
 
@@ -94,8 +96,9 @@ o item e devolvem foco ao botão. Seleção ainda não tentada pode ser retirada
 ## Fronteiras
 
 `registerMediaCollection`, `nextEvidenceRevision` e `publishMedia` são internos
-e usados pela transação da origem validada. T07/T09/T11 deverão integrá-los a
-registros/tickets reais. Não há criação pública de coleção ou publicação do
+e usados pela transação da origem validada. T07/T08 integram registros reais;
+[T11](albums-local.md) integra publicação, ordem, legenda e retenção do ticket.
+Não há criação pública de coleção ou publicação do
 álbum por UUID arbitrário. Evidência histórica é preservada por versão.
 
 `/visual-check/midia` é composição fictícia em memória, com transporte injetado.

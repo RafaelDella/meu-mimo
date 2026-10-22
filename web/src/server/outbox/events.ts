@@ -5,7 +5,7 @@ import { operationConflict, resourceId, unavailable } from '../stores/validation
 
 type EventInput = Pick<Prisma.OutboxEventUncheckedCreateInput,
   'key' | 'kind' | 'storeId' | 'participantMembershipId' | 'actorProfileId' |
-  'recipientMembershipId' | 'invitationId' | 'commentId' | 'submissionId' | 'reviewEventId' | 'redemptionId' | 'redemptionEventId'>;
+  'recipientMembershipId' | 'invitationId' | 'commentId' | 'submissionId' | 'reviewEventId' | 'redemptionId' | 'redemptionEventId' | 'albumEventId'>;
 
 async function persistEvent(tx: StoreTransaction, input: EventInput): Promise<void> {
   // A unicidade também cobre duas transações que chegaram aqui ao mesmo tempo.
@@ -18,7 +18,8 @@ async function persistEvent(tx: StoreTransaction, input: EventInput): Promise<vo
       existing.submissionId !== (input.submissionId ?? null) ||
       existing.reviewEventId !== (input.reviewEventId ?? null) ||
       existing.redemptionId !== (input.redemptionId ?? null) ||
-      existing.redemptionEventId !== (input.redemptionEventId ?? null)) operationConflict();
+      existing.redemptionEventId !== (input.redemptionEventId ?? null) ||
+      existing.albumEventId !== (input.albumEventId ?? null)) operationConflict();
 }
 
 async function audience(tx: StoreTransaction, storeId: string, participantMembershipId: string, allowClosedMerchant = false) {
@@ -126,4 +127,18 @@ export async function enqueueRedemptionUpdated(tx: StoreTransaction, eventId: st
   await persistEvent(tx, { key: `redemption.updated:${id}`, kind: 'REDEMPTION_UPDATED',
     storeId: ticket.storeId, participantMembershipId: participant.id, actorProfileId: author.profileId,
     recipientMembershipId: recipient.id, redemptionId: ticket.id, redemptionEventId: id });
+}
+
+/** Uma publicação explícita gera uma única novidade para o participante do ticket. */
+export async function enqueueAlbumPublished(tx: StoreTransaction, eventId: string): Promise<void> {
+  const id = resourceId(eventId);
+  const event = await tx.albumEvent.findUnique({ where: { id }, include: { redemption: true, album: true } });
+  if (!event || event.kind !== 'PUBLISH' || event.album.redemptionId !== event.redemptionId ||
+      event.album.createdByProfileId !== event.actorProfileId) unavailable();
+  const ticket = event.redemption;
+  const { participant, merchant } = await audience(tx, ticket.storeId, ticket.participantMembershipId, true);
+  if (event.actorProfileId !== merchant.profileId) unavailable();
+  await persistEvent(tx, { key: `album.published:${id}`, kind: 'ALBUM_PUBLISHED', storeId: ticket.storeId,
+    participantMembershipId: participant.id, actorProfileId: merchant.profileId, recipientMembershipId: participant.id,
+    redemptionId: ticket.id, albumEventId: id });
 }

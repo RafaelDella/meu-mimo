@@ -23,7 +23,7 @@ export function ticket(overrides: Partial<TicketView> = {}): TicketView {
       note: 'Um recadinho só nosso.', instructions: 'Converse para combinar o dia.', rewardVersion: 1 }, balanceBefore: '15', balanceAfter: '5',
     conversation: { id: conversationId, storeId: ids.first, participantMembershipId: store().membershipId, subjectType: 'TICKET', subjectId: ticketId, writable: true },
     version: 1, agreementText: '', agreementDate: null, fulfilledAt: null, cancelledAt: null, eventsTotal: 1,
-    pendingCancellation: null, actions: [], cancellationImpact: null,
+    pendingCancellation: null, actions: [], cancellationImpact: null, album: { publishedCount: 0, thumbnailAssetId: null },
     events: [{ id: ticketId, kind: 'ISSUED', version: 1, fromStatus: null, toStatus: 'WAITING_AGREEMENT', text: '', agreementDate: null,
       requestId: null, delta: '0', restocked: false, stockBefore: null, stockAfter: null, stockRevision: null, balanceBefore: null, balanceAfter: null,
       createdAt: now, author: { displayName: 'Ana participante' } }], ...overrides };
@@ -60,6 +60,11 @@ export async function mockRewards(page: Page, options: { merchant?: boolean; bal
     if (options.handler && await options.handler(route, url, state)) return true;
     const path = url.pathname; const method = route.request().method();
     if (!path.startsWith('/api/lojas/')) return false;
+    if (path.endsWith('/album')) {
+      await json(route, { id: null, storeId: ids.first, ticketId: path.split('/')[5], version: 0, collectionId: null,
+        permissions: { canStart: false, canUpload: false, canPublish: false }, unavailableReason: null,
+        items: [], page: 1, pageSize: 20, total: 0 }); return true;
+    }
     if (path.endsWith('/pontos')) {
       await json(route, { storeId: ids.first, participantMembershipId: store().membershipId, available: state.balance, pending: state.pending,
         today: { localDate: '2026-10-22', timezone: 'America/Sao_Paulo', submitted: 1, approved: 1, credited: '15', adjusted: '0' } }); return true;

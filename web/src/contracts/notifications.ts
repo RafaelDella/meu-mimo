@@ -1,4 +1,4 @@
-export type NotificationKind = 'INVITATION_ACCEPTED' | 'COMMENT_CREATED' | 'SUBMISSION_RECEIVED' | 'SUBMISSION_REVIEWED' | 'SUBMISSION_RESPONDED' | 'REDEMPTION_ISSUED' | 'REDEMPTION_UPDATED';
+export type NotificationKind = 'INVITATION_ACCEPTED' | 'COMMENT_CREATED' | 'SUBMISSION_RECEIVED' | 'SUBMISSION_REVIEWED' | 'SUBMISSION_RESPONDED' | 'REDEMPTION_ISSUED' | 'REDEMPTION_UPDATED' | 'ALBUM_PUBLISHED';
 export type NotificationTarget = {
   storeId: string; participantMembershipId: string;
 } & ({ type: 'membership'; path: string } | { type: 'submission' | 'ticket'; subjectId: string; path: string } | {

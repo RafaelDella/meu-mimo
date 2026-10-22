@@ -9,7 +9,7 @@ import { mediaEnvironment } from './media-environment.mjs';
 
 const resources = taskResources(process.argv[2] ?? 't02');
 const state = readState(resources.task);
-const withMedia = ['t06', 't07', 't08', 't09', 't10'].includes(resources.task);
+const withMedia = ['t06', 't07', 't08', 't09', 't10', 't11'].includes(resources.task);
 const mediaEnv = withMedia ? mediaEnvironment('integration', resources.task) : {};
 await bindLocalStack();
 // Depois de religar o DB, o pool do Auth pode descartar uma conexão antiga.
@@ -38,7 +38,7 @@ await new Promise((resolve, reject) => {
 
 // As credenciais administrativas pertencem aos fixtures, nunca ao processo Next.
 const serverEnv = Object.fromEntries(Object.entries(process.env).filter(([key]) =>
-  !/^(T(?:0[2456789]|10)_|SUPABASE_|MEDIA_|FFMPEG_|FFPROBE_|MIGRATION_|SHADOW_)/i.test(key)));
+  !/^(T(?:0[2456789]|1[01])_|SUPABASE_|MEDIA_|FFMPEG_|FFPROBE_|MIGRATION_|SHADOW_)/i.test(key)));
 Object.assign(serverEnv, state.runtime, { NODE_ENV: 'production' });
 const log = createWriteStream(path.join(resources.directory, 'next-integration.log'), { mode: 0o600 });
 const server = spawn(process.execPath, [path.join(webRoot, 'node_modules/next/dist/bin/next'),

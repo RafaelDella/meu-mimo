@@ -210,3 +210,18 @@ Detalhes no [plano T08](superpowers/plans/2026-10-22-t08-analise-extrato.md).
 Saldo negativo após gasto e preservação de tickets exigem a integração T09;
 T08 prova estorno real, aritmética assinada e apresentação controlada. Leitor
 de tela, aparelhos físicos, CI remoto e publicação continuam não observados.
+
+## Verificação de T11
+
+Álbuns usam o pipeline real de mídia e tickets reais também nas regressões T06.
+As provas cobrem seleção explícita, três fotos/dois vídeos, lote parcial, ordem
+e legenda imutáveis, remoção autoral, recuperação e corridas com cancelamento.
+A evolução preserva a cadeia financeira e as coleções anteriores; runtime não
+altera itens/eventos nem apaga auditoria.
+
+Retenção deve ser verificada antes da manutenção: um álbum vencido sem hold
+não pode retornar bytes, legendas ou metadados, inclusive para UUIDs válidos
+especiais. O teste nil falhou antes e passou depois do filtro explícito vazio.
+Na UI, remoção confirmada precisa ocultar imediatamente mesmo se a consulta
+seguinte falhar; revisão mantém miniatura/duração e a galeria informa publicação.
+Evidências e limites no [plano T11](superpowers/plans/2026-10-22-t11-album.md).

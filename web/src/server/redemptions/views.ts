@@ -3,6 +3,7 @@ import type { Prisma, Redemption } from '../../generated/prisma/client.ts';
 import type { TicketEventView, TicketView } from '../../contracts/redemptions.ts';
 import type { RewardSnapshot } from '../../contracts/rewards.ts';
 import { requireConversationAudience } from '../conversations/access.ts';
+import { albumPreview } from '../albums/views.ts';
 import { conversationView } from '../conversations/views.ts';
 import type { StoreScope } from '../stores/transaction.ts';
 import { requireMembership } from '../stores/transaction.ts';
@@ -49,5 +50,6 @@ export async function ticketView(scope: StoreScope, ticket: Redemption): Promise
     fulfilledAt: ticket.fulfilledAt?.toISOString() ?? null, cancelledAt: ticket.cancelledAt?.toISOString() ?? null,
     pendingCancellation: request ? { id: request.id, text: request.text, createdAt: request.createdAt.toISOString(),
       fromStatus: request.fromStatus! } : null,
-    actions, cancellationImpact: actions.includes('CANCEL') ? await cancellationImpact(scope, ticket) : null };
+    actions, cancellationImpact: actions.includes('CANCEL') ? await cancellationImpact(scope, ticket) : null,
+    album: await albumPreview(scope, ticket.id) };
 }

@@ -1,4 +1,5 @@
 import type { ConversationView } from './conversations';
+import type { AlbumPreview } from './albums';
 import type { RewardSnapshot } from './rewards';
 import type { PageResult } from './stores';
 
@@ -25,6 +26,7 @@ export type TicketView = {
   fulfilledAt: string | null; cancelledAt: string | null; eventsTotal: number;
   pendingCancellation: { id: string; text: string; createdAt: string; fromStatus: TicketStatus } | null;
   actions: TicketAction[]; cancellationImpact: TicketCancellationImpact | null;
+  album: AlbumPreview;
 };
 export type TicketPage = PageResult<TicketView>;
 export type TicketSummary = { total: number; outstanding: number };

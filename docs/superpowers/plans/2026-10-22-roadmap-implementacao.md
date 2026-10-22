@@ -10,7 +10,7 @@
 
 **Especificação:** [requisitos](../../../requisitos.md), [arquitetura](../../../arquitetura.md), [design](../../../design.md) e [README](../../../README.md). Operação e qualidade: [onboarding](../../onboarding.md), [setup](../../setup.md) e [quality](../../quality.md).
 
-**Data:** 22/10/2026. **Estado atual:** M0 e T01–T10 entregues localmente; T03 conserva a conferência com leitor de tela real. T10 integra combinado, realização, pedido/recusa de cancelamento, devolução única e reposição explícita; evidências e limitação pontual do Chromium no [plano T10](2026-10-22-t10-realizacao-cancelamento.md). A próxima entrega é T11, álbum privado. Os desenhos T11–T15 foram confirmados; o idealizador priorizou web/PostgreSQL locais e adiou provedores, publicação e aparelhos físicos. Esses gates permanecem abertos. Decisões constam em requisitos §6.1; a seção 1 preserva o ponto de partida do planejamento.
+**Data:** 22/10/2026. **Estado atual:** M0 e T01–T11 entregues localmente; T03 conserva a conferência com leitor de tela real. T11 integra álbum privado, publicação explícita, remoção e retenção da origem; evidências e ocorrências do navegador no [plano T11](2026-10-22-t11-album.md). A próxima entrega é T12, relação/novidades e painéis completos. Os desenhos T12–T15 foram confirmados; o idealizador priorizou web/PostgreSQL locais e adiou provedores, publicação e aparelhos físicos. Esses gates permanecem abertos. Decisões constam em requisitos §6.1; a seção 1 preserva o ponto de partida do planejamento.
 
 ## 1. Ponto de partida e restrições
 
@@ -246,10 +246,16 @@ encerradas após provas de regressão; contratos em [tickets locais](../../ticke
 **Responsável:** fluxo de momentos. **Depende de:** T10, T06 e D07–D08.
 **Arquivos:** `web/src/server/albums/**`, `web/src/components/albums/**`, `web/src/app/lojas/[storeId]/tickets/**`, `web/tests/{integration,e2e}/albums/**`, `web/prisma/**`. **Recursos:** padrão T11 e pipeline de mídia de teste.
 
-- [ ] Lojista seleciona/revisa/envia/publica várias fotos e vídeos; legenda/ordem, progresso, falha/tentativa por arquivo, publicação explícita dos prontos e novos lotes posteriores.
-- [ ] Participante vê somente mídias publicadas no próprio ticket, com ampliação de fotos e player com controles, sem som automático. Remoção própria exige confirmação e respeita retenção.
-- [ ] Verificar três fotos e dois vídeos, falha em um vídeo, retomada e nova tentativa sem duplicação; uma novidade agrupada por publicação. Outro ticket do mesmo mimo tem álbum independente.
-- [ ] Confirmar que publicar/remover mídia ou adicionar depois da realização não muda pontos, estoque ou estado do ticket; acesso a arquivo/miniatura de outra participação é negado.
+- [x] Lojista seleciona/revisa/envia/publica várias fotos e vídeos; legenda/ordem, progresso, falha/tentativa por arquivo, publicação explícita dos prontos e novos lotes posteriores.
+- [x] Participante vê somente mídias publicadas no próprio ticket, com ampliação de fotos e player com controles, sem som automático. Remoção própria exige confirmação e respeita retenção.
+- [x] Verificar três fotos e dois vídeos, falha em um vídeo, retomada e nova tentativa sem duplicação; uma novidade agrupada por publicação. Outro ticket do mesmo mimo tem álbum independente.
+- [x] Confirmar que publicar/remover mídia ou adicionar depois da realização não muda pontos, estoque ou estado do ticket; acesso a arquivo/miniatura de outra participação é negado.
+
+T11: treze migrações, `check` e 276 HTTP reais passaram. Foram executados 562
+Chromium em grupos: 561 passaram e um histórico antigo sofreu suspensão de rede
+no ambiente; repetição focal passou em 320/390. Os 108 novos passaram, assim como
+a regressão StrictMode no Next dev. Revisões encerradas após reprodução/correção;
+capturas a 200% examinadas. Contratos em [álbum local](../../albums-local.md).
 
 ### T12 · Relação, novidades e telas iniciais completas
 

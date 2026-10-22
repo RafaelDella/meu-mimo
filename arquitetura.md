@@ -331,6 +331,24 @@ reautorizando a audiência antes da recuperação. Outbox REDEMPTION_UPDATED apo
 ao evento real e à outra pessoa da relação. Contratos/comandos em
 [T10 local](docs/tickets-local.md). Álbum integra T11.
 
+### 3.6. Álbum por ticket em T11
+
+`TicketAlbum` liga ticket, participação e coleção MEMORY reais. `AlbumEvent`
+audita publicação/remoção; `AlbumItem` congela legenda e posição por asset.
+Projeção versionada, itens, `publishedAt` e outbox confirmam juntos. Eventos e
+itens são imutáveis; runtime não apaga histórico. O pipeline T06 continua
+responsável por bytes, partes, derivados e expurgo, sem IO na transação do álbum.
+
+API genérica e gateway verificam a origem real e o acesso atual, inclusive nas
+leituras Range. Retenção usa o primeiro encerramento da loja/participação e
+doze meses de calendário. Pendência protege existentes, sem estender uploads;
+resolução tardia aplica o prazo original. Encerramento e resolução sincronizam
+coleções na transação vigente. Manutenção usa Store → coleção → asset com
+SKIP LOCKED, na mesma ordem das operações do domínio.
+
+Comandos, API e limites em [T11 local](docs/albums-local.md). Bilhete, reações,
+mural e central completa de novidades continuam em T12.
+
 ## 4. Modelo conceitual de dados
 
 A tabela descreve o modelo completo proposto. T02/T04/T05/T06/T07/T08/T09 implementam os

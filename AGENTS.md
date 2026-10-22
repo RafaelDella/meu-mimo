@@ -28,6 +28,8 @@ extrato; comandos e limites em `docs/points-local.md`.
 T09 entrega catálogo, resgates e tickets; contratos e comandos em `docs/rewards-local.md`.
 T10 acrescenta combinado, realização, cancelamento/devolução e reposição explícita;
 contratos e comandos em `docs/tickets-local.md`.
+T11 integra álbum privado por ticket e retenção da origem; contratos e comandos
+em `docs/albums-local.md`. Os testes de mídia usam tickets reais na cadeia atual.
 O plano da fundação e as dependências estão em
 [M0](docs/superpowers/plans/2026-10-22-m0-fundacao.md).
 
@@ -60,6 +62,8 @@ T09 usa `test:integration:t09`, domínio `meumimo_t09`, as mesmas portas em sér
 e namespaces `t09-development`/`t09-integration`, com dev/shadow separados.
 T10 usa `test:integration:t10`, domínio `meumimo_t10`/dev/shadow, namespaces próprios
 e Next4310/mídia4311, em série com os modos anteriores.
+T11 usa `test:integration:t11`, bancos `meumimo_t11`/dev/shadow, namespaces próprios
+e as mesmas portas em série. Não alterar as treze migrações já aplicadas.
 T05 usa `test:integration:t05`, domínio `meumimo_t05` e a mesma porta em série;
 o consumidor local tem comando próprio e credencial restrita.
 T06 usa `test:integration:t06`, bancos `meumimo_t06`/dev/shadow e gateway local

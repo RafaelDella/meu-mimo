@@ -41,6 +41,7 @@ enum NotificationKind {
   SUBMISSION_RESPONDED
   REDEMPTION_ISSUED
   REDEMPTION_UPDATED
+  ALBUM_PUBLISHED
 
   @@schema("app")
 }
@@ -126,6 +127,8 @@ model Profile {
   rewardEvents RewardEvent[]
   authoredRedemptions Redemption[]
   redemptionEvents RedemptionEvent[]
+  createdAlbums TicketAlbum[]
+  albumEvents AlbumEvent[]
 
   @@schema("app")
 }
@@ -161,6 +164,8 @@ model Store {
   rewardEvents RewardEvent[]
   redemptions Redemption[]
   redemptionEvents RedemptionEvent[]
+  ticketAlbums TicketAlbum[]
+  albumEvents AlbumEvent[]
 
   @@index([createdByProfileId])
   @@schema("app")
@@ -185,6 +190,7 @@ model Membership {
   pointsEntries PointsEntry[]
 
   redemptions Redemption[]
+  ticketAlbums TicketAlbum[]
 
   @@unique([storeId, profileId])
   @@unique([id, storeId])
@@ -274,6 +280,7 @@ model OutboxEvent {
   reviewEventId String? @db.Uuid
   redemptionId String? @db.Uuid
   redemptionEventId String? @db.Uuid
+  albumEventId String? @db.Uuid
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   availableAt DateTime @default(now()) @db.Timestamptz(6)
   processedAt DateTime? @db.Timestamptz(6)
@@ -289,6 +296,7 @@ model OutboxEvent {
   reviewEvent SubmissionReviewEvent? @relation(fields: [reviewEventId], references: [id], onDelete: Restrict)
   redemption Redemption? @relation(fields: [redemptionId], references: [id], onDelete: Restrict)
   redemptionEvent RedemptionEvent? @relation(fields: [redemptionEventId], references: [id], onDelete: Restrict)
+  albumEvent AlbumEvent? @relation(fields: [albumEventId], references: [id], onDelete: Restrict)
   notification Notification?
 
   @@index([processedAt, availableAt, id])
@@ -330,6 +338,7 @@ model MediaCollection {
   store Store @relation(fields: [storeId], references: [id], onDelete: Restrict)
   participantMembership Membership @relation(fields: [participantMembershipId], references: [id], onDelete: Restrict)
   assets MediaAsset[]
+  ticketAlbum TicketAlbum?
 
   @@unique([purpose, subjectId])
   @@unique([id, storeId])
@@ -370,6 +379,8 @@ model MediaAsset {
   parts MediaPart[]
   submissionEvidence ActivitySubmission?
   reviewEvidence SubmissionReviewEvent?
+  albumItem AlbumItem?
+  albumRemoval AlbumEvent? @relation("AlbumRemoval")
 
   @@index([collectionId, revision, createdAt, id])
   @@index([state, availableAt, leaseUntil])
@@ -609,9 +620,75 @@ model Redemption {
   events RedemptionEvent[]
   pointsEntries PointsEntry[]
   outboxEvents OutboxEvent[]
+  album TicketAlbum?
+  albumEvents AlbumEvent[]
 
   @@unique([id, storeId, participantMembershipId])
   @@index([storeId, participantMembershipId, status, createdAt, id])
+  @@schema("app")
+}
+
+model TicketAlbum {
+  id String @id @db.Uuid
+  storeId String @db.Uuid
+  redemptionId String @unique @db.Uuid
+  participantMembershipId String @db.Uuid
+  collectionId String @unique @db.Uuid
+  createdByProfileId String @db.Uuid
+  version Int @default(1)
+  nextPosition Int @default(1)
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  store Store @relation(fields: [storeId], references: [id], onDelete: Restrict)
+  redemption Redemption @relation(fields: [redemptionId], references: [id], onDelete: Restrict)
+  participant Membership @relation(fields: [participantMembershipId], references: [id], onDelete: Restrict)
+  collection MediaCollection @relation(fields: [collectionId], references: [id], onDelete: Restrict)
+  creator Profile @relation(fields: [createdByProfileId], references: [id], onDelete: Restrict)
+  events AlbumEvent[]
+  items AlbumItem[]
+
+  @@unique([id, redemptionId, storeId])
+  @@index([storeId, participantMembershipId])
+  @@schema("app")
+}
+
+model AlbumEvent {
+  id String @id @db.Uuid
+  albumId String @db.Uuid
+  storeId String @db.Uuid
+  redemptionId String @db.Uuid
+  actorProfileId String @db.Uuid
+  version Int
+  kind String
+  requestDigest String
+  removedAssetId String? @unique @db.Uuid
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  album TicketAlbum @relation(fields: [albumId], references: [id], onDelete: Restrict)
+  store Store @relation(fields: [storeId], references: [id], onDelete: Restrict)
+  redemption Redemption @relation(fields: [redemptionId], references: [id], onDelete: Restrict)
+  actor Profile @relation(fields: [actorProfileId], references: [id], onDelete: Restrict)
+  removedAsset MediaAsset? @relation("AlbumRemoval", fields: [removedAssetId], references: [id], onDelete: Restrict)
+  items AlbumItem[]
+  outboxEvents OutboxEvent[]
+
+  @@unique([albumId, version])
+  @@unique([id, albumId, storeId])
+  @@index([storeId, createdAt, id])
+  @@schema("app")
+}
+
+model AlbumItem {
+  assetId String @id @db.Uuid
+  albumId String @db.Uuid
+  publicationId String @db.Uuid
+  storeId String @db.Uuid
+  position Int
+  caption String @default("")
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  asset MediaAsset @relation(fields: [assetId], references: [id], onDelete: Restrict)
+  album TicketAlbum @relation(fields: [albumId], references: [id], onDelete: Restrict)
+  publication AlbumEvent @relation(fields: [publicationId], references: [id], onDelete: Restrict)
+
+  @@unique([albumId, position])
   @@schema("app")
 }
 

@@ -2,6 +2,7 @@ import '../only.ts';
 import type { Prisma } from '../../generated/prisma/client.ts';
 import type { PageResult, PersonView } from '../../contracts/stores.ts';
 import type { Identity } from '../auth/types.ts';
+import { syncAlbumRetention } from '../albums/retention.ts';
 import { assertLifecycleDependencies } from '../stores/lifecycle.ts';
 import { consumeStoreLimit } from '../stores/limits.ts';
 import { databaseNow, requireMembership, requireMerchant, storeAudit, withStoreTransaction } from '../stores/transaction.ts';
@@ -59,6 +60,7 @@ export async function closeMembership(identity: Identity, storeId: string, membe
     const result = await scope.tx.membership.update({
       where: { id: target.id }, data: { closedAt: await databaseNow(scope.tx) }, select: personSelect,
     });
+    await syncAlbumRetention(scope, { membershipId: target.id });
     await storeAudit(scope, 'membership.closed', target.id);
     return personView(result);
   });

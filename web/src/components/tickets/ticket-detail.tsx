@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { AlbumPreview } from '@/contracts/albums';
 import type { TicketView } from '@/contracts/redemptions';
 import type { StoreView } from '@/contracts/stores';
 import { Button } from '@/components/ui/button';
@@ -18,6 +19,7 @@ import { ticketStatuses } from './ticket-display';
 import { TicketActions } from './ticket-actions';
 import { TicketHistory } from './ticket-history';
 import { TicketProjection } from './ticket-projection';
+import { TicketAlbum } from '@/components/albums/ticket-album';
 import styles from '@/components/rewards/rewards.module.css';
 
 export function TicketDetail({ store, accountKey, ticketId, returnTo }: { store: StoreView; accountKey: string; ticketId: string; returnTo?: string }) {
@@ -29,6 +31,7 @@ export function TicketDetail({ store, accountKey, ticketId, returnTo }: { store:
 }
 function TicketContent({ store, accountKey, initial, returnTo }: { store: StoreView; accountKey: string; initial: TicketView; returnTo?: string }) {
   const [ticket, setTicket] = useState(initial);
+  const updatePreview = useCallback((album: AlbumPreview) => setTicket(current => ({ ...current, album })), []);
   const unavailable = useRewardAccess();
   const title = useRef<HTMLHeadingElement>(null);
   useEffect(() => { title.current?.focus(); }, []);
@@ -57,6 +60,7 @@ function TicketContent({ store, accountKey, initial, returnTo }: { store: StoreV
     <TicketActions ticket={ticket} onUpdate={setTicket} />
     {store.role === 'PARTICIPANT' && <RewardBalance key={ticket.version} store={store} />}
     <TicketHistory key={ticket.version} ticket={ticket} />
+    <TicketAlbum key={`${accountKey}:${ticket.id}:${ticket.status}`} ticket={ticket} accountKey={accountKey} onPreviewChange={updatePreview} />
     <ConversationPanel accountKey={accountKey} storeId={store.id} conversationId={ticket.conversation.id} transport={transport} />
     {store.role === 'PARTICIPANT' && <Link className="stores-link" href={rewardPath(store.id, ticket.rewardId)}>Resgatar novamente</Link>}
   </>;

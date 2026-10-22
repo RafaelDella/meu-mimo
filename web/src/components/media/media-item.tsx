@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import { useEffect, useId, useRef, useState } from 'react';
 import type { MediaAccess } from '@/contracts/media';
-import { storeError } from '@/components/stores/store-api';
+import { StoreRequestError, storeError } from '@/components/stores/store-api';
 import { Button } from '@/components/ui/button';
 import { Dialog } from '@/components/ui/dialog';
 import type { MediaContext, MediaTransport } from './transport';
@@ -13,6 +13,8 @@ import styles from './media.module.css';
 type Props = {
   item: UploadItem; context: MediaContext; transport: MediaTransport; busy: boolean; current: boolean;
   writable: boolean; retry: () => void; remove: () => void; pause: () => void; resume: (file: File) => void;
+  removable?: boolean;
+  localPreview?: boolean;
   denied: (cause: unknown) => boolean;
 };
 function itemStatus(item: UploadItem) {
@@ -27,7 +29,7 @@ function itemStatus(item: UploadItem) {
   return item.file ? 'Selecionado. Ainda não foi enviado.' : 'Envio interrompido. Selecione o arquivo original para retomar.';
 }
 
-export function MediaItem({ item, context, transport, busy, current, writable, retry, remove, pause, resume, denied }: Props) {
+export function MediaItem({ item, context, transport, busy, current, writable, removable = writable, localPreview = false, retry, remove, pause, resume, denied }: Props) {
   const inputId = useId();
   const controller = useRef<AbortController | null>(null);
   const opener = useRef<HTMLButtonElement>(null);
@@ -36,6 +38,15 @@ export function MediaItem({ item, context, transport, busy, current, writable, r
   const [opening, setOpening] = useState(false);
   const [error, setError] = useState('');
   const [confirmDiscard, setConfirmDiscard] = useState(false);
+  const previewNode = useRef<HTMLImageElement>(null);
+  const previewVideo = useRef<HTMLVideoElement>(null);
+  useEffect(() => {
+    if (!localPreview || !item.file || item.asset || item.invalid) return;
+    const url = URL.createObjectURL(item.file);
+    if (previewNode.current) previewNode.current.src = url;
+    if (previewVideo.current) previewVideo.current.src = url;
+    return () => URL.revokeObjectURL(url);
+  }, [localPreview, item.file, item.asset, item.invalid]);
   useEffect(() => () => controller.current?.abort(), []);
   useEffect(() => {
     if (!grant) return;
@@ -58,6 +69,19 @@ export function MediaItem({ item, context, transport, busy, current, writable, r
       if (!active.signal.aborted) { controller.current = null; setOpening(false); }
     }
   }
+  async function contentFailure() {
+    if (!grant || controller.current) return;
+    const active = new AbortController(); controller.current = active;
+    const url = grant.url; setGrant(undefined);
+    try {
+      const response = await fetch(url, { cache: 'no-store', credentials: 'same-origin', signal: active.signal, headers: { Range: 'bytes=0-0' } });
+      await response.body?.cancel();
+      if (!response.ok) throw new StoreRequestError('media_unavailable', response.status,
+        response.status === 410 ? 'O acesso temporário expirou. Abra o arquivo novamente.' : 'Não foi possível abrir o arquivo. Confira seu acesso e tente novamente.');
+      if (!active.signal.aborted) setError('Não foi possível reproduzir este arquivo. Abra-o novamente para renovar o acesso.');
+    } catch (cause) { if (!active.signal.aborted && !denied(cause)) setError(storeError(cause)); }
+    finally { if (!active.signal.aborted) controller.current = null; }
+  }
   const available = item.asset?.state === 'READY';
   const canResume = !item.invalid && (!item.asset || (['UPLOADING', 'FAILED'].includes(item.asset.state) && item.asset.failureCode !== 'file_invalid'));
   const bytes = item.asset?.uploadedBytes ?? 0;
@@ -65,6 +89,11 @@ export function MediaItem({ item, context, transport, busy, current, writable, r
   const percent = total ? Math.floor(bytes / total * 100) : 0;
   return <li className={styles.item} aria-label={item.name}>
     <h3>{item.name}</h3>
+    {localPreview && item.file && !item.asset && !item.invalid && <div className={styles.content}>{item.file.type.startsWith('image/') ?
+      // O endereço existe somente no efeito e é revogado ao descartar o arquivo.
+      // eslint-disable-next-line @next/next/no-img-element
+      <img ref={previewNode} alt={`Prévia local de ${item.name}`} width={240} height={160} /> :
+      <video ref={previewVideo} controls preload="metadata" playsInline aria-label={`Prévia local de ${item.name}`} />}</div>}
     {item.asset && <p>Versão {item.asset.revision} · {item.asset.mediaType === 'PHOTO' ? 'Foto' : 'Vídeo'}</p>}
     <p role="status" aria-live="polite">{itemStatus(item)}</p>
     {!item.invalid && <><progress max={100} value={percent} aria-label={`Progresso de ${item.name}`} />
@@ -78,7 +107,7 @@ export function MediaItem({ item, context, transport, busy, current, writable, r
       {current ? <Button variant="secondary" onClick={pause}>Pausar envio</Button> :
         writable && canResume && item.file && <Button disabled={busy} onClick={retry}>
           {item.attempted ? 'Retomar arquivo' : 'Enviar arquivo'}</Button>}
-      {writable && <Button ref={discard} variant="secondary" disabled={busy} onClick={() => {
+      {removable && <Button ref={discard} variant="secondary" disabled={busy} onClick={() => {
         if (item.attempted || item.asset) setConfirmDiscard(true); else remove();
       }}>Remover arquivo</Button>}
       {available && <Button ref={opener} variant="secondary" disabled={opening} onClick={() => { void open(); }}>
@@ -97,9 +126,9 @@ export function MediaItem({ item, context, transport, busy, current, writable, r
     {grant && item.asset && <div className={styles.content}>
       {item.asset.mediaType === 'PHOTO' ? <Image src={grant.url} unoptimized alt="Foto privada deste item"
         width={item.asset.width ?? 480} height={item.asset.height ?? 480}
-        onError={() => { setGrant(undefined); setError('Não foi possível abrir a foto. Confira seu acesso e tente novamente.'); }} /> :
-        <video controls preload="metadata" src={grant.url} aria-label="Vídeo privado deste item"
-          onError={() => { setGrant(undefined); setError('Não foi possível reproduzir o vídeo. Confira seu acesso e tente novamente.'); }} />}
+        onError={() => { void contentFailure(); }} /> :
+        <video controls preload="metadata" playsInline src={grant.url} aria-label="Vídeo privado deste item"
+          onError={() => { void contentFailure(); }} />}
       <p>Consulta privada e temporária. Feche o arquivo ao terminar.</p>
     </div>}
   </li>;

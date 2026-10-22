@@ -8,6 +8,7 @@ import { getDb } from '../../../src/server/db/client.ts';
 import { processMediaBatch } from '../../../src/server/media-worker/processing.ts';
 import { publishMedia } from '../../../src/server/media/registration.ts';
 import { withStoreTransaction } from '../../../src/server/stores/transaction.ts';
+import { memoryOrigin } from './origin-fixture.mjs';
 
 export const closeRuntime = () => getDb().$disconnect();
 export const processBatch = (limit = 10) => processMediaBatch({ limit });
@@ -36,11 +37,17 @@ export async function mediaFixture(t) {
   const bucketName = process.env.MEDIA_BUCKET;
   const prefix = process.env.MEDIA_PREFIX;
   assert.equal(bucketName, 'meumimo-t06-private');
-  assert.equal(prefix, ['t07', 't08', 't09', 't10'].includes(process.env.T02_TASK) ? `${process.env.T02_TASK}-integration` : 'integration');
+  assert.equal(prefix, ['t07', 't08', 't09', 't10', 't11'].includes(process.env.T02_TASK) ? `${process.env.T02_TASK}-integration` : 'integration');
   const storage = fixture.auth.storage.from(bucketName);
+  const hasAlbums = !!(await fixture.database.query("SELECT to_regclass('app.\"TicketAlbum\"') AS table")).rows[0].table;
 
   async function collection(purpose = 'MEMORY', member = participation, currentStore = store) {
-    // Origens são assuntos fictícios: nenhum registro/ticket é criado por T06.
+    if (purpose === 'MEMORY' && hasAlbums) {
+      const participant = [ana, bia].find(person => person.id === member.profileId);
+      assert.ok(participant, 'A origem real exige a conta participante desta fixture.');
+      return memoryOrigin(owner, participant, currentStore, member);
+    }
+    // Testes isolados anteriores a T11 preservam o contrato histórico de T06.
     const value = { id: randomUUID(), storeId: currentStore.id, participantMembershipId: member.id, purpose, subjectId: randomUUID() };
     await fixture.database.query('INSERT INTO app."MediaCollection" (id, "storeId", "participantMembershipId", purpose, "subjectId") VALUES ($1,$2,$3,$4,$5)',
       [value.id, value.storeId, value.participantMembershipId, value.purpose, value.subjectId]);
@@ -81,6 +88,14 @@ export async function mediaFixture(t) {
     expectStatus(response, 200); return response.json();
   }
   async function publish(person, current, ids) {
+    if (current.albumId) {
+      const base = `/api/lojas/${current.storeId}/tickets/${current.subjectId}/album`;
+      const response = await person.client.get(base); expectStatus(response, 200);
+      const album = await response.json();
+      const publication = await person.client.post(`${base}/publicacoes`, { operationId: randomUUID(),
+        expectedVersion: album.version, items: ids.map(assetId => ({ assetId, caption: '' })) });
+      expectStatus(publication, 200); return publication.json();
+    }
     return withStoreTransaction(await identity(person), current.storeId, scope => publishMedia(scope, current.id, ids));
   }
   async function objectKeys(id) {

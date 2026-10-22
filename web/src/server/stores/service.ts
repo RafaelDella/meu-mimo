@@ -4,6 +4,7 @@ import type { Prisma } from '../../generated/prisma/client.ts';
 import type { PageResult, StoreView } from '../../contracts/stores.ts';
 import type { Identity } from '../auth/types.ts';
 import { AppError } from '../errors.ts';
+import { syncAlbumRetention } from '../albums/retention.ts';
 import { assertLifecycleDependencies } from './lifecycle.ts';
 import { consumeStoreLimit } from './limits.ts';
 import {
@@ -112,6 +113,7 @@ export async function changeStoreState(identity: Identity, storeId: string, body
     const store = await scope.tx.store.update({ where: { id: scope.store.id }, data: {
       state: target, pausedAt: target === 'PAUSED' ? now : null, closedAt: target === 'CLOSED' ? now : null,
     } });
+    if (action === 'close') await syncAlbumRetention({ ...scope, store });
     await storeAudit(scope, action === 'pause' ? 'store.paused' : action === 'resume' ? 'store.resumed' : 'store.closed', store.id);
     return storeView(store, membership);
   });

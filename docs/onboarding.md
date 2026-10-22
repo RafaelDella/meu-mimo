@@ -143,3 +143,9 @@ Para combinado, realização e cancelamento/devolução, siga [T10 local](ticket
 O preparo seleciona desenvolvimento T10; integração usa `meumimo_t10`, namespaces
 Storage próprios e Next4310/mídia4311. Encerramento preserva o tratamento dos tickets;
 revogação continua retirando acesso. Execute migrações/checks/modos em série.
+
+Para o álbum privado, publicação explícita e retenção por ticket, siga
+[T11 local](albums-local.md). O preparo seleciona `meumimo_t11_dev`; integração
+usa `meumimo_t11`, com namespace Storage separado e as mesmas portas em série.
+PostgreSQL permanece na stack Docker existente, com consumidores próprios de
+mídia/outbox.

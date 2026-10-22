@@ -89,6 +89,13 @@ export async function createFixture(t) {
       const scopeValues = [[...storeIds], profiles];
       await database.query(`DELETE FROM app."Notification" WHERE "eventId" IN (SELECT id FROM app."OutboxEvent" WHERE ${scope})`, scopeValues);
       await database.query(`DELETE FROM app."OutboxEvent" WHERE ${scope}`, scopeValues);
+      if ((await database.query("SELECT to_regclass('app.\"TicketAlbum\"') AS table")).rows[0].table) {
+        const albumScope = '"storeId" = ANY($1::uuid[]) OR "createdByProfileId" = ANY($2::uuid[]) OR "participantMembershipId" IN (SELECT id FROM app."Membership" WHERE "profileId" = ANY($2::uuid[]))';
+        for (const table of ['AlbumItem', 'AlbumEvent']) {
+          await database.query(`DELETE FROM app."${table}" WHERE "albumId" IN (SELECT id FROM app."TicketAlbum" WHERE ${albumScope})`, scopeValues);
+        }
+        await database.query(`DELETE FROM app."TicketAlbum" WHERE ${albumScope}`, scopeValues);
+      }
       const submissionScope = '"storeId" = ANY($1::uuid[]) OR "authorProfileId" = ANY($2::uuid[]) OR "participantMembershipId" IN (SELECT id FROM app."Membership" WHERE "profileId" = ANY($2::uuid[]))';
       await deleteChain('PointsEntry', 'compensatesEntryId',
         `"storeId" = ANY($1::uuid[]) OR "submissionId" IN (SELECT id FROM app."ActivitySubmission" WHERE ${submissionScope}) OR "redemptionId" IN (SELECT id FROM app."Redemption" WHERE ${submissionScope}) OR "actorProfileId" = ANY($2::uuid[])`, scopeValues);
@@ -108,7 +115,7 @@ export async function createFixture(t) {
       const mediaScope = '"authorProfileId" = ANY($2::uuid[]) OR "collectionId" IN (SELECT id FROM app."MediaCollection" WHERE ' + conversationScope + ')';
       const media = await database.query(`SELECT id FROM app."MediaAsset" WHERE ${mediaScope}`, scopeValues);
       if (media.rowCount) {
-        assert.ok(['t06', 't07', 't08', 't09', 't10'].includes(environment.task), 'Mídia de fixture só pode existir nos domínios reservados T06/T07/T08/T09/T10.');
+        assert.ok(['t06', 't07', 't08', 't09', 't10', 't11'].includes(environment.task), 'Mídia de fixture só pode existir nos domínios reservados T06/T07/T08/T09/T10/T11.');
         const { listAssetObjects, deleteObjects } = await import('../../../src/server/media-worker/storage.ts');
         for (const item of media.rows) await deleteObjects(await listAssetObjects(item.id));
       }
