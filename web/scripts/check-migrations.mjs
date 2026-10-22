@@ -8,6 +8,7 @@ import { artifactRoot, readState, webRoot } from './local-runtime.mjs';
 import { checkActivitiesMigration } from './check-activities-migration.mjs';
 import { checkReviewsMigration } from './check-reviews-migration.mjs';
 import { checkRedemptionsMigration } from './check-redemptions-migration.mjs';
+import { checkTicketsMigration } from './check-tickets-migration.mjs';
 
 const state = readState();
 const databaseName = `meumimo_t02_migrations_${randomUUID().replaceAll('-', '')}`;
@@ -170,15 +171,34 @@ try {
   await checkReviewsMigration(runtime, { storeId, merchantId: id, participantId, profileId: secondProfile, otherStoreId });
   const priorPoints = await database.query('SELECT to_jsonb(p) AS row FROM app."PointsEntry" p ORDER BY id');
   const priorSubmissions = await database.query('SELECT to_jsonb(s) AS row FROM app."ActivitySubmission" s ORDER BY id');
-  for (const name of names.filter(name => name >= '20261022235940')) {
+  for (const name of names.filter(name => name >= '20261022235940' && name < '20261022235950')) {
     cpSync(path.join(source, name), path.join(migrations, name), { recursive: true });
   }
   deploy();
-  assert.equal((await database.query('SELECT count(*)::int AS count FROM app._prisma_migrations WHERE finished_at IS NOT NULL')).rows[0].count, names.length);
+  assert.equal((await database.query('SELECT count(*)::int AS count FROM app._prisma_migrations WHERE finished_at IS NOT NULL')).rows[0].count,
+    names.filter(name => name < '20261022235950').length);
   const nextPoints = await database.query('SELECT to_jsonb(p)-\'redemptionId\' AS row FROM app."PointsEntry" p ORDER BY id');
   assert.deepEqual(nextPoints.rows, priorPoints.rows, 'A cadeia financeira anterior deve permanecer intacta.');
   assert.deepEqual((await database.query('SELECT to_jsonb(s) AS row FROM app."ActivitySubmission" s ORDER BY id')).rows, priorSubmissions.rows);
   await checkRedemptionsMigration(database, runtime, { storeId, merchantId: id, participantId, profileId: secondProfile, otherStoreId });
+  const beforeTickets = new Map();
+  for (const table of ['Redemption', 'RedemptionEvent', 'Reward', 'RewardEvent', 'PointsEntry', 'OutboxEvent', 'ActivitySubmission']) {
+    beforeTickets.set(table, (await database.query(`SELECT to_jsonb(t) AS row FROM app."${table}" t ORDER BY id`)).rows);
+  }
+  for (const name of names.filter(name => name >= '20261022235950')) {
+    cpSync(path.join(source, name), path.join(migrations, name), { recursive: true });
+  }
+  deploy();
+  assert.equal((await database.query('SELECT count(*)::int AS count FROM app._prisma_migrations WHERE finished_at IS NOT NULL')).rows[0].count, names.length);
+  const added = { Redemption: ['version', 'agreementText', 'agreementDate', 'cancellationFromStatus', 'fulfilledAt', 'cancelledAt'],
+    RedemptionEvent: ['version', 'fromStatus', 'toStatus', 'text', 'agreementDate', 'requestDigest', 'requestId', 'delta',
+      'restocked', 'stockBefore', 'stockAfter', 'stockRevision', 'balanceBefore', 'balanceAfter'],
+    PointsEntry: ['redemptionEventId'], OutboxEvent: ['redemptionEventId'] };
+  for (const [table, rows] of beforeTickets) {
+    const current = (await database.query(`SELECT to_jsonb(t)-$1::text[] AS row FROM app."${table}" t ORDER BY id`, [added[table] ?? []])).rows;
+    assert.deepEqual(current, rows, `T10 deve preservar integralmente os dados anteriores de ${table}.`);
+  }
+  await checkTicketsMigration(database, runtime, { storeId, merchantId: id, participantId, profileId: secondProfile, otherStoreId });
   process.stdout.write('Migrações: banco vazio, evolução com dados preservados, RLS e privilégios efetivos comprovados.\n');
 } finally {
   await runtime?.end();

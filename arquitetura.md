@@ -310,6 +310,27 @@ dos filtros/página. Avisos/comentários resolvem o ticket real. Contratos e
 comandos em [T09 local](docs/rewards-local.md). Transições/devolução seguem em
 T10, álbum em T11 e composição completa da Lojinha/novidades em T12.
 
+### 3.5. Andamento e devolução em T10
+
+Redemption mantém snapshots T09 e acrescenta versão, combinado/data civil,
+origem do pedido e marcos de realização/cancelamento. RedemptionEvent passa a
+ter versão única por ticket, UUID/digest, estados, texto/data, pedido resolvido
+e impacto. Alterações da projeção exigem evento correspondente no commit;
+runtime não pode atualizar snapshots, eventos ou ledger. Só uma transição da
+versão observada vence, inclusive realização × cancelamento.
+
+REDEMPTION_REFUND é positivo, único por ticket, igual ao custo congelado e ligado
+ao débito/evento de cancelamento. Não participa da cadeia de conquista ou dos
+ganhos/ajustes de atividade. Reposição limitada opt-in usa revisão exclusiva,
+com escolha auditada, sem reabrir mimo arquivado nem compartilhar uma alteração
+com auditoria administrativa. Estado, evento, refund, estoque e outbox confirmam
+juntos pelo lock de loja, inclusive durante pausa ou encerramento (D03).
+
+Eventos crescem com paginação; replay retorna evento aplicado e ticket atual,
+reautorizando a audiência antes da recuperação. Outbox REDEMPTION_UPDATED aponta
+ao evento real e à outra pessoa da relação. Contratos/comandos em
+[T10 local](docs/tickets-local.md). Álbum integra T11.
+
 ## 4. Modelo conceitual de dados
 
 A tabela descreve o modelo completo proposto. T02/T04/T05/T06/T07/T08/T09 implementam os

@@ -571,3 +571,33 @@ A migração T09 tem fins de linha mistos já aplicados. Uma regra `-text` em
 `.gitattributes`, restrita a esse arquivo, preserva seus bytes no Git. Os hashes
 do índice e dos dois bancos foram comparados, sem alterar migrações anteriores
 ou checksums aplicados. A exceção cosmética de whitespace está no plano T09.
+
+## Execução de T10
+
+Desenho e limites confirmados antes da implementação. A orquestração do Toolkit
+usou escritores exclusivos de dados, domínio e interface, com root responsável
+por contratos, HTTP, runtime, documentos e execução serial dos recursos mutáveis.
+Revisões independentes de SQL/segurança e interface foram somente leitura.
+
+Context7 confirmou a transação interativa Prisma v7 e a History API do Next.
+O índice não oferece a versão exata Next 16.4.2; a integração foi conferida
+também contra tipos e build instalados. Nenhum dado privado foi consultado.
+
+Os bancos `meumimo_t10_dev`, `meumimo_t10_shadow` e `meumimo_t10` usam PostgreSQL
+local na stack Docker existente. Duas migrações aditivas foram aplicadas aos
+bancos T10, sem reset dos anteriores. Auth/Storage continuam na stack meumimo-t02,
+com namespaces T10 e credenciais separadas de runtime, worker e migração.
+
+A revisão levou a duas reproduções: foco perdido ao paginar o histórico e
+SQL aceitando motivo formado só por espaços Unicode. Os testes falharam antes
+e passaram após as correções; a guarda de texto foi adicionada por nova migração,
+preservando os bytes de todas as migrações aplicadas.
+
+`check` passou com lint, tipos, build e 7+9 testes. A prova de migração passou
+com doze migrações; a repetição HTTP final passou 249/249, sem skips. Resultados
+do navegador e revisão final estão no [plano T10](superpowers/plans/2026-10-22-t10-realizacao-cancelamento.md).
+Comandos e contratos em [tickets locais](tickets-local.md).
+
+O idealizador autorizou a sequência até T15 e pediu primeiro a versão web local
+com PostgreSQL configurado. Provedores, custos, publicação e aparelhos físicos
+foram adiados; nenhuma dessas conferências será atribuída aos testes locais.

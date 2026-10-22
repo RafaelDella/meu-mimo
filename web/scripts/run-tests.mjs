@@ -9,12 +9,13 @@ if (!['unit', 'integration'].includes(mode) || process.argv.length > 3) {
   throw new Error('Modo de testes inválido: use unit ou integration.');
 }
 const excluded = new Set(['e2e', 'fixtures', 'integration']);
-if (mode === 'integration' && !['t04', 't05', 't06', 't07', 't08', 't09'].includes(process.env.T02_TASK)) excluded.add('stores');
-if (mode === 'integration' && !['t05', 't06', 't07', 't08', 't09'].includes(process.env.T02_TASK)) { excluded.add('conversations'); excluded.add('notifications'); }
-if (mode === 'integration' && !['t06', 't07', 't08', 't09'].includes(process.env.T02_TASK)) excluded.add('media');
-if (mode === 'integration' && !['t07', 't08', 't09'].includes(process.env.T02_TASK)) excluded.add('activities');
-if (mode === 'integration' && !['t08', 't09'].includes(process.env.T02_TASK)) excluded.add('points');
-if (mode === 'integration' && process.env.T02_TASK !== 't09') excluded.add('redemptions');
+if (mode === 'integration' && !['t04', 't05', 't06', 't07', 't08', 't09', 't10'].includes(process.env.T02_TASK)) excluded.add('stores');
+if (mode === 'integration' && !['t05', 't06', 't07', 't08', 't09', 't10'].includes(process.env.T02_TASK)) { excluded.add('conversations'); excluded.add('notifications'); }
+if (mode === 'integration' && !['t06', 't07', 't08', 't09', 't10'].includes(process.env.T02_TASK)) excluded.add('media');
+if (mode === 'integration' && !['t07', 't08', 't09', 't10'].includes(process.env.T02_TASK)) excluded.add('activities');
+if (mode === 'integration' && !['t08', 't09', 't10'].includes(process.env.T02_TASK)) excluded.add('points');
+if (mode === 'integration' && !['t09', 't10'].includes(process.env.T02_TASK)) excluded.add('redemptions');
+if (mode === 'integration' && process.env.T02_TASK !== 't10') excluded.add('tickets');
 const root = mode === 'integration' ? path.join(testsRoot, 'integration') : testsRoot;
 if (mode === 'integration') {
   try { await access(root); } catch { throw new Error('Nenhuma suíte de integração implementada.'); }

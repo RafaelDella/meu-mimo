@@ -47,7 +47,7 @@ export type PointsEntryView = {
   reviewEventId: string | null; compensatesEntryId: string | null;
 };
 export type ReviewAction = 'APPROVE' | 'CONTEST' | 'VOID' | 'REOPEN';
-export type PointsKind = 'ACTIVITY_CREDIT' | 'ACTIVITY_REVERSAL' | 'ACTIVITY_RESTORE' | 'REDEMPTION_DEBIT';
+export type PointsKind = 'ACTIVITY_CREDIT' | 'ACTIVITY_REVERSAL' | 'ACTIVITY_RESTORE' | 'REDEMPTION_DEBIT' | 'REDEMPTION_REFUND';
 export type ReviewImpact = { available: string; delta: string; resulting: string };
 export type ReviewEventView = {
   id: string; submissionId: string; kind: ReviewAction | 'RESPOND' | 'RECEIVED' | 'AUTO_APPROVED';

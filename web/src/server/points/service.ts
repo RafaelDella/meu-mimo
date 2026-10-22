@@ -63,7 +63,7 @@ export async function readPoints(identity: Identity, storeId: string, query = ne
 
 export async function listPointsEntries(identity: Identity, storeId: string, query = new URLSearchParams()): Promise<PageResult<PointsEntryView>> {
   const page = pagination(query);
-  const kind = choice(query, 'kind', ['ACTIVITY_CREDIT', 'ACTIVITY_REVERSAL', 'ACTIVITY_RESTORE', 'REDEMPTION_DEBIT'] as const);
+  const kind = choice(query, 'kind', ['ACTIVITY_CREDIT', 'ACTIVITY_REVERSAL', 'ACTIVITY_RESTORE', 'REDEMPTION_DEBIT', 'REDEMPTION_REFUND'] as const);
   const from = query.has('from') ? localDate(query.get('from')) : null;
   const to = query.has('to') ? localDate(query.get('to')) : null;
   if (from && to && from > to) invalidField();

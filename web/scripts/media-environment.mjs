@@ -3,7 +3,7 @@ import { assertLocalDatabase, readState, taskResources } from './local-runtime.m
 
 export function mediaEnvironment(target = 'integration', task = 't06') {
   if (!['integration', 'development'].includes(target)) throw new Error('Use integration ou development.');
-  if (!['t06', 't07', 't08', 't09'].includes(task)) throw new Error('Use t06, t07, t08 ou t09 para mídia.');
+  if (!['t06', 't07', 't08', 't09', 't10'].includes(task)) throw new Error('Use t06, t07, t08, t09 ou t10 para mídia.');
   const resources = taskResources(task);
   const state = readState(task);
   if (!state.media || state.media.bucket !== 'meumimo-t06-private') throw new Error(`Execute local:prepare:${task} para preparar mídia.`);

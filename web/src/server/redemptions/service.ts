@@ -17,6 +17,8 @@ import { localDate } from '../submissions/validation.ts';
 import { requireRedeemingParticipant, requireTicket } from './access.ts';
 import { ticketView } from './views.ts';
 
+export { transitionTicket, lookupTicketTransition, listTicketEvents } from './transitions.ts';
+
 function redemptionInput(body: Record<string, unknown>) {
   allowedFields(body, ['operationId', 'expectedVersion', 'expectedBalance']);
   const id = operationId(body);

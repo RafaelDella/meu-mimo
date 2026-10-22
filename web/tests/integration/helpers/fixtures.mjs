@@ -53,7 +53,7 @@ export async function createFixture(t) {
   }
 
   async function deleteChain(table, reference, scope, values) {
-    assert.ok(['PointsEntry:compensatesEntryId', 'SubmissionReviewEvent:requestId'].includes(table + ':' + reference));
+    assert.ok(['PointsEntry:compensatesEntryId', 'SubmissionReviewEvent:requestId', 'RedemptionEvent:requestId'].includes(table + ':' + reference));
     const ids = (await database.query(`SELECT id FROM app."${table}" WHERE ${scope}`, values)).rows.map(row => row.id);
     let remaining = ids.length;
     while (remaining) {
@@ -92,7 +92,7 @@ export async function createFixture(t) {
       const submissionScope = '"storeId" = ANY($1::uuid[]) OR "authorProfileId" = ANY($2::uuid[]) OR "participantMembershipId" IN (SELECT id FROM app."Membership" WHERE "profileId" = ANY($2::uuid[]))';
       await deleteChain('PointsEntry', 'compensatesEntryId',
         `"storeId" = ANY($1::uuid[]) OR "submissionId" IN (SELECT id FROM app."ActivitySubmission" WHERE ${submissionScope}) OR "redemptionId" IN (SELECT id FROM app."Redemption" WHERE ${submissionScope}) OR "actorProfileId" = ANY($2::uuid[])`, scopeValues);
-      await database.query(`DELETE FROM app."RedemptionEvent" WHERE "redemptionId" IN (SELECT id FROM app."Redemption" WHERE ${submissionScope}) OR "actorProfileId" = ANY($2::uuid[])`, scopeValues);
+      await deleteChain('RedemptionEvent', 'requestId', `"redemptionId" IN (SELECT id FROM app."Redemption" WHERE ${submissionScope}) OR "actorProfileId" = ANY($2::uuid[])`, scopeValues);
       await database.query(`DELETE FROM app."Redemption" WHERE ${submissionScope}`, scopeValues);
       await database.query('DELETE FROM app."RewardEvent" WHERE "storeId" = ANY($1::uuid[]) OR "actorProfileId" = ANY($2::uuid[])', scopeValues);
       await database.query('DELETE FROM app."Reward" WHERE "storeId" = ANY($1::uuid[]) OR "createdByProfileId" = ANY($2::uuid[])', scopeValues);
@@ -108,7 +108,7 @@ export async function createFixture(t) {
       const mediaScope = '"authorProfileId" = ANY($2::uuid[]) OR "collectionId" IN (SELECT id FROM app."MediaCollection" WHERE ' + conversationScope + ')';
       const media = await database.query(`SELECT id FROM app."MediaAsset" WHERE ${mediaScope}`, scopeValues);
       if (media.rowCount) {
-        assert.ok(['t06', 't07', 't08', 't09'].includes(environment.task), 'Mídia de fixture só pode existir nos domínios reservados T06/T07/T08/T09.');
+        assert.ok(['t06', 't07', 't08', 't09', 't10'].includes(environment.task), 'Mídia de fixture só pode existir nos domínios reservados T06/T07/T08/T09/T10.');
         const { listAssetObjects, deleteObjects } = await import('../../../src/server/media-worker/storage.ts');
         for (const item of media.rows) await deleteObjects(await listAssetObjects(item.id));
       }

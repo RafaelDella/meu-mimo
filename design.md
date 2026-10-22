@@ -7,7 +7,14 @@ Recorte T09: catálogo e emissão/histórico de tickets seguem o
 Detalhe usa página responsiva e confirmação em diálogo; catálogo seleciona
 ilustrações locais. Quantidade é a disponível agora; edição antiga não repõe
 unidades consumidas. Vale preserva o conteúdo da ocasião. Realização/cancelamento
-pertencem a T10, álbum a T11 e composição completa da Lojinha a T12.
+seguem o [desenho T10 confirmado](docs/superpowers/specs/2026-10-22-t10-realizacao-cancelamento-design.md),
+álbum a T11 e composição completa da Lojinha a T12.
+
+T10 acrescenta ações por estado no ticket, combinado revisável de até500
+caracteres Unicode com data civil opcional e realização direta dos estados
+abertos. Pedido bloqueia realização; recusa motivada restaura o estado anterior.
+Cancelamento mostra devolução exata e reposição inicialmente desmarcada; terminais
+mantêm histórico/conversa. Timeline é paginada e saldos da emissão são históricos.
 
 Este documento reúne a direção visual existente, a experiência aprovada como referência no protótipo e a proposta de produto. As decisões confirmadas pelo idealizador estão na seção 5; os comportamentos operacionais propostos para completar os fluxos estão identificados ao longo do documento. A seção 21 registra a consolidação do protótipo com esta especificação; `requisitos.md` complementa as regras de implementação.
 

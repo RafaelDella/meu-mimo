@@ -7,7 +7,7 @@ import { readState, taskResources, webRoot } from './local-runtime.mjs';
 import { prepareMediaTools } from './media-tools.mjs';
 
 const task = process.argv[2] ?? 't06';
-if (!['t06', 't07', 't08', 't09'].includes(task)) throw new Error('Use t06, t07, t08 ou t09 para preparar mídia.');
+if (!['t06', 't07', 't08', 't09', 't10'].includes(task)) throw new Error('Use t06, t07, t08, t09 ou t10 para preparar mídia.');
 execFileSync(process.execPath, ['scripts/prepare-local.mjs', task], { cwd: webRoot, windowsHide: true, stdio: 'inherit' });
 const resources = taskResources(task);
 const state = readState(task);

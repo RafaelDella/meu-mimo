@@ -1,5 +1,5 @@
 import '../only.ts';
-import type { ActivitySubmission, SubmissionReviewEvent } from '../../generated/prisma/client.ts';
+import type { ActivitySubmission, Redemption, RedemptionEvent, SubmissionReviewEvent } from '../../generated/prisma/client.ts';
 import type { StoreScope } from '../stores/transaction.ts';
 import { invalidField } from '../stores/validation.ts';
 
@@ -31,4 +31,19 @@ export async function recordReviewPoints(scope: StoreScope, submission: Activity
     participantMembershipId: submission.participantMembershipId, submissionId: submission.id,
     actorProfileId: event.actorProfileId, kind, amount: event.delta, sourceKey,
     reviewEventId: event.id, compensatesEntryId: terminalId, createdAt: event.createdAt } });
+}
+
+/** A devolução compensa somente o débito da emissão, sem participar da cadeia de atividades. */
+export async function refundRedemption(scope: StoreScope, ticket: Redemption, event: RedemptionEvent): Promise<void> {
+  if (event.kind !== 'CANCEL' || event.redemptionId !== ticket.id || event.storeId !== scope.store.id ||
+      event.actorProfileId !== scope.identity.userId || event.delta !== BigInt(ticket.rewardCost)) invalidField();
+  const debit = await scope.tx.pointsEntry.findUnique({ where: { sourceKey: `redemption.debit:${ticket.id}` } });
+  if (!debit || debit.redemptionId !== ticket.id || debit.kind !== 'REDEMPTION_DEBIT' ||
+      debit.storeId !== scope.store.id || debit.participantMembershipId !== ticket.participantMembershipId ||
+      debit.amount !== -event.delta) invalidField();
+  await scope.tx.pointsEntry.create({ data: { storeId: scope.store.id,
+    participantMembershipId: ticket.participantMembershipId, redemptionId: ticket.id,
+    actorProfileId: event.actorProfileId, kind: 'REDEMPTION_REFUND', amount: event.delta,
+    sourceKey: `redemption.refund:${ticket.id}`, redemptionEventId: event.id,
+    compensatesEntryId: debit.id, createdAt: event.createdAt } });
 }

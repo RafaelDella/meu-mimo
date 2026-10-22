@@ -10,7 +10,7 @@
 
 **Especificação:** [requisitos](../../../requisitos.md), [arquitetura](../../../arquitetura.md), [design](../../../design.md) e [README](../../../README.md). Operação e qualidade: [onboarding](../../onboarding.md), [setup](../../setup.md) e [quality](../../quality.md).
 
-**Data:** 22/10/2026. **Estado atual:** M0 e T01–T09 entregues localmente; T03 conserva a conferência com leitor de tela real. T09 integra catálogo, resgate atômico, estoque e histórico de tickets; evidências no [plano T09](2026-10-22-t09-catalogo-resgates.md). D06 e limites do catálogo estão confirmados. A próxima entrega é T10: combinado, realização e cancelamento/devolução. Decisões confirmadas e propostas restantes constam em requisitos §6.1. A seção 1 preserva o ponto de partida do planejamento.
+**Data:** 22/10/2026. **Estado atual:** M0 e T01–T10 entregues localmente; T03 conserva a conferência com leitor de tela real. T10 integra combinado, realização, pedido/recusa de cancelamento, devolução única e reposição explícita; evidências e limitação pontual do Chromium no [plano T10](2026-10-22-t10-realizacao-cancelamento.md). A próxima entrega é T11, álbum privado. Os desenhos T11–T15 foram confirmados; o idealizador priorizou web/PostgreSQL locais e adiou provedores, publicação e aparelhos físicos. Esses gates permanecem abertos. Decisões constam em requisitos §6.1; a seção 1 preserva o ponto de partida do planejamento.
 
 ## 1. Ponto de partida e restrições
 
@@ -231,9 +231,15 @@ continuam nas etapas seguintes; aparelhos físicos e leitor de tela não observa
 **Responsável:** domínio de tickets. **Depende de:** T09 e D06.
 **Arquivos:** `web/src/server/{redemptions,points}/**`, `web/src/app/lojas/[storeId]/tickets/**`, `web/src/components/tickets/**`, `web/tests/{integration,e2e}/tickets/**`, `web/prisma/**`. **Recursos:** padrão T10.
 
-- [ ] Entregar L08/P09 com conversa e linha do tempo: aguardando combinar, combinado, realizado, cancelamento solicitado e cancelado/estornado.
-- [ ] Pedido em análise impede realização; recusa com motivo restaura estado anterior. Lojista pode iniciar cancelamento; estorno e eventual reposição de estoque obedecem ao contrato aprovado.
-- [ ] Verificar realizar duas vezes, cancelar duas vezes, realizar concorrendo com cancelamento, tickets em loja pausada/relação encerrada e devolução que não conta como conquista. Tickets não expiram no MVP e realização não debita de novo.
+- [x] Entregar L08/P09 com conversa e linha do tempo: aguardando combinar, combinado, realizado, cancelamento solicitado e cancelado/estornado.
+- [x] Pedido em análise impede realização; recusa com motivo restaura estado anterior. Lojista pode iniciar cancelamento; estorno e eventual reposição de estoque obedecem ao contrato aprovado.
+- [x] Verificar realizar duas vezes, cancelar duas vezes, realizar concorrendo com cancelamento, tickets em loja pausada/relação encerrada e devolução que não conta como conquista. Tickets não expiram no MVP e realização não debita de novo.
+
+T10: `check`, doze migrações e 249 HTTP reais aprovados. Chromium executou os
+454 cenários: 453 passaram na repetição final e um convite antigo falhou ao
+carregar um chunk com `ERR_NO_BUFFER_SPACE`; passou isoladamente em 320/390.
+Os 72 cenários novos passaram, com foco/200% e privacidade. Revisões independentes
+encerradas após provas de regressão; contratos em [tickets locais](../../tickets-local.md).
 
 ### T11 · Álbum privado por ticket
 

@@ -138,3 +138,8 @@ Para catálogo, emissão e histórico de tickets, siga [T09 local](rewards-local
 O preparo seleciona desenvolvimento T09; integração usa `meumimo_t09`, prefixos
 próprios e Next4310/mídia4311. Execute os comandos/migrações T09 antes de abrir
 o catálogo. Não reutilize o estado da demonstração como saldo ou dados reais.
+
+Para combinado, realização e cancelamento/devolução, siga [T10 local](tickets-local.md).
+O preparo seleciona desenvolvimento T10; integração usa `meumimo_t10`, namespaces
+Storage próprios e Next4310/mídia4311. Encerramento preserva o tratamento dos tickets;
+revogação continua retirando acesso. Execute migrações/checks/modos em série.

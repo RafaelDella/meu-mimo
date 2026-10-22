@@ -14,6 +14,8 @@ export const notificationSelect = {
     submission: { select: { id: true, status: true } },
     reviewEvent: { select: { id: true } },
     redemption: { select: { id: true } },
+    redemptionEvent: { select: { id: true, kind: true, redemptionId: true, storeId: true,
+      pointsEntry: { select: { kind: true, redemptionId: true } } } },
   } },
 } satisfies Prisma.NotificationSelect;
 
@@ -34,6 +36,10 @@ export function notificationAudience(identity: Identity, storeId?: string): Pris
       { kind: 'SUBMISSION_RESPONDED', reviewEventId: { not: null }, submission: { status: { not: 'DRAFT' } },
         recipientMembership: { role: 'MERCHANT' } },
       { kind: 'REDEMPTION_ISSUED', redemptionId: { not: null }, recipientMembership: { role: 'MERCHANT' } },
+      { kind: 'REDEMPTION_UPDATED', redemptionId: { not: null }, redemptionEvent: { kind: 'REQUEST_CANCELLATION' },
+        recipientMembership: { role: 'MERCHANT' } },
+      { kind: 'REDEMPTION_UPDATED', redemptionId: { not: null }, redemptionEvent: { kind: { in: ['AGREE', 'FULFILL', 'REJECT_CANCELLATION', 'CANCEL'] } },
+        recipientMembership: { role: 'PARTICIPANT' } },
     ],
   } };
 }
@@ -51,10 +57,14 @@ export async function notificationTarget(notification: SelectedNotification, tx:
   const { event } = notification;
   const common = { storeId: event.storeId, participantMembershipId: event.participantMembershipId };
   if (event.kind === 'INVITATION_ACCEPTED') return { ...common, type: 'membership', path: `/lojas/${event.storeId}/pessoas` };
-  if (event.kind === 'REDEMPTION_ISSUED') {
+  if (event.kind === 'REDEMPTION_ISSUED' || event.kind === 'REDEMPTION_UPDATED') {
     if (!event.redemption) unavailable();
+    const transition = event.redemptionEvent;
+    if (event.kind === 'REDEMPTION_UPDATED' && (!transition || transition.storeId !== event.storeId ||
+        transition.redemptionId !== event.redemption.id || (transition.kind === 'CANCEL' &&
+        (transition.pointsEntry?.kind !== 'REDEMPTION_REFUND' || transition.pointsEntry.redemptionId !== event.redemption.id)))) unavailable();
     return { ...common, type: 'ticket', subjectId: event.redemption.id,
-      path: `/lojas/${event.storeId}/tickets/${event.redemption.id}` };
+      path: `/lojas/${event.storeId}/tickets/${event.redemption.id}${transition ? `?evento=${transition.id}` : ''}` };
   }
   if (['SUBMISSION_RECEIVED', 'SUBMISSION_REVIEWED', 'SUBMISSION_RESPONDED'].includes(event.kind)) {
     if (!event.submission || event.submission.status === 'DRAFT') unavailable();

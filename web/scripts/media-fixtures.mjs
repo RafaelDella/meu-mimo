@@ -6,7 +6,7 @@ import sharp from 'sharp';
 import { readState, taskResources } from './local-runtime.mjs';
 
 const task = process.argv[2] ?? 't06';
-if (!['t06', 't07', 't08', 't09'].includes(task)) throw new Error('Use t06, t07, t08 ou t09 para fixtures de mídia.');
+if (!['t06', 't07', 't08', 't09', 't10'].includes(task)) throw new Error('Use t06, t07, t08, t09 ou t10 para fixtures de mídia.');
 const state = readState(task);
 if (!state.media?.ffmpeg || !state.media?.ffprobe) throw new Error('Prepare a mídia T06 antes das fixtures.');
 const directory = path.join(taskResources(task).directory, 'fixtures');

@@ -137,6 +137,15 @@ foco/teclado, 320/390 e texto 200%. A evolução preserva dados T07/T08 e nega
 emissão gratuita, reserva sem ticket e auditoria administrativa tardia.
 Evidências, revisão e limites no [plano T09](superpowers/plans/2026-10-22-t09-catalogo-resgates.md).
 
+T10 acrescenta 38 casos HTTP reais (249 com regressões), com realização versus
+cancelamento, devolução única do custo congelado, reposição explícita e rollback
+de cada efeito. A prova de evolução verifica doze migrações, privilégios
+restritos e preservação da cadeia financeira. A guarda SQL rejeita motivos
+formados só por espaços Unicode ou caracteres de controle, além dos limites da
+API. No navegador, o histórico conserva foco ao mudar de página e a recuperação
+de intenção usa UUID sem persistir textos privados. Evidências e limites no
+[plano T10](superpowers/plans/2026-10-22-t10-realizacao-cancelamento.md).
+
 ## Revisão de segurança reutilizável
 
 Fonte e invocação: leia a seção Prompt de

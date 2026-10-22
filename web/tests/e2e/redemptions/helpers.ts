@@ -22,7 +22,11 @@ export function ticket(overrides: Partial<TicketView> = {}): TicketView {
     snapshot: { name: 'Café da ocasião', description: 'Um café preparado com carinho.', category: 'A dois', sticker: 'coffee', cost: 10,
       note: 'Um recadinho só nosso.', instructions: 'Converse para combinar o dia.', rewardVersion: 1 }, balanceBefore: '15', balanceAfter: '5',
     conversation: { id: conversationId, storeId: ids.first, participantMembershipId: store().membershipId, subjectType: 'TICKET', subjectId: ticketId, writable: true },
-    events: [{ id: ticketId, kind: 'ISSUED', createdAt: now, author: { displayName: 'Ana participante' } }], ...overrides };
+    version: 1, agreementText: '', agreementDate: null, fulfilledAt: null, cancelledAt: null, eventsTotal: 1,
+    pendingCancellation: null, actions: [], cancellationImpact: null,
+    events: [{ id: ticketId, kind: 'ISSUED', version: 1, fromStatus: null, toStatus: 'WAITING_AGREEMENT', text: '', agreementDate: null,
+      requestId: null, delta: '0', restocked: false, stockBefore: null, stockAfter: null, stockRevision: null, balanceBefore: null, balanceAfter: null,
+      createdAt: now, author: { displayName: 'Ana participante' } }], ...overrides };
 }
 export type RewardState = {
   merchant: boolean; balance: string; pending: string; current: RewardView; rewards: RewardView[]; tickets: TicketView[];

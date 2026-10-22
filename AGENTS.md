@@ -26,6 +26,8 @@ T07 entrega atividades, conquistas e crédito automático; comandos e limites em
 `docs/activities-local.md`. T08 entrega análise, complementos, compensações e
 extrato; comandos e limites em `docs/points-local.md`.
 T09 entrega catálogo, resgates e tickets; contratos e comandos em `docs/rewards-local.md`.
+T10 acrescenta combinado, realização, cancelamento/devolução e reposição explícita;
+contratos e comandos em `docs/tickets-local.md`.
 O plano da fundação e as dependências estão em
 [M0](docs/superpowers/plans/2026-10-22-m0-fundacao.md).
 
@@ -56,6 +58,8 @@ T08 usa `test:integration:t08`, domínio `meumimo_t08`, Next 4310/mídia 4311,
 Storage com prefixo próprio e bancos dev/shadow separados.
 T09 usa `test:integration:t09`, domínio `meumimo_t09`, as mesmas portas em série
 e namespaces `t09-development`/`t09-integration`, com dev/shadow separados.
+T10 usa `test:integration:t10`, domínio `meumimo_t10`/dev/shadow, namespaces próprios
+e Next4310/mídia4311, em série com os modos anteriores.
 T05 usa `test:integration:t05`, domínio `meumimo_t05` e a mesma porta em série;
 o consumidor local tem comando próprio e credencial restrita.
 T06 usa `test:integration:t06`, bancos `meumimo_t06`/dev/shadow e gateway local
