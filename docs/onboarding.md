@@ -12,6 +12,7 @@ Na raiz do checkout:
 node --version
 npm --version
 npm ci
+npm --prefix web ci
 npm run check
 npm run dev
 ```
@@ -47,6 +48,34 @@ Os registros de conferências anteriores estão em [prototype/QA.md](../prototyp
 
 O servidor usa somente `127.0.0.1`, sem acesso a produção. Encerre com `Ctrl+C`.
 Não há banco para preparar nem migrações para executar nesta base.
+
+## Continuidade após M0
+
+A base de Next.js/React/TypeScript em `web/`, PostgreSQL/Prisma e Supabase
+Auth/Storage foi confirmada em M0. T01 implementa a aplicação sem serviços;
+os contratos e dependências estão no
+[plano da fundação](superpowers/plans/2026-10-22-m0-fundacao.md).
+
+Após instalar os dois pacotes, `npm run web:dev` atende em 4301, enquanto
+`npm run dev` continua atendendo a demonstração em 4173. Não inicie builds,
+geração de tipos ou outra tarefa Next ao mesmo tempo neste checkout.
+
+```sh
+npm run web:typecheck
+npm run web:build
+npm --prefix web exec -- playwright install chromium
+npm run web:test:e2e
+```
+
+O teste de navegador usa o build de produção e recusa reutilizar servidor existente.
+No Linux, `playwright install --with-deps chromium` também prepara bibliotecas
+do sistema necessárias. A CLI está no pacote, sem instalação global.
+
+T01 não exige banco ou credenciais. T02 exige as decisões de acesso e um
+ambiente local de Supabase comprovado. Em M0 foi encontrado um shim npm chamado
+`docker`, sem comprovação de Docker Engine/CLI real, e nenhuma CLI Supabase no
+PATH. Preparar esse ambiente é uma dependência explícita de T02, sem instalação
+global automática. Isso não bloqueia a fundação ou as composições estáticas.
 
 ## Recuperação e continuidade
 

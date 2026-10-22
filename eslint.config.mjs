@@ -6,7 +6,7 @@ export default [
   {
     ignores: [
       '**/node_modules/**', '.artifacts/**', '.agents/**', '.claude/**',
-      '.codex/**', '**/.sites-local/**', '**/qa/**', '**/coverage/**',
+      '.codex/**', '**/.sites-local/**', '**/qa/**', '**/coverage/**', 'web/**',
     ],
   },
   js.configs.recommended,

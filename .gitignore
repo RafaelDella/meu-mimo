@@ -8,6 +8,11 @@ coverage/
 qa/
 *.log
 *.tar.gz
+.next/
+next-env.d.ts
+*.tsbuildinfo
+test-results/
+playwright-report/
 
 # Credenciais ficam fora do controle de versão.
 .env

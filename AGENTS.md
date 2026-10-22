@@ -11,25 +11,32 @@
 
 ## Estado e comandos
 
-A implementação atual está em `prototype/`: HTML, CSS e JavaScript ESM,
-Node.js 24 e npm. `prototype/dist/` é código-fonte manual e deve ser versionado
-e verificado. Next.js/React/TypeScript e PostgreSQL são propostas futuras;
-Prisma foi escolhido para o acesso e as migrações do futuro banco.
+A demonstração está em `prototype/`: HTML, CSS e JavaScript ESM.
+`prototype/dist/` é código-fonte manual e deve ser versionado e verificado.
+A fundação Next.js/React/TypeScript está em `web/`, com Node.js 24 e npm.
+PostgreSQL/Prisma e Supabase Auth/Storage continuam para T02, sem serviços
+implementados em T01. O plano da fundação e as dependências estão em
+[M0](docs/superpowers/plans/2026-10-22-m0-fundacao.md).
 
 Na raiz:
 
 ```sh
 npm ci
+npm --prefix web ci
 npm run dev
+npm run web:dev
 npm run lint
 npm run lint:rules
 npm test
 npm run check
 ```
 
-O servidor atende em `http://127.0.0.1:4173`. Não há build nem typecheck
-porque o protótipo não usa bundler ou TypeScript. Os comandos existentes de
-`prototype/package.json` continuam válidos dentro daquela pasta.
+O protótipo atende em `http://127.0.0.1:4173`; a aplicação em
+`http://127.0.0.1:4301`. Execute cada servidor em seu terminal.
+`web:typecheck` e `web:build` verificam a aplicação; `web:test:e2e` testa o build
+com Chromium previamente instalado pelo Playwright. O `check` agrega a base e
+`web/`, sem iniciar banco. Lint da raiz cobre a base; `web:lint` cobre `web/`.
+Os comandos de `prototype/package.json` continuam válidos naquela pasta.
 
 ## Acordos de trabalho
 

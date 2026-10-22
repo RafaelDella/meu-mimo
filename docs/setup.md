@@ -175,3 +175,64 @@ A integração do GitHub disponível nesta sessão retornou falta de acesso ao
 destino; a consulta pelo Git local funcionou. A conexão local foi utilizada
 para configurar o remoto e preparar o envio. Os resultados de setup acima
 continuam sendo o histórico anterior à importação inicial.
+
+## M0 — preparação da implementação
+
+Em 22/10/2026, M0 foi preparado na branch `codex/m0-contracts`, a partir de
+`51fd20c`. O idealizador confirmou D01: Next.js/React/TypeScript em `web/`,
+PostgreSQL/Prisma e Supabase Auth/Storage, com desenvolvimento/teste local,
+sem contratação ou publicação. Versões selecionadas e escolhas técnicas
+estão em `arquitetura.md`, seção 1.1; propostas de produto e dependências em
+`requisitos.md`, seção 6.1. O [plano da fundação](superpowers/plans/2026-10-22-m0-fundacao.md)
+detalha T01–T03 e as evidências.
+
+Nesta sessão, a skill local `vibe-coding-toolkit`, as skills de processo e as
+ferramentas Context7 foram descobertas. Foram executadas resolução e consulta
+de documentação para Next, Prisma e Supabase; isso atualiza o estado de consulta
+pendente no histórico do setup acima, sem alterar ou duplicar a configuração
+global. Análises de produto/fundação foram delegadas somente para leitura;
+o orquestrador manteve a escrita dos documentos.
+
+O registro npm foi consultado e um ensaio `npm install --dry-run` em
+`.artifacts/m0/compatibility/` resolveu a árvore sem criar dependências ou
+lockfile no ensaio. A aplicação continua sem `web/` ou dependências de produção.
+Next/React/TS, Prisma e Supabase não foram instalados. O engine de contêineres
+não foi comprovado e a CLI Supabase não está no PATH; preparar serviços locais
+é dependência de T02. T01 não exige esses serviços. Os gates atuais passaram
+com as três regras locais e 7/7 testes da demonstração.
+
+## M1/T01 — fundação da aplicação
+
+T01 acrescenta `web/` como pacote independente, com lockfile próprio e versões
+de aplicação/CSS/testes registradas em arquitetura §1.1. O parser
+`typescript-eslint` 8.72.0 foi declarado diretamente para os testes de AST.
+Banco, Prisma e Supabase continuam sem instalação ou serviço em T01.
+
+O lint da raiz permanece no ESLint 10; `web/` usa ESLint 9 por compatibilidade
+declarada dos plugins do preset Next. O npm informa que essa linha do ESLint
+está fora de suporte; reavaliar a versão quando os plugins aceitarem a linha
+suportada, sem forçar peers ou enfraquecer gates. A instalação também informou
+postinstall de `unrs-resolver` não aprovado pelo npm local; lint e builds passaram
+com a configuração efetiva, sem mudar permissões globais.
+
+Context7 foi consultado para configuração Next, Tailwind/PostCSS e Playwright.
+Os casos das regras existentes foram compartilhados, e novos casos usam AST
+TS/TSX real. O build descartável rejeita o marcador `server-only` no cliente;
+o layout normal o importa no servidor. Testes Chromium usam o build de produção,
+com servidor próprio em 4301 e encerramento pelo Playwright. Capturas e traces
+ficam em `web/test-results/`, ignorado pelo Git.
+
+A inspeção de texto 200% encontrou rótulo do botão fora de sua superfície;
+o teste foi fortalecido para conferir os retângulos de texto e reproduziu a
+falha em 320/390 px. O reflow e os espaçamentos foram corrigidos, com os oito
+cenários aprovados em seguida. A conferência não substitui leitor de tela ou
+Android/iPhone reais. O workflow foi preparado para Windows/Ubuntu; execução
+remota ainda não foi observada.
+
+Conferência final de T01: `npm run check` aprovado com três autoverificações,
+7/7 testes do protótipo, 5/5 testes nativos de `web/`, lint sem warnings,
+tipagem e build. O navegador aprovou 8/8 cenários. Os dois lockfiles também
+foram instalados com `npm ci` em snapshot limpo sem dependências/Git interno,
+seguido do mesmo check agregado. A auditoria de produção de `web/` retornou
+zero avisos; o relatório permanece em `.artifacts/`, fora do Git. A revisão
+independente foi aprovada após a correção do CTA. T02/T03 não foram iniciadas.

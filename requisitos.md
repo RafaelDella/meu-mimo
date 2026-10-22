@@ -1,6 +1,6 @@
 # Meu Mimo — requisitos consolidados para implementação
 
-Atualizado em 21 de outubro de 2026. Complementa `design.md` e usa o protótipo em `prototype/` como referência de apresentação.
+Atualizado em 22 de outubro de 2026. Complementa `design.md` e usa o protótipo em `prototype/` como referência de apresentação.
 
 ## 1. Objetivo e escopo
 
@@ -175,6 +175,32 @@ Estas questões não foram confirmadas pelo idealizador; os documentos distingue
 12. Limites de mídias por álbum, formatos, tamanho e duração dos vídeos, processamento, retenção e regras de remoção de memórias de tickets cancelados.
 
 Não é necessário transformar todas essas decisões em telas novas. Muitas definem validações, mensagens, permissões e comportamento do servidor.
+
+### 6.1. Registro de decisões de M0
+
+Em 22/10/2026, o idealizador confirmou D01: Next.js/React/TypeScript em `web/`, PostgreSQL com Prisma e Supabase para Auth/Storage, desenvolvimento e testes locais, sem contratação ou publicação. As seleções de versões e os limites da verificação estão em `arquitetura.md`, seção 1.1.
+
+As recomendações abaixo foram preparadas pelo orquestrador com análise independente de produto. **D02–D09 continuam propostas aguardando decisão do idealizador.** Registrar uma pendência com sua dependência atende M0; não autoriza implementar a política por suposição. T01 pode avançar sem conta/banco; as dependências indicadas continuam fechadas.
+
+| Decisão | Proposta concreta para revisão | Responsável pela decisão e tarefa dependente |
+|---|---|---|
+| D02 · acesso | E-mail/senha com e-mail verificado, recuperação de senha e retorno a caminho interno validado do convite. Administração provisionada fora do cadastro, com papel verificado no servidor e MFA/TOTP para acesso administrativo. Login e estorno foram apresentados ao idealizador em perguntas próprias; ausência de resposta não é aceite. | Idealizador; bloqueia o fluxo de identidade de T02 |
+| D03 · loja e convite | Um responsável; lojista não pontua na própria loja; atividades/catálogo compartilhados; saldo inicial zero; convite revogável, uso único e validade de sete dias, com aceite autenticado/idempotente. Pausa impede novos convites, registros e resgates, permitindo resolver análises anteriores. | Idealizador; T04, T07, T09 |
+| D03 · encerramento | Exigir resolver registros em análise/contestação antes de encerrar loja ou participação. Tickets emitidos não impedem encerramento e continuam acessíveis para realização/cancelamento. Essa resolução de análises pendentes é uma proposta adicional à seção 16.3 do design. | Idealizador; T04 e T10 |
+| D04 · períodos | Semana de segunda-feira 00h até a segunda seguinte no fuso da loja; sem retroatividade no MVP. Única = uma ocorrência por participação; diária = uma por data local; semanal = até N no período, com N inteiro entre 1 e 100 e possibilidade de vários registros no mesmo dia. | Idealizador; T07–T08 |
+| D04 · ocorrência/fuso | Envio recebido ocupa a ocorrência, inclusive se contestado/anulado; complemento e reabertura usam o mesmo registro. Alterar fuso somente antes do primeiro registro/ticket; depois, bloquear mudança no MVP. | Idealizador; configuração de T04 e recorrência de T07 |
+| D04 · limites | Nomes/títulos: 80 caracteres; descrições: 1.000; apresentação: 280; bilhete: 2.000; comentários/motivos: 500. Pontos e custos inteiros de 1 a 1.000.000. Paginação padrão 20, máximo 50, ordenação estável. | Idealizador; T04–T12 conforme recurso |
+| D04 · requisições | Limites separados por conta e contexto: leitura 120/minuto, mutação 30/minuto, autorização de upload 20/minuto; recuperação 3 pedidos/hora/destinatário e login 5 tentativas/minuto/combinação conta+origem. Respostas neutras e espera explícita; validar abuso, concorrência e limitações do provedor antes de fixar implementação. | Idealizador, com validação técnica; T02/T04/T06 |
+| D05 · correções | Contestação mantém crédito existente. Anulação estorna uma vez, admite saldo negativo, preserva tickets e impede novos resgates sem saldo suficiente. Manter aprovação não credita novamente; reabertura recompõe somente o crédito da ocasião. | Idealizador; T08 |
+| D06 · tickets/estoque | Decrementar estoque na emissão. Cancelamento antes da realização devolve pontos uma vez; reposição de item limitado exige escolha explícita do lojista, desligada por padrão. Pedido em análise impede realizar; recusa motivada restaura estado anterior. Disputa após realização usa procedimento operacional a definir para o piloto. | Idealizador; T09–T10 e procedimento em T14 |
+| D07 · mídia | Uma foto opcional por registro; álbum de até 20 itens, até 10 por lote. Foto de até 10 MB, JPEG/PNG/WebP; HEIC/HEIF somente se processamento comprovado. Versão de entrega até 2.048 px e miniatura de 480 px, com orientação correta e localização removida. | Idealizador e prova técnica; T06/T11 |
+| D07 · vídeo | Até 100 MB/60 s; provar entrada MP4/MOV de Android/iPhone e saída reproduzível MP4/H.264/AAC até 1080p. Objetos/miniaturas privados, acesso temporário de cinco minutos, retomada reautorizada e publicação parcial explícita. Conversão/infraestrutura ainda não escolhidas; vídeo continua P0. | Idealizador e prova técnica; T06/T11 |
+| D08 · retenção | Órfãos: 24h sem atividade; originais: remover até 24h após processamento; evidência: 180 dias, sem expurgo durante análise/contestação; álbum: relação ativa e até 12 meses após encerramento; histórico estruturado: até 24 meses após encerramento e resolução de pendências; backups: janela de até 30 dias. Definir anonimização, expurgo e reaplicação de exclusões ao restaurar. | Idealizador; T06/T11/T14 |
+| D08 · direitos e pendências | Procedimento manual identificável de exportação/exclusão antes do piloto; não apagar pendências automaticamente. Ocultar mídia removida imediatamente e expurgar conforme política; exclusão não muda pontos/ticket. Prazos são recomendações de produto, não exigências legais ou política já aceita. | Idealizador; T14 e implementação de retenção |
+| D09 · operação | Duas versões estáveis mais recentes no piloto de Chrome Android/Safari iPhone, com versões exatas registradas e Android intermediário real. Proposta: RPO de 24h e RTO de 8h para banco/arquivos, a comprovar por restauração. Orçamento, disponibilidade, provedor de publicação e canal de suporte ainda sem decisão; nenhum custo autorizado. | Idealizador; T14/T15 |
+| D10 · retrospectiva | Periodicidade, elegibilidade, corte, regeneração e compartilhamento continuam para evolução. Capturar os dados históricos necessários desde o MVP. | Idealizador; E04, sem bloqueio de T01 |
+
+Os limites devem ser validados nos testes do pacote responsável e podem ser ajustados antes da decisão. Nenhum valor desta tabela altera os dados ou as regras da demonstração.
 
 ## 7. Ordem proposta de implementação
 

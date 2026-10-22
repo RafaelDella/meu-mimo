@@ -1,26 +1,52 @@
 # Meu Mimo — proposta técnica e decisões de dados
 
-Atualizado em 21 de outubro de 2026. Complementa `design.md` e `requisitos.md`. Este documento registra decisões e propostas; não representa infraestrutura ou funcionalidades já implementadas.
+Atualizado em 22 de outubro de 2026. Complementa `design.md` e `requisitos.md`. Este documento registra decisões e propostas; não representa infraestrutura ou funcionalidades já implementadas.
 
-## 1. Decisões e base proposta
+## 1. Decisões e base da implementação
 
 **Confirmado pelo idealizador:** aplicação mobile first, Prisma para migrações de estrutura do banco, histórico de pontos e resgates no MVP, várias fotos/vídeos publicados pelo lojista em cada resgate e retrospectiva futura no estilo de apresentação do Spotify Wrapped.
 
-Interpretação adotada para “Prisma DB para migração”: **Prisma ORM e suas ferramentas de migração sobre PostgreSQL**. O provedor de hospedagem do banco permanece uma decisão separada. A base recomendada segue sendo PostgreSQL no Supabase, com Supabase Auth, Storage e Realtime.
+Interpretação adotada para “Prisma DB para migração”: **Prisma ORM e suas ferramentas de migração sobre PostgreSQL**.
 
-| Camada | Proposta | Responsabilidade |
+**D01 confirmada pelo idealizador em M0, em 22/10/2026:** Next.js/React/TypeScript em `web/`, PostgreSQL com Prisma e Supabase para Auth/Storage, com desenvolvimento e testes locais. Essa confirmação não contrata serviços nem autoriza publicação. T01 cria a fundação de `web/` sem serviços; o mecanismo de login continua pendente em D02, em `requisitos.md`, seção 6.1.
+
+| Camada | Seleção e estado | Responsabilidade |
 |---|---|---|
-| Aplicação | Next.js, React e TypeScript | Web, API e serviços da aplicação |
-| Interface | Tailwind CSS e componentes shadcn/ui personalizados | Adaptar identidade, composição e assets do protótipo |
-| Banco | PostgreSQL, inicialmente proposto no Supabase | Persistência relacional e transações |
-| Acesso e migrações | Prisma ORM e migrações versionadas | Modelos, consultas e evolução do banco |
-| Identidade | Supabase Auth | Autenticação e sessões |
-| Fotos | Supabase Storage privado | Upload e acesso autorizado |
-| Eventos ao vivo | Supabase Realtime com audiência autorizada | Avisar a interface sobre mudanças confirmadas |
-| Qualidade | Validação de entrada, testes de regras, integração e navegação | Cobrir autorização, concorrência e uso pelo celular |
-| Publicação | Vercel como opção inicial | Hospedar a aplicação Next.js |
+| Aplicação | Next.js, React e TypeScript; confirmados em D01 | Web, API e serviços da aplicação |
+| Interface | Tailwind CSS; escolha técnica de M0. Componentes shadcn/ui continuam uma opção a avaliar em T03 | Adaptar identidade, composição e assets do protótipo |
+| Banco | PostgreSQL no Supabase; base confirmada em D01, ambiente local ainda não validado | Persistência relacional e transações |
+| Acesso e migrações | Prisma ORM e migrações versionadas; confirmados | Modelos, consultas e evolução do banco |
+| Identidade | Supabase Auth; provedor confirmado, método pendente em D02 | Autenticação e sessões |
+| Fotos e vídeos | Supabase Storage privado; confirmado como serviço, pipeline pendente em D07 | Upload e acesso autorizado |
+| Eventos ao vivo | Supabase Realtime com audiência autorizada; proposta para T05 | Avisar a interface sobre mudanças confirmadas |
+| Qualidade | Validação de entrada, testes de regras, integração e navegação; requisito | Cobrir autorização, concorrência e uso pelo celular |
+| Publicação | Vercel; opção futura, sem implantação autorizada | Hospedar a aplicação Next.js |
 
 Fixar versões estáveis e compatíveis no início da implementação. As interfaces e comandos do Prisma variam entre versões; os comandos operacionais devem ser registrados para a versão escolhida, sem depender de uma instalação implícita de `latest`.
+
+### 1.1. Seleções técnicas de M0
+
+Versões selecionadas em 22/10/2026 por consulta ao registro npm oficial. Os pacotes de T01 estão declarados e fixados em `web/package-lock.json`; banco e identidade continuam como alvos de T02.
+
+| Grupo | Versões exatas selecionadas | Etapa |
+|---|---|---|
+| Runtime preservado | Node.js 24.12.0, npm 11.19.1 | Já existente; mínimo `>=24.12.0 <25` |
+| Aplicação | `next` e `eslint-config-next` 16.4.2; `react` e `react-dom` 19.3.1 | T01 |
+| Tipagem | `typescript` 6.0.3; `@types/node` 24.19.2; `@types/react` e `@types/react-dom` 19.3.0 | T01 |
+| Lint de `web/` | `eslint` e `@eslint/js` 9.39.5; `globals` 16.4.0; `typescript-eslint` 8.72.0 | T01; raiz preserva ESLint 10.13.0 |
+| CSS | `tailwindcss` e `@tailwindcss/postcss` 4.3.3; `postcss` 8.5.23 | T01 |
+| Navegação automatizada | `@playwright/test` 1.64.1 | T01/T03 |
+| Banco | `prisma`, `@prisma/client` e `@prisma/adapter-pg` 7.10.1; `pg` e `@types/pg` 8.23.1 | T02 |
+| Identidade | `@supabase/supabase-js` 2.118.0; `@supabase/ssr` 0.12.7 | T02 |
+| Ferramentas de servidor/local | `server-only` 0.0.1 em T01; `dotenv` 18.0.8 e CLI `supabase` 2.121.0 em T02 | Instalar apenas na etapa que precisar |
+
+Escolhas do orquestrador: TypeScript 6.0.3 respeita o intervalo declarado por `typescript-eslint` (`>=4.8.4 <6.1.0`), enquanto TypeScript 7.0.2 está fora dele. A CLI Prisma em `latest` apontava para `8.0.0-rc.25`; a linha 7.10.1 mantém CLI, cliente e adaptador alinhados em versões estáveis. Plugins React/import/acessibilidade usados pelo preset Next ainda declaram ESLint 9, razão para isolar o lint de `web/` sem alterar o lint atual nem usar instalação forçada.
+
+O ensaio `npm install --dry-run --ignore-scripts --no-audit --no-fund --package-lock=false` resolveu a árvore de aplicação/banco/testes em diretório descartável ignorado, sem instalar pacotes nem criar lockfile. Engines/peers e resolução não comprovam build, execução, segurança ou testes reais: esses aceites pertencem a T01/T02. Os tipos mais recentes da série Node 24 não autorizam depender de APIs posteriores ao runtime mínimo.
+
+Cada pacote npm terá seu lockfile e seus comandos. A raiz continuará atendendo a demonstração em 4173; a nova aplicação usará 4301. Lint, tipos e build executam em série no mesmo checkout. T02/T03 também ficam em série por padrão, pois portas e `distDir` distintos não isolam fontes, `next-env.d.ts` e arquivos incrementais. O plano concreto está em [M0 e fundação](docs/superpowers/plans/2026-10-22-m0-fundacao.md).
+
+Fontes: [registro npm](https://registry.npmjs.org/), [instalação do Next](https://nextjs.org/docs/app/getting-started/installation), [CLI e geração de tipos](https://nextjs.org/docs/app/api-reference/cli/next), [Prisma Migrate v7](https://www.prisma.io/docs/orm/v7/prisma-migrate/workflows/development-and-production), [Supabase com Prisma](https://supabase.com/docs/guides/database/prisma) e [Supabase local](https://supabase.com/docs/guides/local-development/cli/getting-started). Context7 foi consultado para Next, Prisma e Supabase; a documentação versionada do Prisma v7 prevalece sobre páginas genéricas que já descrevem outra linha.
 
 ## 2. Organização da aplicação
 

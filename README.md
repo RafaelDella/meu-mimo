@@ -1,7 +1,7 @@
 # Meu Mimo
 
 Uma lojinha privada de atividades, pontos e recompensas afetivas. Este repositório
-contém o planejamento do produto e um protótipo navegável da pessoa participante.
+contém o planejamento do produto, um protótipo navegável e a fundação da aplicação.
 
 ## Executar a prévia
 
@@ -9,6 +9,7 @@ Com Node.js 24.12 ou superior da série 24 e npm, na raiz:
 
 ```sh
 npm ci
+npm --prefix web ci
 npm run dev
 ```
 
@@ -21,12 +22,34 @@ npm run check
 ```
 
 Esse comando verifica as regras locais, executa ESLint e roda os testes existentes.
-Para mais detalhes e limitações, consulte [qualidade](docs/quality.md).
+Também verifica lint, tipos, testes e build de `web/`. Para detalhes e limitações,
+consulte [qualidade](docs/quality.md).
+
+## Executar a aplicação
+
+```sh
+npm run web:dev
+```
+
+Abra [a aplicação local](http://127.0.0.1:4301). A fundação apresenta o Meu Mimo
+e oferece acesso à demonstração; conta, banco e fluxos reais pertencem às próximas
+etapas. O servidor da prévia em 4173 continua independente.
+
+Para verificar o navegador depois de `npm run check`:
+
+```sh
+npm --prefix web exec -- playwright install chromium
+npm run web:test:e2e
+```
+
+O Playwright inicia o build local, espera a resposta HTTP e encerra seu servidor.
+Se a porta 4301 estiver ocupada, encerre somente seu servidor antes do teste.
 
 ## O que existe hoje
 
 O [protótipo](prototype/README.md) oferece atividades diárias, pontos, catálogo,
 resgate de tickets, extrato e bilhete, com dados de demonstração salvos no navegador.
+`web/` fornece a fundação Next.js/React/TypeScript sem depender de serviços.
 Não há contas reais, banco, convites, sincronização ou notificações entre pessoas.
 
 A aplicação completa está descrita nos documentos abaixo. A adoção do toolkit
@@ -38,6 +61,7 @@ prepara o desenvolvimento e mantém o estágio atual explícito.
 | [arquitetura.md](arquitetura.md) | Decisões e proposta técnica, incluindo Prisma |
 | [design.md](design.md) | Identidade, telas, estados e acessibilidade |
 | [Roadmap de implementação](docs/superpowers/plans/2026-10-22-roadmap-implementacao.md) | Marcos, dependências, critérios de aceite e orquestração do MVP e da evolução |
+| [M0 e plano da fundação](docs/superpowers/plans/2026-10-22-m0-fundacao.md) | Decisões registradas, versões selecionadas, pendências e plano de T01–T03 |
 | [AGENTS.md](AGENTS.md) | Instruções e comandos compartilhados para agentes |
 | [docs/onboarding.md](docs/onboarding.md) | Preparação, execução e diagnóstico local |
 | [docs/quality.md](docs/quality.md) | Gates, revisão e avaliação do agente |
@@ -49,6 +73,8 @@ prepara o desenvolvimento e mantém o estágio atual explícito.
 prototype/dist/         HTML, CSS, JavaScript e assets da prévia; são fontes
 prototype/server.mjs    Servidor local sem dependências
 prototype/tests/        Testes de regras e persistência da demonstração
+web/                   Aplicação Next.js com pacote e lockfile próprios
+web/tests/             Testes de fronteira, lint e navegador da fundação
 eslint-rules/           Regras locais derivadas do toolkit
 scripts/               Autoverificação dessas regras
 docs/                  Operação, qualidade, setup e atribuições

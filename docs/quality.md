@@ -4,15 +4,21 @@
 
 | Comando na raiz | O que verifica |
 | --- | --- |
-| `npm run lint` | JavaScript ESM/CommonJS, preset recomendado do ESLint e regras locais, sem warnings |
+| `npm run lint` | Base e protótipo JavaScript ESM/CommonJS, ESLint 10 e regras locais, sem warnings; exclui `web/` |
 | `npm run lint:rules` | Casos válidos e inválidos das três regras do toolkit com RuleTester |
 | `npm test` | Testes de domínio e persistência já existentes no protótipo |
-| `npm run check` | Autoverificação de regras, lint e testes, interrompendo na primeira falha |
+| `npm run web:lint` | Aplicação/configuração/testes TS/TSX e JS de `web/`, ESLint 9, preset Next e regras locais |
+| `npm run web:typecheck` | Geração de tipos de rotas e `tsc --noEmit`, incluindo testes TS |
+| `npm run web:test` | Testes nativos de fronteira e regras, com AST TypeScript/TSX real |
+| `npm run web:build` | Build real de produção Next |
+| `npm run web:test:e2e` | Smoke do build em Chromium a 320/390 px; requer browser instalado |
+| `npm run check` | Gates da base e lint/tipos/testes/build de `web/`, em série e interrompendo na primeira falha |
 | `npm audit` | Avisos do registro sobre dependências, incluindo ferramentas de desenvolvimento |
-| `npm audit --omit=dev` | Avisos de dependências de produção; atualmente não há nenhuma |
+| `npm audit --omit=dev` | Avisos da base; para a aplicação usar também `npm --prefix web audit --omit=dev` |
 
-Não existem build nem typecheck: os arquivos estáticos são entregues diretamente,
-sem TypeScript ou bundler. Não há scripts fictícios para produzir um resultado verde.
+O protótipo continua estático, sem build. A aplicação possui build/typecheck
+próprios e lockfile independente; instale os dois pacotes antes do check agregado.
+O navegador é uma conferência adicional ao `check` e também roda no workflow.
 
 ## Regras adotadas
 
@@ -30,8 +36,21 @@ de interface e de fronteiras quando alterados.
 
 As regras de console e acesso a dados do toolkit também têm autoverificação,
 mas não se exige logger de produção nem se configura uma camada de banco inexistente.
-Não foram instalados Biome, React, Drizzle ou Vitest para reproduzir exemplos de
-outra stack. O runner de testes continua sendo `node:test`.
+Não foram instalados Biome, Drizzle ou Vitest. React pertence à aplicação escolhida;
+o runner nativo continua sendo `node:test`. Os mesmos casos das três regras são
+compartilhados entre RuleTester 10 da raiz e RuleTester 9 da aplicação. Casos
+adicionais usam parser TypeScript/TSX real.
+
+O lint de `web/` proíbe imports privados em módulos com `use client`, incluindo
+imports/exports e importações dinâmicas de caminho estático, e restringe acesso
+direto a dados nas camadas de apresentação. Caminhos calculados e código de
+terceiros não ficam provados seguros por essa análise. Um build descartável deve
+falhar com o diagnóstico de `server-only` ao tentar importá-lo no cliente; o build
+normal importa o mesmo marcador pelo layout de servidor e deve passar.
+
+Os testes de navegador verificam carregamento sem serviços, toque, teclado/foco,
+texto 200%, larguras móveis, ausência de erros e movimento reduzido. Chromium
+emulado não substitui Android/iPhone reais nem conferência com leitor de tela.
 
 ## Aceite por mudança
 
