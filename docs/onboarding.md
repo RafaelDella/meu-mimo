@@ -42,7 +42,8 @@ Os registros de conferências anteriores estão em [prototype/QA.md](../prototyp
   Não altere permissões globais ou use instalação forçada para ocultar o problema.
 - Estado inesperado: reinicie a demonstração pelo perfil. A chave local é
   `meu-mimo-v1`; dados de outro navegador não são sincronizados.
-- Fontes externas indisponíveis: a interface tem fontes de sistema alternativas.
+- Fontes indisponíveis: `web/` serve DM Sans/DM Serif localmente, com fontes
+  de sistema alternativas; o protótipo preserva seu carregamento existente.
 - Skill nova não descoberta: abra uma nova sessão do cliente e confira sua origem.
   A configuração de um MCP não altera a lista de ferramentas de uma sessão já aberta.
 
@@ -76,6 +77,25 @@ ambiente local de Supabase comprovado. Em M0 foi encontrado um shim npm chamado
 `docker`, sem comprovação de Docker Engine/CLI real, e nenhuma CLI Supabase no
 PATH. Preparar esse ambiente é uma dependência explícita de T02, sem instalação
 global automática. Isso não bloqueia a fundação ou as composições estáticas.
+
+## Conferir a interface de T03
+
+Com `npm run web:dev`, abra `http://127.0.0.1:4301/visual-check`.
+Os botões dos mimos mostram diálogos de exemplo; o formulário confere apenas
+o campo em memória. Recarregar descarta essa edição, sem criar um mimo.
+Assets e licenças estão em `web/public/assets/README.md`.
+
+Para testar em 4303 usando PowerShell, após o build e sem outro servidor nessa porta:
+
+```powershell
+$env:WEB_TEST_PORT = '4303'
+npm run web:test:e2e
+Remove-Item Env:WEB_TEST_PORT
+```
+
+O padrão continua 4301 quando a variável não existe. `WEB_TEST_PORT` aceita
+somente inteiros de 1024 a 65535. Todos os testes usam a mesma saída `.next/`,
+por isso mudar a porta não autoriza builds concorrentes.
 
 ## Recuperação e continuidade
 

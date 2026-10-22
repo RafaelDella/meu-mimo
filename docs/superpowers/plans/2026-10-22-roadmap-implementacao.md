@@ -136,9 +136,10 @@ Os caminhos abaixo são alvos propostos, relativos à raiz, e incluem testes do 
 **Responsável:** interface. **Depende de:** T01 e contrato visual existente.
 **Arquivos:** `web/src/components/ui/**`, `web/src/styles/**`, `web/src/app/visual-check/**`, `web/public/assets/**`, `web/tests/e2e/ui-foundation.spec.ts`. **Recursos:** porta `4303`, saída `web/.next/` em série, dados estáticos; nenhum banco/bucket.
 
-- [ ] Reaproveitar assets/atribuições, tokens semânticos, DM Sans/DM Serif com alternativas, botões, formulários, estados e painéis com fechamento e foco corretos.
-- [ ] Validar três composições: Lojinha, detalhe de mimo e resumo do lojista; separar pontos disponíveis de pendentes.
-- [ ] Verificar 320 px, toque ≥44 × 44 px, texto a 200%, contraste, teclado, retorno/contenção de foco, leitor de tela e movimento reduzido. A página de conferência usa somente conteúdo fictício.
+- [x] Reaproveitar assets/atribuições, tokens semânticos, DM Sans/DM Serif com alternativas, botões, formulários, estados e painéis com fechamento e foco corretos.
+- [x] Validar três composições: Lojinha, detalhe de mimo e resumo do lojista; separar pontos disponíveis de pendentes.
+- [x] Verificar 320 px, toque ≥44 × 44 px, texto a 200%, contraste, teclado, retorno/contenção de foco e movimento reduzido. A página de conferência usa somente conteúdo fictício.
+- [ ] Conferir leitura com leitor de tela real; rótulos e ordem ARIA foram verificados no Chromium. Evidências e limites no plano da fundação §9.
 
 ### T04 · Lojas, participantes, convites e navegação contextual
 
@@ -345,4 +346,4 @@ Planos/cobrança, colaboradores, transferência, múltiplas fotos por registro d
 - Skill local do Vibe Coding Toolkit descoberta no cliente e consultada, com os fluxos de planejamento/orquestração; skills locais de planejamento, brainstorming, revisão e verificação usadas de forma proporcional ao pedido documental.
 - Na elaboração inicial do roadmap, versões e provedores ainda não estavam escolhidos. M0 confirmou D01, selecionou versões e executou consultas reais ao Context7 e às fontes oficiais, registradas no plano da fundação. Isso atualiza a descoberta inicial sem alegar instalação ou integração já concluída.
 
-Próximo pacote possível: T03, após T01 concluída; T02 exige decisões de acesso/limites e o ambiente local comprovado. D03–D09 bloqueiam as respectivas políticas nos pacotes indicados em requisitos §6.1. A aprovação do roadmap não autoriza por si só publicação, cobrança ou migração em ambiente real.
+T01 e a implementação de T03 foram entregues; resta a conferência de T03 com leitor de tela real. T02 exige decisões de acesso/limites e o ambiente local comprovado; M1 ainda não está completo. D03–D09 bloqueiam as respectivas políticas nos pacotes indicados em requisitos §6.1. A aprovação do roadmap não autoriza por si só publicação, cobrança ou migração em ambiente real.

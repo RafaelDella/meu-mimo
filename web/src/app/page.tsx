@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 export default function Home() {
   return (
     <div className="welcome">
@@ -14,6 +16,7 @@ export default function Home() {
           Conhecer a demonstração <span aria-hidden="true">↗</span>
         </a>
         <p className="demo-note">Uma prévia com dados de exemplo para você conhecer o Meu Mimo.</p>
+        <Link className="preview-link" href="/visual-check">Ver a nova interface</Link>
       </main>
       <footer>Pequenas conquistas. Momentos especiais.</footer>
     </div>

@@ -13,7 +13,7 @@ Interpretação adotada para “Prisma DB para migração”: **Prisma ORM e sua
 | Camada | Seleção e estado | Responsabilidade |
 |---|---|---|
 | Aplicação | Next.js, React e TypeScript; confirmados em D01 | Web, API e serviços da aplicação |
-| Interface | Tailwind CSS; escolha técnica de M0. Componentes shadcn/ui continuam uma opção a avaliar em T03 | Adaptar identidade, composição e assets do protótipo |
+| Interface | Tailwind CSS e CSS com tokens semânticos; cinco componentes próprios em T03, sem pacote adicional | Adaptar identidade, composição e assets do protótipo |
 | Banco | PostgreSQL no Supabase; base confirmada em D01, ambiente local ainda não validado | Persistência relacional e transações |
 | Acesso e migrações | Prisma ORM e migrações versionadas; confirmados | Modelos, consultas e evolução do banco |
 | Identidade | Supabase Auth; provedor confirmado, método pendente em D02 | Autenticação e sessões |
@@ -23,6 +23,15 @@ Interpretação adotada para “Prisma DB para migração”: **Prisma ORM e sua
 | Publicação | Vercel; opção futura, sem implantação autorizada | Hospedar a aplicação Next.js |
 
 Fixar versões estáveis e compatíveis no início da implementação. As interfaces e comandos do Prisma variam entre versões; os comandos operacionais devem ser registrados para a versão escolhida, sem depender de uma instalação implícita de `latest`.
+
+T03 acrescenta `Button`, `Input`, `Dialog`, `StatusBadge` e `PointsSummary` em
+`web/src/components/ui/`. O diálogo usa o elemento nativo, estado controlado,
+contenção de Tab e retorno do foco ao acionador. Para este escopo, shadcn/ui
+não justificou uma dependência adicional. Os contratos estão no
+[registro de T03](docs/superpowers/plans/2026-10-22-t03-interface.md).
+Fontes DM Sans/DM Serif são locais, com licença, `font-display: swap` e
+alternativas. `/visual-check` usa somente dados fictícios em memória, sem
+serviços ou persistência; P01/L02 com dados autorizados continuam em T12.
 
 ### 1.1. Seleções técnicas de M0
 

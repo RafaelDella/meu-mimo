@@ -1,0 +1,49 @@
+.ui-button {
+  display: inline-block;
+  min-width: 48px;
+  min-height: 48px;
+  max-width: 100%;
+  border: 1px solid transparent;
+  border-radius: .875rem;
+  padding: .75rem 16px;
+  font-weight: 600;
+  line-height: 1.4;
+  text-align: center;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+.ui-button-primary { background: var(--action); color: var(--surface); }
+.ui-button-primary:active { background: var(--action-pressed); }
+.ui-button-secondary { background: var(--surface); border-color: var(--border-control); color: var(--action); }
+.ui-button-secondary:active { background: var(--surface-soft); }
+.ui-button:disabled { background: var(--surface-soft); color: var(--text-muted); border-color: var(--border-control); cursor: default; }
+.ui-field { display: grid; gap: .5rem; min-width: 0; }
+.ui-field label { font-weight: 600; }
+.ui-input { width: 100%; min-width: 0; min-height: 48px; padding: .75rem 12px; border: 1px solid var(--border-control); border-radius: .75rem; background: var(--surface); color: var(--text); }
+.ui-input[aria-invalid="true"] { border: 2px solid var(--error-text); }
+.ui-field-hint, .ui-field-error { margin: 0; font-size: .875rem; }
+.ui-field-hint { color: var(--text-muted); }
+.ui-field-error { color: var(--error-text); }
+.ui-status { display: inline-flex; align-items: baseline; gap: .375rem; width: fit-content; max-width: 100%; border-radius: .625rem; padding: .375rem .625rem; font-size: .875rem; font-weight: 600; line-height: 1.45; overflow-wrap: anywhere; }
+.ui-status > :first-child { flex-shrink: 0; }
+.ui-status-success { background: var(--success-bg); color: var(--success-text); }
+.ui-status-pending { background: var(--pending-bg); color: var(--pending-text); }
+.ui-status-error { background: var(--error-bg); color: var(--error-text); }
+.ui-status-info { background: var(--info-bg); color: var(--info-text); }
+.ui-points { padding: 1.5rem 16px; background: var(--surface-soft); border: 1px solid var(--border); border-radius: var(--radius); }
+.ui-points-store { margin: 0 0 .5rem; color: var(--text-muted); font-size: .875rem; }
+.ui-points h3 { margin: 0 0 1.25rem; font-family: var(--font-heading); font-size: 1.5rem; font-weight: 400; line-height: 1.25; }
+.ui-points dl { display: flex; flex-wrap: wrap; gap: 1rem 1.75rem; margin: 0; }
+.ui-points dt { font-size: .875rem; }
+.ui-points dd { margin: .25rem 0 0; font-size: 2.5rem; font-weight: 600; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.ui-points-pending { align-self: end; padding: .625rem .75rem; background: var(--surface); border-radius: .875rem; }
+.ui-points-pending dd { font-size: 1.5rem; }
+.ui-points-note { margin: 1rem 0 0; color: var(--text-muted); font-size: .875rem; }
+.ui-dialog { width: min(38rem, calc(100% - 24px)); max-width: none; max-height: calc(100dvh - 24px); margin: auto; padding: 1.25rem 16px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); color: var(--text); overflow-y: auto; overscroll-behavior: contain; overflow-wrap: anywhere; }
+.ui-dialog::backdrop { background: rgb(74 46 59 / 48%); }
+.ui-dialog-header { display: flex; flex-direction: column; align-items: start; gap: 1rem; }
+.ui-dialog-header h2 { margin: 0; font: 400 2rem/1.15 var(--font-heading); }
+.ui-dialog-header .ui-button { align-self: end; }
+.ui-dialog p { margin-block: 1rem; }
+.ui-dialog-content { min-width: 0; }
+@media (max-width: 420px) { .ui-dialog { margin-bottom: 12px; } }

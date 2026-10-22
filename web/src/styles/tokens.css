@@ -1,0 +1,42 @@
+@font-face {
+  font-family: "DM Sans";
+  src: url("/assets/fonts/dm-sans.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 100 1000;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "DM Serif Display";
+  src: url("/assets/fonts/dm-serif-display.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+:root {
+  --background: #fff8fb;
+  --surface: #fff;
+  --surface-soft: #fce8f0;
+  --brand: #f2a7c4;
+  --accent: #e76e9a;
+  --action: #b23a68;
+  --action-pressed: #922c54;
+  --text: #4a2e3b;
+  --text-muted: #785a68;
+  --border: #eed4e0;
+  --border-control: #a8748c;
+  --focus: #7a2850;
+  --cream: #fff2d8;
+  --success-bg: #e8f4ec;
+  --success-text: #35654f;
+  --pending-bg: #fff2d8;
+  --pending-text: #7a5418;
+  --error-bg: #fff0f3;
+  --error-text: #9b3548;
+  --info-bg: #f0ecfa;
+  --info-text: #52457a;
+  --font-body: "DM Sans", Arial, sans-serif;
+  --font-heading: "DM Serif Display", Georgia, serif;
+  --radius: 1.5rem;
+}

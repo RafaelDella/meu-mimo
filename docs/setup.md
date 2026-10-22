@@ -236,3 +236,28 @@ foram instalados com `npm ci` em snapshot limpo sem dependências/Git interno,
 seguido do mesmo check agregado. A auditoria de produção de `web/` retornou
 zero avisos; o relatório permanece em `.artifacts/`, fora do Git. A revisão
 independente foi aprovada após a correção do CTA. T02/T03 não foram iniciadas.
+
+## M1/T03 — componentes e composições
+
+Em 22/10/2026, T03 acrescentou cinco componentes próprios e a rota
+`/visual-check`, com três composições de dados fictícios. Não houve instalação
+de pacotes ou serviços. Fontes locais têm licenças em `web/public/assets/`;
+o protótipo foi preservado. O [plano da fundação, seção 9](superpowers/plans/2026-10-22-m0-fundacao.md#9-execução-de-t03--interface-de-referência)
+registra execução, falhas tratadas, contraste, gates e limites.
+
+A skill local do Vibe Coding Toolkit e as ferramentas nativas de agentes
+foram usadas com dois escritores de escopo separado e dois revisores somente
+leitura; o integrador executou builds/testes em série e preparou o commit.
+Context7 foi consultado para React 19 (`ref` e sincronização de diálogo),
+Next (Link/Image e worker Webpack), sem enviar código ou dados privados.
+Fontes oficiais complementares: [React: Effect](https://react.dev/reference/react/useEffect),
+[MDN: dialog](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/dialog),
+[Next: build worker](https://nextjs.org/docs/app/guides/memory-usage#webpack-build-worker)
+e [Google Fonts na revisão utilizada](https://github.com/google/fonts/tree/45e3d5269e4a17d823f6d84470bc084dc5ae46f6/ofl).
+
+O servidor de testes aceita `WEB_TEST_PORT` (padrão 4301; T03 em 4303).
+O fixture negativo agora tem configuração própria para executar o compilador
+Webpack sem worker intermediário; a configuração de produção e a exigência
+do diagnóstico de fronteira permanecem. Conferência final: check agregado
+aprovado e 20/20 cenários Chromium. Não foi usado leitor de tela real nem
+aparelho móvel real. T02 permanece pendente; M1 ainda está incompleto.

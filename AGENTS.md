@@ -14,6 +14,8 @@
 A demonstração está em `prototype/`: HTML, CSS e JavaScript ESM.
 `prototype/dist/` é código-fonte manual e deve ser versionado e verificado.
 A fundação Next.js/React/TypeScript está em `web/`, com Node.js 24 e npm.
+As composições de T03 estão em `/visual-check`, com dados fictícios e sem
+persistência; componentes compartilhados em `web/src/components/ui/`.
 PostgreSQL/Prisma e Supabase Auth/Storage continuam para T02, sem serviços
 implementados em T01. O plano da fundação e as dependências estão em
 [M0](docs/superpowers/plans/2026-10-22-m0-fundacao.md).
@@ -37,6 +39,8 @@ O protótipo atende em `http://127.0.0.1:4173`; a aplicação em
 com Chromium previamente instalado pelo Playwright. O `check` agrega a base e
 `web/`, sem iniciar banco. Lint da raiz cobre a base; `web:lint` cobre `web/`.
 Os comandos de `prototype/package.json` continuam válidos naquela pasta.
+`WEB_TEST_PORT` altera somente a porta do servidor de testes (padrão 4301;
+T03 usa 4303). Builds, typegen e servidores continuam serializados no checkout.
 
 ## Acordos de trabalho
 

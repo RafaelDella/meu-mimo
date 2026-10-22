@@ -52,6 +52,16 @@ Os testes de navegador verificam carregamento sem serviços, toque, teclado/foco
 texto 200%, larguras móveis, ausência de erros e movimento reduzido. Chromium
 emulado não substitui Android/iPhone reais nem conferência com leitor de tela.
 
+T03 acrescenta seis cenários por largura em `/visual-check`: três composições,
+saldos distintos e ordem semântica; diálogo com Tab/Shift+Tab, Fechar/Escape e
+retorno do foco; ticket sem persistir ou descontar pontos; campo com rótulo,
+orientação, erro e correção; texto 200% sem cortar ações/modal; desktop e
+movimento reduzido. A suíte também rejeita requisições externas e mutantes.
+As capturas ficam em `web/test-results/`; o servidor usa `WEB_TEST_PORT` ou
+4301 por padrão. A árvore ARIA verifica rótulos/ordem, sem simular fala de
+leitor de tela. Os tokens têm contraste calculado; isso não prova toda a
+interface em todas as condições de uso.
+
 ## Aceite por mudança
 
 Defina comportamento e falhas relevantes antes de implementar. Para corrigir
