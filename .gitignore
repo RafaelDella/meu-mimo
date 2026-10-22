@@ -1,0 +1,19 @@
+# Dependências e arquivos locais de ferramentas.
+node_modules/
+.artifacts/
+.sites-local/
+.graphify/
+graphify-out/
+coverage/
+qa/
+*.log
+*.tar.gz
+
+# Credenciais ficam fora do controle de versão.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# prototype/dist/ contém o código-fonte desta demonstração; deve ser versionado.

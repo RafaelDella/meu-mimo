@@ -1,0 +1,18 @@
+.git/
+.artifacts/
+.agents/
+.claude/
+.codex/
+node_modules/
+.sites-local/
+qa/
+coverage/
+.env
+.env.*
+*.pem
+*.key
+*.log
+*.tar.gz
+package-lock.json
+skills-lock.json
+# prototype/dist/ é fonte, não saída gerada.

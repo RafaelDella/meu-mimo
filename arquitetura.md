@@ -1,0 +1,190 @@
+# Meu Mimo — proposta técnica e decisões de dados
+
+Atualizado em 21 de outubro de 2026. Complementa `design.md` e `requisitos.md`. Este documento registra decisões e propostas; não representa infraestrutura ou funcionalidades já implementadas.
+
+## 1. Decisões e base proposta
+
+**Confirmado pelo idealizador:** aplicação mobile first, Prisma para migrações de estrutura do banco, histórico de pontos e resgates no MVP, várias fotos/vídeos publicados pelo lojista em cada resgate e retrospectiva futura no estilo de apresentação do Spotify Wrapped.
+
+Interpretação adotada para “Prisma DB para migração”: **Prisma ORM e suas ferramentas de migração sobre PostgreSQL**. O provedor de hospedagem do banco permanece uma decisão separada. A base recomendada segue sendo PostgreSQL no Supabase, com Supabase Auth, Storage e Realtime.
+
+| Camada | Proposta | Responsabilidade |
+|---|---|---|
+| Aplicação | Next.js, React e TypeScript | Web, API e serviços da aplicação |
+| Interface | Tailwind CSS e componentes shadcn/ui personalizados | Adaptar identidade, composição e assets do protótipo |
+| Banco | PostgreSQL, inicialmente proposto no Supabase | Persistência relacional e transações |
+| Acesso e migrações | Prisma ORM e migrações versionadas | Modelos, consultas e evolução do banco |
+| Identidade | Supabase Auth | Autenticação e sessões |
+| Fotos | Supabase Storage privado | Upload e acesso autorizado |
+| Eventos ao vivo | Supabase Realtime com audiência autorizada | Avisar a interface sobre mudanças confirmadas |
+| Qualidade | Validação de entrada, testes de regras, integração e navegação | Cobrir autorização, concorrência e uso pelo celular |
+| Publicação | Vercel como opção inicial | Hospedar a aplicação Next.js |
+
+Fixar versões estáveis e compatíveis no início da implementação. As interfaces e comandos do Prisma variam entre versões; os comandos operacionais devem ser registrados para a versão escolhida, sem depender de uma instalação implícita de `latest`.
+
+## 2. Organização da aplicação
+
+```mermaid
+flowchart TD
+    A[Web mobile first / PWA] --> B[API Next.js]
+    B --> C[Serviços com autorização e regras]
+    C --> D[Prisma no servidor]
+    D --> E[(PostgreSQL)]
+    A --> F[Autenticação]
+    A --> G[Upload autorizado de fotos]
+    C --> H[Eventos e notificações persistidos]
+    H --> I[Atualização privada da interface]
+    I --> A
+```
+
+- Separar módulos de contas, lojas, participantes, atividades, registros, pontos, mimos, tickets, bilhetes e notificações.
+- Executar Prisma somente em ambiente de servidor. Navegador não recebe credenciais de banco.
+- Validar sessão, papel, loja e participação antes de consultar ou alterar recursos privados.
+- Processar aprovação, resgate e estorno em serviços transacionais. SQL específico é permitido quando necessário para restrições, bloqueios ou funções do PostgreSQL.
+- Realtime comunica uma mudança confirmada; a consulta autorizada continua sendo a fonte dos dados. Falha de conexão ou evento perdido é recuperada por nova consulta.
+- Upload pode ir diretamente ao Storage com autorização apropriada, evitando transformar a API de aplicação em passagem obrigatória de arquivos grandes.
+
+### 2.1. Prisma e autorização
+
+Uma conexão Prisma ao PostgreSQL não herda automaticamente a identidade do usuário do Supabase Auth. Dependendo do papel da conexão, ela também pode não estar sujeita a RLS. A implementação precisa verificar o modelo de conexão e as permissões efetivas.
+
+Por isso, a autorização da API e os filtros por loja/participação são obrigatórios em consultas Prisma. RLS, grants e políticas do Storage/Realtime complementam a proteção nos caminhos em que se aplicam; não substituem essa validação.
+
+Definir os caminhos públicos de dados explicitamente. Se a aplicação acessa tabelas de negócio apenas pelo backend, restringir a Data API correspondente e impedir escritas diretas do navegador em pontos, tickets e decisões de análise. Canais de Realtime têm autorização própria e não podem expor uma relação a todos os participantes da loja.
+
+## 3. Migrações de estrutura com Prisma
+
+O uso de Prisma para migração foi escolhido; o procedimento abaixo é a proposta operacional:
+
+1. Alterar os modelos do banco no projeto e gerar uma migração em desenvolvimento.
+2. Revisar o SQL e seus efeitos em dados existentes, nomes, índices e permissões.
+3. Incluir SQL complementar necessário, como políticas RLS e restrições que a modelagem não represente, na mesma cadeia versionada de migrações da aplicação.
+4. Testar em banco de desenvolvimento/teste antes de aplicar ao ambiente real.
+5. Na publicação, aplicar somente migrações previamente revisadas pelo comando de produção da versão escolhida.
+6. Registrar o resultado, verificar compatibilidade entre código e esquema e manter estratégia de recuperação.
+
+Prisma será responsável pela evolução do esquema da aplicação. Esquemas internos gerenciados pelo Supabase, como Auth e Storage, permanecem sob responsabilidade do serviço; não devem ser recriados pelo ORM.
+
+Uma alteração de dados em produção exige preservar o histórico e planejar transformações. Corrigir um lançamento de pontos usa um movimento compensatório do domínio; não é uma migração de esquema.
+
+Para a implantação serverless proposta, definir pooling, orçamento de conexões e conexão apropriada para execução de migrações conforme o provedor e a versão adotados. Credenciais ficam somente nos ambientes autorizados.
+
+Referências técnicas: [Prisma com Supabase](https://supabase.com/docs/guides/database/prisma), [customização de migrações](https://www.prisma.io/docs/orm/v7/prisma-migrate/workflows/customizing-migrations), [desenvolvimento e produção](https://www.prisma.io/docs/orm/v7/prisma-migrate/workflows/development-and-production). As duas últimas descrevem Prisma ORM v7 e precisam ser revalidadas se outra versão for escolhida.
+
+## 4. Modelo conceitual de dados
+
+Nomes abaixo são propostas para orientar o futuro modelo, não um schema Prisma já criado.
+
+| Entidade | Dados e responsabilidade principais |
+|---|---|
+| User / Profile | Identidade da conta, nome e preferências |
+| Store | Responsável, identidade, fuso e estado |
+| Membership | Participante, loja, estado e início/fim da relação |
+| Invitation | Destino da loja, token protegido, validade, aceite e revogação |
+| Activity | Definição editável, pontos, frequência e modo de aprovação |
+| ActivitySubmission | Pessoa, loja, atividade, data da atividade/envio, evidências e regra/pontuação da ocasião |
+| SubmissionEvent | Autor, decisão, motivo e data de cada mudança de análise |
+| MediaAttachment | Autor, tipo foto/vídeo, propósito evidência/memória, loja, participação, registro ou resgate de origem, objeto privado, estado, legenda, ordem, duração/dimensões quando aplicáveis e política de retenção |
+| PointsWallet | Participação, saldo de consulta e versão para controle de concorrência, se houver saldo materializado |
+| PointsEntry | Movimento confirmado, valor inteiro com sinal, tipo, origem, autor, data e referência de compensação |
+| Reward | Definição editável, custo, categoria, disponibilidade e instruções |
+| Redemption | Participação, ticket, custo e conteúdo da ocasião do resgate, estado e datas de marcos |
+| RedemptionEvent | Linha do tempo de combinado, realização, pedido/resolução de cancelamento e motivos |
+| Comment / Reaction | Conversa/reação vinculada a registro ou ticket, com audiência da relação |
+| PersonalNote / NoteRead | Bilhete, destinatário, versão, data de envio e leitura daquela versão |
+| Notification / OutboxEvent | Novidade persistida e evento a entregar com controle de repetição |
+| RetrospectiveSnapshot | Futuro: período, participação, métricas agregadas, data de corte e versão do cálculo |
+
+Índices e restrições devem cobrir participação por loja/pessoa, consultas históricas por período, decisões idempotentes, origem dos movimentos e emissão de tickets. Definir identificadores estáveis para filtrar e agregar mesmo quando nomes forem alterados.
+
+## 5. Histórico de pontos e prêmios
+
+### 5.1. Extrato de pontos
+
+- Registrar créditos de atividade, bônus explícitos futuros, débitos de resgate, estornos de crédito e devoluções de cancelamento como tipos distintos.
+- Um registro em análise não é um crédito confirmado e não faz parte do saldo disponível.
+- Movimentos confirmados são acrescentados ao extrato. O fluxo normal da aplicação corrige por compensação vinculada ao movimento original, preservando a explicação do ocorrido.
+- Se houver saldo materializado para leitura rápida, atualizá-lo na mesma transação do movimento e permitir reconciliá-lo com a soma do extrato.
+- Guardar autor, origem, valor, data, identificação de repetição e ordenação estável por carteira. O detalhe histórico abre o registro/ticket autorizado.
+- Não somar saldos de lojas diferentes. Cada loja define sua própria economia.
+
+### 5.2. Histórico de resgates
+
+- Preservar código, nome, descrição/instruções relevantes e custo da ocasião do resgate.
+- Registrar separadamente data do resgate, combinado, realização e cancelamento. Manter eventos de alteração e motivos.
+- Uma edição ou arquivamento do prêmio no catálogo não muda o ticket anterior.
+- Exibir resgates ativos, realizados e cancelados, com filtros e paginação; contador de navegação considera somente os ainda a realizar.
+- Histórico preservado respeita a política de retenção, exclusão e anonimização a definir. Fotos não precisam ter a mesma duração de retenção dos movimentos estruturados.
+- Cada resgate pode conter várias fotos/vídeos de momentos publicados pelo lojista. O álbum é uma relação de um ticket para muitos anexos, com audiência daquela participação.
+
+### 5.3. Consistência
+
+Na aprovação: validar autor/papel e estado, registrar decisão, creditar quando aplicável e persistir o evento de notificação como uma operação consistente.
+
+No resgate: validar participação, estado da loja, custo, saldo e estoque; criar o ticket e seu movimento na mesma transação. No cancelamento: resolver o pedido e devolver pontos uma única vez.
+
+Concorrência exige combinação apropriada de isolamento, bloqueio/atualização condicional, unicidade, identificação de repetição e novas tentativas controladas. Uma transação isoladamente não define toda a política de concorrência.
+
+Referência: [transações no Prisma ORM v7](https://www.prisma.io/docs/orm/v7/prisma-client/queries/transactions). Ajustar APIs e opções à versão estável escolhida.
+
+### 5.4. Álbum privado por resgate
+
+- Guardar arquivos no Storage; Prisma/PostgreSQL guardam metadados, vínculos, autoria, ordenação, legenda e estados. Não colocar os vídeos em colunas binárias do banco nem persistir URLs temporárias como identificador permanente do arquivo.
+- Distinguir propósito e vínculo de cada mídia. Evidência pertence a um registro; memória pertence a um resgate. Impedir anexos soltos ou vinculados a registros/resgates de outra relação.
+- Usar upload autorizado direto e retomável quando apropriado. Persistir o resultado de cada arquivo e publicar somente itens que passaram pela validação e foram confirmados pelo lojista.
+- Estado de envio/processamento pertence à mídia e não altera o estado do ticket. Publicar um lote gera uma novidade agrupada, com identificação de repetição para não duplicar o aviso.
+- Armazenamento privado exige autorização também para reprodução, miniaturas e acesso temporário aos vídeos. Outros participantes da loja não acessam o álbum.
+- Definir formatos, duração, tamanho, miniaturas e necessidade de conversão antes do piloto. Supabase Storage oferece armazenamento/upload, mas a eventual conversão de vídeo exige um fluxo de processamento escolhido e testado separadamente.
+- Falha de processamento permite tentar novamente ou remover o item; o ticket e o fluxo de pontos continuam consistentes.
+- Seleção de momentos para retrospectiva referencia os anexos autorizados e respeita remoção/retenção. Não copiar automaticamente mídia privada para um local público.
+
+Referências: [uploads retomáveis com TUS no Supabase](https://supabase.com/docs/guides/storage/uploads/resumable-uploads) e [acesso privado a arquivos](https://supabase.com/docs/guides/storage/buckets/fundamentals).
+
+## 6. Preparação para retrospectiva
+
+### 6.1. Capturar desde o MVP
+
+- Identificadores de conta, loja, participação, atividade, registro, movimento e ticket.
+- Categoria e conteúdo relevante da ocasião, com política de retenção definida.
+- Datas distintas de realização da atividade, envio, aprovação, crédito, resgate, realização do mimo e estorno; instantes armazenados em UTC e períodos apresentados no fuso da loja.
+- Eventos de aprovação/anulação e cancelamento, com vínculo ao crédito ou ticket corrigido.
+- Origem dos pontos: atividade, bônus ou devolução. Separar crédito original de correções e recomposições.
+- Datas e versão dos bilhetes, para uma futura seleção pessoal, sem exigir retenção ilimitada de textos e fotos.
+- Fotos/vídeos dos álbuns com vínculo ao ticket e data/publicação, permitindo selecionar momentos reais do período com autorização.
+
+É suficiente guardar os dados de domínio necessários e indexá-los. Não é necessário construir agora um sistema genérico de eventos, uma ferramenta de analytics própria ou o gerador de stories.
+
+### 6.2. Métricas propostas
+
+| Métrica | Definição para a evolução |
+|---|---|
+| Conquistas válidas | Registros que receberam aprovação válida, considerando anulações até a data de corte |
+| Dias com conquistas | Dias distintos das atividades válidas no fuso e período definidos |
+| Pontos conquistados por atividade | Créditos de atividade do período, descontadas compensações vinculadas consideradas no corte; excluir devoluções de resgate e bônus |
+| Atividade mais frequente | Contagem de registros válidos por identificador da atividade, com desempate explícito |
+| Mimos resgatados | Tickets emitidos no período, distinguindo os que foram cancelados até o corte |
+| Mimos realizados | Eventos de realização no período; não presumir realização a partir de resgate |
+| Mimo mais resgatado | Resgates válidos por identificador do mimo, sem reescrever nomes históricos |
+| Momentos pessoais | Fotos, vídeos dos álbuns, bilhetes e experiências selecionados para aparecer pelo participante |
+
+Uma atividade pode ter acontecido em dezembro e ser aprovada em janeiro. A métrica de atividade pode usar a data de realização; a métrica de pontos usa a data do crédito. Essa diferença precisa estar definida e explicável.
+
+Cada retrospectiva registra período, fuso, data de corte, versão do cálculo e geração. Uma correção posterior pode exigir uma nova versão; não alterar silenciosamente o significado dos números de uma retrospectiva já apresentada.
+
+Começar por participação/loja. Uma visão pessoal de várias lojas pode agregar contagens compatíveis, mantendo pontos separados. Respeitar as mesmas permissões do histórico, a política de retenção e a escolha explícita de imagens/bilhetes compartilhados.
+
+### 6.3. Implementação futura
+
+Proposta: agregar dados no servidor, gerar um snapshot autorizado e renderizar uma sequência de cards na interface mobile. A narrativa pode usar templates determinísticos e a identidade visual existente. Fotos pessoais, publicação e compartilhamento dependem de escolha e revisão da pessoa.
+
+Periodicidade, elegibilidade com poucos dados e regras de regeneração serão definidas antes de implementar a retrospectiva.
+
+## 7. Verificação antes do piloto
+
+- Validar autorizações reais usando as credenciais e caminhos de acesso que a aplicação empregará, incluindo Prisma, Storage e Realtime.
+- Testar aprovação/resgate/estorno simultâneos e repetidos, conferindo saldo, extrato, estoque e tickets.
+- Testar que renomear/arquivar atividade ou mimo preserva os dados históricos da ocasião.
+- Verificar filtros e paginação do histórico no celular e separação entre lojas/pessoas.
+- Testar migrações em ambiente separado, recuperação de banco/arquivos e evolução do esquema com dados já existentes.
+- Confirmar que eventos coletados permitem as métricas futuras sem transformar devoluções em conquistas ou tickets cancelados em mimos realizados.
+- Verificar upload de várias mídias, retomada após falha, publicação parcial explícita, reprodução em Android/iPhone e privacidade por resgate, incluindo miniaturas.

@@ -1,0 +1,22 @@
+{
+  "name": "meu-mimo",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "npm@11.19.1",
+  "engines": {
+    "node": ">=24.12.0 <25"
+  },
+  "scripts": {
+    "dev": "npm --prefix prototype run dev",
+    "test": "npm --prefix prototype test",
+    "lint": "eslint . --max-warnings 0",
+    "lint:rules": "node scripts/verify-quality-rules.mjs",
+    "check": "npm run lint:rules && npm run lint && npm test"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "eslint": "10.13.0",
+    "globals": "17.13.0"
+  }
+}

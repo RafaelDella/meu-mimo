@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#FFF8FB">
+  <meta name="description" content="Sua lojinha de carinho para alguém especial. Conquiste pontos e escolha seu próximo mimo.">
+  <title>Meu Mimo — sua lojinha de carinho</title>
+  <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;450;500;550;600;650;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <svg class="svg-library" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <defs>
+      <symbol id="i-heart" viewBox="0 0 24 24"><path d="M20.8 4.8a5.5 5.5 0 0 0-7.8 0L12 5.9l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.4a5.5 5.5 0 0 0 0-7.8Z"/></symbol>
+      <symbol id="i-gift" viewBox="0 0 24 24"><path d="M3 11h18V7H3zm2 0v10h14V11M12 7v14M12 7H8.5A3.5 3.5 0 1 1 12 3.5V7Zm0 0h3.5A3.5 3.5 0 1 0 12 3.5V7Z"/></symbol>
+      <symbol id="i-sparkle" viewBox="0 0 24 24"><path d="m12 2 2.8 7.2L22 12l-7.2 2.8L12 22l-2.8-7.2L2 12l7.2-2.8L12 2Z"/></symbol>
+      <symbol id="i-home" viewBox="0 0 24 24"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1V10Z"/></symbol>
+      <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+      <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-5-5 5 5-5 5"/></symbol>
+      <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M6 18 18 6"/></symbol>
+      <symbol id="i-list" viewBox="0 0 24 24"><path d="m3 6 2 2 3-4m3 2h10M3 13l2 2 3-4m3 2h10M4 20h2m5 0h10"/></symbol>
+      <symbol id="i-book" viewBox="0 0 24 24"><path d="M12 5c-3-2-6-2-10-1v15c4-1 7-1 10 1 3-2 6-2 10-1V4c-4-1-7-1-10 1Zm0 0v15"/></symbol>
+      <symbol id="i-move" viewBox="0 0 24 24"><path d="m4 8 12 12m-7-15 10 10M2 10l8-8m4 20 8-8M1 7l6-6m10 22 6-6"/></symbol>
+      <symbol id="i-cup" viewBox="0 0 24 24"><path d="M4 8h13v7a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V8Zm13 1h2a3 3 0 0 1 0 6h-2M8 2v3m5-3v3M2 23h19"/></symbol>
+      <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="11" rx="3"/><path d="M8 10V7a4 4 0 0 1 8 0v3m-4 4v3"/></symbol>
+      <symbol id="i-ticket" viewBox="0 0 24 24"><path d="M3 5h18v5a2 2 0 0 0 0 4v5H3v-5a2 2 0 0 0 0-4V5Zm12 0v3m0 3v2m0 3v3"/></symbol>
+      <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 6v6l4 2"/></symbol>
+      <symbol id="i-bow" viewBox="0 0 64 40"><path d="M30 19C15-3 2 1 5 17c2 10 17 8 25 2Zm4 0C49-3 62 1 59 17c-2 10-17 8-25 2ZM28 21 16 36l12-3 3-11m5-1 12 15-12-3-3-11"/><ellipse cx="32" cy="20" rx="5" ry="5"/></symbol>
+    </defs>
+  </svg>
+
+  <div class="desktop-layout">
+    <aside class="desktop-story" aria-label="Sobre o Meu Mimo">
+      <a class="brand brand-large" href="#lojinha" aria-label="Meu Mimo, início"><svg class="brand-bow"><use href="#i-bow"/></svg><span>meu mimo<span class="brand-dot">.</span></span></a>
+      <div class="story-content">
+        <span class="eyebrow"><span class="tiny-heart">♡</span> PEQUENOS GESTOS, MUITO AMOR</span>
+        <h1>Carinho que<br>vira <em>mimo.</em><svg class="story-star"><use href="#i-sparkle"/></svg></h1>
+        <p>Um pouquinho de incentivo.<br>Um montão de afeto.</p>
+        <div class="story-note"><svg class="icon"><use href="#i-heart"/></svg><span>Sua lojinha de carinho<br>para alguém especial.</span><span class="note-star">✧</span></div>
+      </div>
+      <div class="desktop-foot"><span>Prévia interativa · dados de exemplo</span><button data-action="reset-prompt">Recomeçar demonstração</button></div>
+    </aside>
+
+    <div class="phone-stage">
+      <div class="outside-note">feito pensando<br><span>em você ♡</span><svg viewBox="0 0 80 70" fill="none"><path d="M12 6c40 0 59 24 40 50m-9-12 9 13 15-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+      <div class="phone">
+        <div class="phone-status" aria-hidden="true"><span>9:41</span><span class="dynamic-island"></span><span class="status-icons">▮▮▮ <svg viewBox="0 0 24 14"><path d="M1 4q11-9 22 0M5 8q7-6 14 0m-10 4q3-3 6 0"/></svg><i></i></span></div>
+        <div class="app-scroll" id="app-scroll">
+          <header class="app-header"><a class="brand" href="#lojinha" aria-label="Meu Mimo, início"><svg class="brand-bow"><use href="#i-bow"/></svg><span>meu mimo<span class="brand-dot">.</span></span></a><div class="header-actions"><button class="icon-button note-button" data-action="note" aria-label="Ler bilhete do Rafael"><svg class="icon"><use href="#i-heart"/></svg><span class="unread-dot"></span></button><button class="avatar" data-action="profile" aria-label="Abrir perfil da Júlia">J<span>♡</span></button></div></header>
+          <main id="app" tabindex="-1"></main>
+          <footer class="app-footer"><svg class="icon"><use href="#i-bow"/></svg><p>Pequenas conquistas, grandes carinhos.</p><span>uma lojinha feita com amor por Rafael</span></footer>
+        </div>
+        <nav class="bottom-nav" aria-label="Navegação principal"><a href="#lojinha" data-nav="lojinha"><span><svg class="icon"><use href="#i-home"/></svg></span>Lojinha</a><a href="#atividades" data-nav="atividades"><span><svg class="icon"><use href="#i-list"/></svg></span>Atividades</a><a href="#meus-mimos" data-nav="meus-mimos"><span><svg class="icon"><use href="#i-gift"/></svg><i id="redeemed-count" hidden></i></span>Meus mimos</a></nav>
+      </div>
+    </div>
+  </div>
+
+  <dialog id="sheet" aria-labelledby="sheet-title"><div class="sheet-handle" aria-hidden="true"></div><button class="icon-button sheet-close" data-action="close-dialog" aria-label="Fechar"><svg class="icon"><use href="#i-close"/></svg></button><div id="sheet-content"></div></dialog>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div class="confetti" id="confetti" aria-hidden="true"></div>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
