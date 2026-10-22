@@ -6,7 +6,7 @@ import quality from '../eslint-rules/index.cjs';
 import { clientBoundary } from './eslint-rules/client-boundary.mjs';
 
 export default defineConfig([
-  globalIgnores(['.next/**', '.artifacts/**', 'node_modules/**', 'next-env.d.ts', 'tests/fixtures/**', 'test-results/**', 'playwright-report/**']),
+  globalIgnores(['.next/**', '.artifacts/**', 'src/generated/**', 'node_modules/**', 'next-env.d.ts', 'tests/fixtures/**', 'test-results/**', 'playwright-report/**']),
   ...nextVitals,
   ...nextTs,
   {

@@ -16,6 +16,7 @@
     "web:lint": "npm --prefix web run lint",
     "web:typecheck": "npm --prefix web run typecheck",
     "web:test": "npm --prefix web test",
+    "web:test:integration": "npm --prefix web run test:integration",
     "web:build": "npm --prefix web run build",
     "web:check": "npm --prefix web run check",
     "web:test:e2e": "npm --prefix web run test:e2e",

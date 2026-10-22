@@ -1,0 +1,101 @@
+generator client {
+  provider               = "prisma-client"
+  output                 = "../src/generated/prisma"
+  moduleFormat           = "esm"
+  generatedFileExtension = "ts"
+  importFileExtension    = "ts"
+}
+
+datasource db {
+  provider = "postgresql"
+  schemas  = ["app"]
+}
+
+enum MembershipRole {
+  MERCHANT
+  PARTICIPANT
+
+  @@schema("app")
+}
+
+model Profile {
+  id             String          @id @db.Uuid
+  displayName    String?
+  suspendedAt    DateTime?       @db.Timestamptz(6)
+  createdAt      DateTime        @default(now()) @db.Timestamptz(6)
+  authoredStores Store[]
+  memberships    Membership[]
+  adminGrant     AdminGrant?
+  authSessions   AuthSession[]
+  securityAudits SecurityAudit[]
+
+  @@schema("app")
+}
+
+model Store {
+  id                 String       @id @default(uuid()) @db.Uuid
+  createdByProfileId String       @db.Uuid
+  name               String?
+  createdAt          DateTime     @default(now()) @db.Timestamptz(6)
+  createdBy          Profile      @relation(fields: [createdByProfileId], references: [id], onDelete: Restrict)
+  memberships        Membership[]
+
+  @@index([createdByProfileId])
+  @@schema("app")
+}
+
+model Membership {
+  id              String         @id @default(uuid()) @db.Uuid
+  storeId         String         @db.Uuid
+  profileId       String         @db.Uuid
+  role            MembershipRole
+  accessRevokedAt DateTime?      @db.Timestamptz(6)
+  createdAt       DateTime       @default(now()) @db.Timestamptz(6)
+  store           Store          @relation(fields: [storeId], references: [id], onDelete: Restrict)
+  profile         Profile        @relation(fields: [profileId], references: [id], onDelete: Restrict)
+
+  @@unique([storeId, profileId, role])
+  @@index([profileId, accessRevokedAt])
+  @@index([storeId, accessRevokedAt])
+  @@schema("app")
+}
+
+model AdminGrant {
+  profileId String    @id @db.Uuid
+  grantedAt DateTime  @default(now()) @db.Timestamptz(6)
+  revokedAt DateTime? @db.Timestamptz(6)
+  profile   Profile   @relation(fields: [profileId], references: [id], onDelete: Restrict)
+
+  @@schema("app")
+}
+
+model AuthSession {
+  id        String    @id @db.Uuid
+  profileId String    @db.Uuid
+  recovery  Boolean   @default(false)
+  revokedAt DateTime? @db.Timestamptz(6)
+  createdAt DateTime  @default(now()) @db.Timestamptz(6)
+  profile   Profile   @relation(fields: [profileId], references: [id], onDelete: Restrict)
+
+  @@index([profileId, revokedAt])
+  @@schema("app")
+}
+
+model AuthRateBucket {
+  key      String     @id
+  attempts DateTime[] @default([]) @db.Timestamptz(6)
+
+  @@schema("app")
+}
+
+model SecurityAudit {
+  id             String   @id @default(uuid()) @db.Uuid
+  action         String
+  actorProfileId String?  @db.Uuid
+  createdAt      DateTime @default(now()) @db.Timestamptz(6)
+  actor          Profile? @relation(fields: [actorProfileId], references: [id], onDelete: Restrict)
+
+  @@index([createdAt])
+  @@index([actorProfileId, createdAt])
+  @@schema("app")
+}

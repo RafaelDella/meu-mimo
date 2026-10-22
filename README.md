@@ -33,9 +33,10 @@ npm run web:dev
 
 Abra [a aplicação local](http://127.0.0.1:4301). A página inicial apresenta o Meu Mimo.
 A [nova interface](http://127.0.0.1:4301/visual-check) reúne Lojinha, detalhe de
-mimo e resumo do lojista, com componentes acessíveis e dados fictícios. Conta,
-banco e fluxos reais pertencem às próximas etapas. O servidor da prévia em 4173
-continua independente.
+mimo e resumo do lojista, com componentes acessíveis e dados fictícios.
+T02 acrescenta [conta](http://127.0.0.1:4301/conta) e APIs de identidade e
+autorização, dependentes da stack local descrita no [onboarding](docs/onboarding.md).
+O servidor da prévia em 4173 continua independente.
 
 Para verificar o navegador depois de `npm run check`:
 
@@ -52,9 +53,10 @@ Se a porta estiver ocupada, encerre somente seu servidor antes do teste.
 
 O [protótipo](prototype/README.md) oferece atividades diárias, pontos, catálogo,
 resgate de tickets, extrato e bilhete, com dados de demonstração salvos no navegador.
-`web/` fornece a fundação Next.js/React/TypeScript e as composições de T03, sem
-depender de serviços. A prévia visual não salva dados nem desconta pontos.
-Não há contas reais, banco, convites, sincronização ou notificações entre pessoas.
+`web/` fornece a fundação Next.js/React/TypeScript, as composições estáticas de
+T03 e a identidade local de T02 com Supabase Auth/PostgreSQL/Prisma. A prévia
+visual não salva dados nem desconta pontos. Convites, atividades, pontos,
+sincronização e notificações da aplicação completa permanecem no roadmap.
 
 A aplicação completa está descrita nos documentos abaixo. A adoção do toolkit
 prepara o desenvolvimento e mantém o estágio atual explícito.

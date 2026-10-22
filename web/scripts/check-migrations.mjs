@@ -1,0 +1,81 @@
+import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
+import { randomUUID } from 'node:crypto';
+import { cpSync, mkdirSync, readdirSync, writeFileSync } from 'node:fs';
+import path from 'node:path';
+import pg from 'pg';
+import { artifactRoot, readState, webRoot } from './local-runtime.mjs';
+
+const state = readState();
+const databaseName = `meumimo_t02_migrations_${randomUUID().replaceAll('-', '')}`;
+if (!/^meumimo_t02_migrations_[a-f0-9]{32}$/.test(databaseName)) throw new Error('Banco de prova inválido.');
+const target = new URL(state.integration.T02_DATABASE_URL);
+target.pathname = `/${databaseName}`;
+target.searchParams.set('schema', 'app');
+const directory = path.join(artifactRoot, databaseName);
+const migrations = path.join(directory, 'migrations');
+mkdirSync(migrations, { recursive: true });
+const source = path.join(webRoot, 'prisma/migrations');
+const names = readdirSync(source).filter(name => /^\d{14}_/.test(name)).sort();
+assert.ok(names.length >= 2, 'A prova precisa de estrutura e evolução de permissões.');
+cpSync(path.join(source, 'migration_lock.toml'), path.join(migrations, 'migration_lock.toml'));
+cpSync(path.join(source, names[0]), path.join(migrations, names[0]), { recursive: true });
+const configuration = path.join(directory, 'prisma.config.mjs');
+writeFileSync(configuration, `export default ${JSON.stringify({
+  schema: path.join(webRoot, 'prisma/schema.prisma'),
+  migrations: { path: migrations }, datasource: { url: target.toString() },
+})};\n`, { mode: 0o600 });
+
+function deploy() {
+  execFileSync(process.execPath, [path.join(webRoot, 'node_modules/prisma/build/index.js'),
+    'migrate', 'deploy', '--config', configuration], {
+    cwd: webRoot, stdio: 'inherit', windowsHide: true,
+  });
+}
+
+const administrator = new pg.Client({ connectionString: state.integration.T02_DATABASE_URL });
+await administrator.connect();
+let created = false;
+let database;
+let runtime;
+try {
+  // Nome imprevisível, exclusivo desta execução; nunca esvazia bancos existentes.
+  await administrator.query(`CREATE DATABASE "${databaseName}"`);
+  created = true;
+  deploy();
+  database = new pg.Client({ connectionString: target.toString() });
+  await database.connect();
+  const id = randomUUID();
+  await database.query('INSERT INTO app."Profile" (id, "displayName") VALUES ($1, $2)', [id, 'Pessoa fictícia']);
+  for (const name of names.slice(1)) cpSync(path.join(source, name), path.join(migrations, name), { recursive: true });
+  deploy();
+  const preserved = await database.query('SELECT "displayName" FROM app."Profile" WHERE id = $1', [id]);
+  assert.equal(preserved.rows[0].displayName, 'Pessoa fictícia');
+  const applied = await database.query('SELECT count(*)::int AS count FROM app._prisma_migrations WHERE finished_at IS NOT NULL');
+  assert.equal(applied.rows[0].count, names.length);
+  const policies = await database.query("SELECT count(*)::int AS count FROM pg_tables WHERE schemaname = 'app' AND rowsecurity = true");
+  assert.equal(policies.rows[0].count, 7);
+  const flags = await database.query("SELECT rolsuper, rolcreatedb, rolcreaterole, rolbypassrls FROM pg_roles WHERE rolname = 'meumimo_runtime'");
+  assert.ok(Object.values(flags.rows[0]).every(value => value === false));
+  for (const role of ['anon', 'authenticated']) {
+    await database.query('BEGIN');
+    try {
+      await database.query(`SET LOCAL ROLE ${role}`);
+      await assert.rejects(database.query('SELECT * FROM app."Profile"'), { code: '42501' });
+    } finally { await database.query('ROLLBACK'); }
+  }
+  const runtimeURL = new URL(state.runtime.DATABASE_URL);
+  runtimeURL.pathname = `/${databaseName}`;
+  runtime = new pg.Client({ connectionString: runtimeURL.toString() });
+  await runtime.connect();
+  assert.equal((await runtime.query('SELECT id FROM app."Profile" WHERE id = $1', [id])).rowCount, 1);
+  await assert.rejects(runtime.query('INSERT INTO app."AdminGrant" ("profileId") VALUES ($1)', [id]), { code: '42501' });
+  await assert.rejects(runtime.query('UPDATE app."Profile" SET "suspendedAt" = now() WHERE id = $1', [id]), { code: '42501' });
+  await assert.rejects(runtime.query('CREATE TABLE app.forbidden (id int)'), { code: '42501' });
+  process.stdout.write('Migrações: banco vazio, evolução com dados preservados, RLS e privilégios efetivos comprovados.\n');
+} finally {
+  await runtime?.end();
+  await database?.end();
+  if (created) await administrator.query(`DROP DATABASE "${databaseName}"`);
+  await administrator.end();
+}

@@ -10,6 +10,8 @@
 | `npm run web:lint` | Aplicação/configuração/testes TS/TSX e JS de `web/`, ESLint 9, preset Next e regras locais |
 | `npm run web:typecheck` | Geração de tipos de rotas e `tsc --noEmit`, incluindo testes TS |
 | `npm run web:test` | Testes nativos de fronteira e regras, com AST TypeScript/TSX real |
+| `npm run web:test:integration` | Inicia produção em 4302 e testa HTTP contra a stack Supabase real preparada; sem reutilizar servidor |
+| `npm --prefix web run db:migrate:check` | Banco vazio, evolução com dados fictícios preservados, RLS e permissões efetivas |
 | `npm run web:build` | Build real de produção Next |
 | `npm run web:test:e2e` | Smoke do build em Chromium a 320/390 px; requer browser instalado |
 | `npm run check` | Gates da base e lint/tipos/testes/build de `web/`, em série e interrompendo na primeira falha |
@@ -19,6 +21,11 @@
 O protótipo continua estático, sem build. A aplicação possui build/typecheck
 próprios e lockfile independente; instale os dois pacotes antes do check agregado.
 O navegador é uma conferência adicional ao `check` e também roda no workflow.
+Os testes em `web/tests/integration/` ficam fora do runner padrão, para que o
+check sem serviços não execute suítes de banco acidentalmente. O comando
+próprio exige a stack de [identidade local](identity-local.md), migrações e
+build atualizado. Estado/serviço ausente ou pasta sem suítes causa falha;
+não há skips ou substituição de Auth/banco por mocks nessa prova.
 
 ## Regras adotadas
 
@@ -61,6 +68,16 @@ As capturas ficam em `web/test-results/`; o servidor usa `WEB_TEST_PORT` ou
 4301 por padrão. A árvore ARIA verifica rótulos/ordem, sem simular fala de
 leitor de tela. Os tokens têm contraste calculado; isso não prova toda a
 interface em todas as condições de uso.
+
+T02 separa a prova HTTP real dos estados de interface: o Playwright controla
+respostas da API somente nos casos de formulário/erro e QR de `/conta`.
+Esses casos verificam rótulos, teclado, foco, texto 200%, movimento reduzido,
+larguras 320/390 e imagem decodificada; não provam autenticação. A suíte HTTP
+usa Auth, PostgreSQL e Mailpit reais para PKCE, recuperação, renovação,
+revogação, suspensão, MFA, isolamento e limites atômicos, inclusive concorrentes.
+O JWT expirado da fixture usa a chave HMAC legada local: o Auth precisa aceitar
+o par vigente e rejeitar a variante expirada explicitamente por expiração;
+depois, o refresh é realizado pelo provedor e seus cookies são conferidos.
 
 ## Aceite por mudança
 

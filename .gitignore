@@ -13,6 +13,9 @@ next-env.d.ts
 *.tsbuildinfo
 test-results/
 playwright-report/
+web/src/generated/
+web/supabase/.temp/
+web/supabase/.branches/
 
 # Credenciais ficam fora do controle de versão.
 .env

@@ -261,3 +261,79 @@ Webpack sem worker intermediário; a configuração de produção e a exigência
 do diagnóstico de fronteira permanecem. Conferência final: check agregado
 aprovado e 20/20 cenários Chromium. Não foi usado leitor de tela real nem
 aparelho móvel real. T02 permanece pendente; M1 ainda está incompleto.
+
+## Preparação de M1/T02
+
+Registro histórico anterior à instalação; o estado atual está na execução abaixo.
+
+O idealizador confirmou D02 em 22/10/2026: e-mail/senha com verificação,
+recuperação, retorno seguro ao convite e MFA/TOTP obrigatório para acesso
+administrativo provisionado separadamente. Os limites de autenticação D04
+e a preparação do runtime continuam aguardando respostas próprias.
+
+Dois agentes investigaram contratos e ambiente somente em leitura. WSL2,
+virtualização e recursos do Windows estavam habilitados; nenhum engine
+Docker/Podman ou Supabase local foi comprovado. Docker Desktop por usuário é
+uma alternativa documentada sem elevação; não há indicação observada de
+reinício pendente. Nenhuma instalação ou alteração global foi executada.
+
+Foi preparado o helper puro de destino após autenticação e um runner de
+integração separado. `npm run check` passou com 7 testes do protótipo e 8 da
+aplicação. Um ensaio isolado em `.artifacts/t02-discovery-*` comprovou que o
+runner padrão exclui integração, o modo de integração executa uma suíte e
+uma pasta vazia falha. Isso testa descoberta, não Supabase/Prisma/HTTP real.
+O comando do projeto falha explicitamente por não haver integração implementada.
+
+Context7 foi consultado para Prisma v7 e Supabase SSR; as versões previamente
+selecionadas de Prisma e bibliotecas Auth foram conferidas no registro npm,
+sem instalação. A descoberta do ambiente foi confrontada com
+[Docker no Windows](https://docs.docker.com/desktop/setup/install/windows-install/)
+e [Supabase local](https://supabase.com/docs/guides/local-development/cli/getting-started).
+O [registro de T02](superpowers/plans/2026-10-22-t02-identidade.md) acompanha
+as dependências e o aceite restante. Não há migração, sessão ou autorização
+de recursos implementada nesta preparação.
+
+## Execução de M1/T02
+
+O idealizador confirmou os limites de autenticação D04, autorizou a preparação
+por usuário e instalou Docker Desktop manualmente. Verificados Docker Desktop
+4.96.2, engine Linux 29.9.2, WSL2 e PostgreSQL 17.11. Supabase CLI 2.121.0 está
+no pacote; Prisma CLI/cliente/adapter 7.10.1 e bibliotecas Auth constam no lockfile.
+Os [comandos locais](identity-local.md) preparam bancos, papéis e credenciais
+isolados. A CLI real do Docker é selecionada por processo, sem alterar o PATH
+global. Uma saída acidental do shim npm foi preservada nos artefatos ignorados.
+
+API, PostgreSQL e Mailpit ficaram saudáveis em 127.0.0.1:54321/54322/54324.
+O helper conserva configuração, mounts e arquivos internos dos contêineres ao
+restringir o bind; predecessores ficam parados para reversão. Seis sondagens
+pelos endereços não locais da máquina não alcançaram essas portas. Não houve
+mudança global de Docker, firewall, modelo ou permissões do cliente.
+
+A orquestração do Vibe Coding Toolkit usou escritores separados para dados,
+identidade e testes HTTP, investigação de runtime e duas revisões independentes
+somente leitura. O integrador instalou, migrou, testou e revisou os resultados.
+Foram corrigidos o contexto PKCE adulterável e a reutilização de challenge de
+signup no recover público com contexto HMAC e método AMR assinado pelo Auth;
+os dois ataques foram reproduzidos antes da correção. Também foram corrigidos
+o QR de MFA, os guardas de conexão local e o diagnóstico de rollback.
+
+Context7 e o código instalado foram consultados para Prisma v7, Supabase
+SSR/PKCE e CLI. Fontes oficiais adicionais: [Auth v2.197.0](https://github.com/supabase/auth/tree/v2.197.0),
+[CLI v2.121.0](https://github.com/supabase/cli/tree/v2.121.0) e
+[publicação de portas Docker](https://docs.docker.com/engine/network/port-publishing/).
+Nenhum código privado, dado pessoal ou segredo foi enviado nas consultas.
+
+Verificação local: check agregado com 7 testes do protótipo e 9 nativos,
+26 testes HTTP reais, 28 casos Chromium e prova de migração vazia/evolutiva,
+dados preservados, RLS e papéis efetivos. Os dois `npm ci` e o check também
+passaram em snapshot limpo, sem `.env`, dependências ou Git interno copiados.
+O workflow acrescenta integração
+Ubuntu com Docker; sua execução remota não foi observada. Leitor de tela real
+e aparelhos móveis continuam pendentes. As demais decisões D03–D09 e os fluxos
+do domínio permanecem no roadmap; M1 conserva a pendência manual de T03.
+
+Auditoria de produção da raiz e de `web/`: zero vulnerabilidades. A árvore de
+desenvolvimento de `web/` tem cinco avisos altos na cadeia braces/micromatch/
+fast-glob do preset ESLint Next. Não há correção compatível indicada no relatório;
+não foi aplicado downgrade forçado. Relatórios, estado local, mensagens e
+credenciais de teste ficam ignorados em `.artifacts/`/serviços locais.

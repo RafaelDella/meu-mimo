@@ -1,0 +1,21 @@
+.account-shell { width: min(100%, 45rem); min-height: 100svh; margin: auto; padding: max(24px, env(safe-area-inset-top)) 16px max(24px, env(safe-area-inset-bottom)); overflow-wrap: anywhere; }
+.account-header { margin-bottom: 2rem; }
+.account-header a { display: inline-block; padding: .75rem 8px; min-height: 48px; color: var(--action); text-underline-offset: 4px; }
+.account-header h1 { margin-block: 1rem; }
+.account-card { padding: 1.5rem 16px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
+.account-card h2 { font: 400 1.75rem/1.3 var(--font-heading); margin: 0 0 1rem; }
+.account-card h3 { font: 400 1.5rem/1.3 var(--font-heading); margin: 0 0 1rem; }
+.account-tabs, .account-actions { display: flex; flex-wrap: wrap; gap: .75rem; margin-block: 1rem; }
+.account-form { display: grid; gap: 1rem; margin-block: 1.5rem; }
+.account-form .ui-button { justify-self: start; }
+.account-feedback { color: var(--success-text); }
+.account-error { color: var(--error-text); }
+.account-error:empty, .account-feedback:empty { margin: 0; }
+.account-status { margin-top: 1.5rem; }
+.account-mfa { border-top: 1px solid var(--border); margin-top: 1.5rem; padding-top: 1.5rem; }
+.account-qr { margin-block: 1.25rem; }
+.account-qr img { max-width: 100%; height: auto; }
+.account-manual-key { display: grid; gap: .75rem; margin-block: 1rem; }
+.account-manual-key .ui-button { justify-self: start; }
+.account-select { display: block; min-height: 48px; width: 100%; max-width: 100%; margin-top: .5rem; padding: .5rem 12px; border: 1px solid var(--border-control); border-radius: .75rem; background: var(--surface); color: var(--text); font: inherit; }
+.account-select:focus-visible { outline: 3px solid var(--focus); outline-offset: 4px; }

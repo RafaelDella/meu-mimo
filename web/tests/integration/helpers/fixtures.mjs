@@ -1,0 +1,89 @@
+import assert from 'node:assert/strict';
+import { createHmac, randomUUID } from 'node:crypto';
+import { createClient } from '@supabase/supabase-js';
+import pg from 'pg';
+import { integrationEnvironment } from './environment.mjs';
+import { BrowserSession, expectStatus } from './http-client.mjs';
+
+export async function createFixture(t) {
+  const environment = integrationEnvironment();
+  const database = new pg.Pool({ connectionString: environment.databaseURL, max: 2, connectionTimeoutMillis: 5000 });
+  const auth = createClient(environment.supabaseURL, environment.serviceRoleKey, {
+    auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+  });
+  const userIds = new Set();
+  const emails = new Set();
+  const storeIds = new Set();
+  const rateKeys = new Set();
+  const newEmail = () => `t02-${randomUUID()}@example.test`;
+  const client = () => new BrowserSession(environment);
+
+  async function createUser({ confirmed = true } = {}) {
+    const email = newEmail();
+    const password = `T02!${randomUUID()}`;
+    emails.add(email);
+    const { data, error } = await auth.auth.admin.createUser({ email, password, email_confirm: confirmed });
+    assert.equal(error, null, 'A fixture exige o Auth real da stack local.');
+    assert.ok(data.user?.id);
+    userIds.add(data.user.id);
+    return { id: data.user.id, email, password, client: client() };
+  }
+
+  async function login(user) {
+    const response = await user.client.post('/api/auth/login', { email: user.email, password: user.password });
+    expectStatus(response, 200);
+    return user;
+  }
+
+  async function createStore(owner, name = 'Lojinha de integração') {
+    const id = randomUUID();
+    await database.query('INSERT INTO app."Store" (id, "createdByProfileId", name) VALUES ($1, $2, $3)',
+      [id, owner.id, name]);
+    storeIds.add(id);
+    return { id, name };
+  }
+
+  async function addMembership(store, user, role = 'PARTICIPANT') {
+    const id = randomUUID();
+    await database.query('INSERT INTO app."Membership" (id, "storeId", "profileId", role) VALUES ($1, $2, $3, $4)',
+      [id, store.id, user.id, role]);
+    return { id, storeId: store.id, profileId: user.id, role };
+  }
+
+  async function cleanup() {
+    try {
+      if (emails.size) {
+        const result = await database.query('SELECT id FROM auth.users WHERE email = ANY($1::text[])', [[...emails]]);
+        for (const row of result.rows) userIds.add(row.id);
+        assert.ok(process.env.AUTH_RATE_LIMIT_SECRET, 'A limpeza exige o segredo da stack de testes.');
+        for (const email of emails) for (const kind of ['login', 'recovery']) {
+          rateKeys.add(createHmac('sha256', process.env.AUTH_RATE_LIMIT_SECRET)
+            .update(kind).update('\0').update(email.trim().toLowerCase()).update('\0')
+            .update(kind === 'login' ? environment.origin : '').digest('hex'));
+        }
+      }
+      const profiles = [...userIds];
+      await database.query('DELETE FROM app."SecurityAudit" WHERE "actorProfileId" = ANY($1::uuid[])', [profiles]);
+      await database.query('DELETE FROM app."AuthSession" WHERE "profileId" = ANY($1::uuid[])', [profiles]);
+      await database.query('DELETE FROM app."AdminGrant" WHERE "profileId" = ANY($1::uuid[])', [profiles]);
+      await database.query('DELETE FROM app."Membership" WHERE "storeId" = ANY($1::uuid[]) OR "profileId" = ANY($2::uuid[])',
+        [[...storeIds], profiles]);
+      await database.query('DELETE FROM app."Store" WHERE id = ANY($1::uuid[])', [[...storeIds]]);
+      await database.query('DELETE FROM app."Profile" WHERE id = ANY($1::uuid[])', [profiles]);
+      if (rateKeys.size) await database.query('DELETE FROM app."AuthRateBucket" WHERE key = ANY($1::text[])', [[...rateKeys]]);
+      for (const id of profiles) {
+        const { error } = await auth.auth.admin.deleteUser(id);
+        assert.equal(error, null, 'A limpeza deve remover somente usuários criados pela fixture.');
+      }
+    } finally {
+      await database.end();
+    }
+  }
+
+  t.after(cleanup);
+  await database.query('SELECT 1');
+  return {
+    environment, database, auth, client, createUser, login, createStore, addMembership, newEmail,
+    trackEmail: email => emails.add(email), trackUser: id => userIds.add(id), trackRateKey: key => rateKeys.add(key),
+  };
+}

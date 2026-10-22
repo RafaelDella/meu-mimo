@@ -16,8 +16,10 @@ A demonstração está em `prototype/`: HTML, CSS e JavaScript ESM.
 A fundação Next.js/React/TypeScript está em `web/`, com Node.js 24 e npm.
 As composições de T03 estão em `/visual-check`, com dados fictícios e sem
 persistência; componentes compartilhados em `web/src/components/ui/`.
-PostgreSQL/Prisma e Supabase Auth/Storage continuam para T02, sem serviços
-implementados em T01. O plano da fundação e as dependências estão em
+T02 acrescenta identidade/API com Supabase Auth e PostgreSQL/Prisma locais;
+os comandos e a separação de credenciais estão em `docs/onboarding.md`.
+Storage/mídia e o restante do domínio permanecem no roadmap.
+O plano da fundação e as dependências estão em
 [M0](docs/superpowers/plans/2026-10-22-m0-fundacao.md).
 
 Na raiz:
@@ -41,6 +43,10 @@ com Chromium previamente instalado pelo Playwright. O `check` agrega a base e
 Os comandos de `prototype/package.json` continuam válidos naquela pasta.
 `WEB_TEST_PORT` altera somente a porta do servidor de testes (padrão 4301;
 T03 usa 4303). Builds, typegen e servidores continuam serializados no checkout.
+Integração real usa `web:test:integration`, stack `meumimo-t02` e aplicação 4302;
+prepare serviços e migrações conforme o onboarding. Não exponha as portas fora
+de loopback, não use o shim npm `docker` e não passe credenciais de fixture ou
+migração ao Next. Desenvolvimento, shadow e integração usam bancos separados.
 
 ## Acordos de trabalho
 

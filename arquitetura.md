@@ -1,6 +1,7 @@
 # Meu Mimo — proposta técnica e decisões de dados
 
-Atualizado em 22 de outubro de 2026. Complementa `design.md` e `requisitos.md`. Este documento registra decisões e propostas; não representa infraestrutura ou funcionalidades já implementadas.
+Atualizado em 22 de outubro de 2026. Complementa `design.md` e `requisitos.md`.
+Registra decisões, propostas futuras e o escopo local implementado em T01–T03.
 
 ## 1. Decisões e base da implementação
 
@@ -8,15 +9,15 @@ Atualizado em 22 de outubro de 2026. Complementa `design.md` e `requisitos.md`. 
 
 Interpretação adotada para “Prisma DB para migração”: **Prisma ORM e suas ferramentas de migração sobre PostgreSQL**.
 
-**D01 confirmada pelo idealizador em M0, em 22/10/2026:** Next.js/React/TypeScript em `web/`, PostgreSQL com Prisma e Supabase para Auth/Storage, com desenvolvimento e testes locais. Essa confirmação não contrata serviços nem autoriza publicação. T01 cria a fundação de `web/` sem serviços; o mecanismo de login continua pendente em D02, em `requisitos.md`, seção 6.1.
+**D01 confirmada pelo idealizador em M0, em 22/10/2026:** Next.js/React/TypeScript em `web/`, PostgreSQL com Prisma e Supabase para Auth/Storage, com desenvolvimento e testes locais. Essa confirmação não contrata serviços nem autoriza publicação. **D02 confirmada em T02:** e-mail/senha com e-mail verificado, recuperação, retorno seguro ao convite e MFA/TOTP obrigatório para administração provisionada separadamente. Os limites D04 de autenticação e a preparação local foram autorizados; as demais decisões continuam pendentes.
 
 | Camada | Seleção e estado | Responsabilidade |
 |---|---|---|
 | Aplicação | Next.js, React e TypeScript; confirmados em D01 | Web, API e serviços da aplicação |
 | Interface | Tailwind CSS e CSS com tokens semânticos; cinco componentes próprios em T03, sem pacote adicional | Adaptar identidade, composição e assets do protótipo |
-| Banco | PostgreSQL no Supabase; base confirmada em D01, ambiente local ainda não validado | Persistência relacional e transações |
+| Banco | PostgreSQL 17.11 na stack Supabase local de T02 | Persistência relacional e transações |
 | Acesso e migrações | Prisma ORM e migrações versionadas; confirmados | Modelos, consultas e evolução do banco |
-| Identidade | Supabase Auth; provedor confirmado, método pendente em D02 | Autenticação e sessões |
+| Identidade | Supabase Auth local em T02, com e-mail/senha, verificação, recuperação e MFA administrativo | Autenticação e sessões |
 | Fotos e vídeos | Supabase Storage privado; confirmado como serviço, pipeline pendente em D07 | Upload e acesso autorizado |
 | Eventos ao vivo | Supabase Realtime com audiência autorizada; proposta para T05 | Avisar a interface sobre mudanças confirmadas |
 | Qualidade | Validação de entrada, testes de regras, integração e navegação; requisito | Cobrir autorização, concorrência e uso pelo celular |
@@ -35,7 +36,8 @@ serviços ou persistência; P01/L02 com dados autorizados continuam em T12.
 
 ### 1.1. Seleções técnicas de M0
 
-Versões selecionadas em 22/10/2026 por consulta ao registro npm oficial. Os pacotes de T01 estão declarados e fixados em `web/package-lock.json`; banco e identidade continuam como alvos de T02.
+Versões selecionadas em 22/10/2026 por consulta ao registro npm oficial.
+Os pacotes de T01/T02 estão declarados e fixados em `web/package-lock.json`.
 
 | Grupo | Versões exatas selecionadas | Etapa |
 |---|---|---|
@@ -106,9 +108,41 @@ Para a implantação serverless proposta, definir pooling, orçamento de conexõ
 
 Referências técnicas: [Prisma com Supabase](https://supabase.com/docs/guides/database/prisma), [customização de migrações](https://www.prisma.io/docs/orm/v7/prisma-migrate/workflows/customizing-migrations), [desenvolvimento e produção](https://www.prisma.io/docs/orm/v7/prisma-migrate/workflows/development-and-production). As duas últimas descrevem Prisma ORM v7 e precisam ser revalidadas se outra versão for escolhida.
 
+### 3.1. Fundação local de T02
+
+O schema privado `app` contém Profile, Store, Membership e AdminGrant; não
+modela os estados de negócio ainda dependentes de D03–D09. AuthSession
+mantém revogação/contexto restrito, AuthRateBucket persiste a janela atômica
+e SecurityAudit registra evento/ator/instante sem senha, token ou e-mail.
+As três migrações em `web/prisma/migrations/` incluem o SQL de permissões.
+Auth/Storage mantêm seus schemas gerenciados pelo Supabase.
+
+Runtime usa `meumimo_runtime`, sem superuser/bypass de RLS ou escrita em
+AdminGrant, Store e Membership. `anon`/`authenticated` não acessam `app`, que
+também fica fora da Data API. RLS restringe o papel de conexão; identidade e
+escopo de loja continuam obrigatórios na API Prisma. O pool local usa no
+máximo 5 conexões, timeout de conexão 5 s e ociosidade 10 s.
+
+`getUser` e claims verificados, e-mail confirmado, AuthSession ativa e perfil
+não suspenso formam a identidade. Cada consulta privada revalida sessão e
+permissão. Callback exige contexto HMAC ligado ao verifier PKCE e método AMR
+compatível no JWT assinado pelo Auth (`email/signup` ou `recovery`). Sessões
+de recuperação só alteram senha/saem; administração exige grant separado e AAL2.
+Cookies de renovação são propagados com HttpOnly/SameSite=Lax; respostas
+privadas usam no-store. As mutações validam Origin, JSON e corpo limitado.
+
+Stack comprovada: Docker Desktop 4.96.2, engine Linux 29.9.2 e PostgreSQL
+17.11 (imagem `public.ecr.aws/supabase/postgres:17.11.0.004`), com Supabase
+CLI 2.121.0 e Auth 2.197.0. Desenvolvimento, shadow e
+integração usam bancos separados; 54321/54322/54324 estão em loopback.
+Configuração, comandos, provisionamento administrativo e limites operacionais
+estão em [identidade local](docs/identity-local.md). Nenhuma migração ou
+implantação em ambiente real foi executada.
+
 ## 4. Modelo conceitual de dados
 
-Nomes abaixo são propostas para orientar o futuro modelo, não um schema Prisma já criado.
+A tabela descreve o modelo completo proposto. T02 implementa somente o
+subconjunto mínimo da seção 3.1; os demais modelos permanecem futuros.
 
 | Entidade | Dados e responsabilidade principais |
 |---|---|

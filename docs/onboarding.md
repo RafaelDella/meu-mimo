@@ -48,7 +48,7 @@ Os registros de conferências anteriores estão em [prototype/QA.md](../prototyp
   A configuração de um MCP não altera a lista de ferramentas de uma sessão já aberta.
 
 O servidor usa somente `127.0.0.1`, sem acesso a produção. Encerre com `Ctrl+C`.
-Não há banco para preparar nem migrações para executar nesta base.
+O protótipo não exige banco. A identidade de T02 usa a stack local abaixo.
 
 ## Continuidade após M0
 
@@ -72,11 +72,13 @@ O teste de navegador usa o build de produção e recusa reutilizar servidor exis
 No Linux, `playwright install --with-deps chromium` também prepara bibliotecas
 do sistema necessárias. A CLI está no pacote, sem instalação global.
 
-T01 não exige banco ou credenciais. T02 exige as decisões de acesso e um
-ambiente local de Supabase comprovado. Em M0 foi encontrado um shim npm chamado
-`docker`, sem comprovação de Docker Engine/CLI real, e nenhuma CLI Supabase no
-PATH. Preparar esse ambiente é uma dependência explícita de T02, sem instalação
-global automática. Isso não bloqueia a fundação ou as composições estáticas.
+T01 e as composições estáticas continuam sem exigir banco ou credenciais.
+Para cadastro, login, recuperação, MFA e APIs privadas, siga
+[identidade local](identity-local.md): engine Docker Linux, stack reservada,
+bootstrap e migrações Prisma. D02 e os limites de autenticação D04 foram
+confirmados pelo idealizador. As outras propostas continuam pendentes.
+`web:test:integration` executa HTTP contra os serviços reais, separado do
+check sem serviços; ausência de estado, serviço ou suíte é falha.
 
 ## Conferir a interface de T03
 
