@@ -13,7 +13,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
@@ -22,5 +22,71 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            web/package-lock.json
       - run: npm ci --ignore-scripts --no-audit
+      - run: npm --prefix web ci --no-audit
       - run: npm run check
+        env:
+          NEXT_TELEMETRY_DISABLED: '1'
+      - run: npm --prefix web exec -- playwright install --with-deps chromium
+      - run: npm run web:test:e2e
+
+  identity-integration:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm --prefix web ci --no-audit
+      - run: npm --prefix web run local:start
+      - run: npm --prefix web run local:prepare
+      - run: npm --prefix web run db:migrate:dev
+      - run: npm --prefix web run db:migrate:integration
+      - run: npm --prefix web run db:migrate:check
+      - run: npm --prefix web run build
+        env:
+          NEXT_TELEMETRY_DISABLED: '1'
+      - run: npm run web:test:integration
+      - run: npm --prefix web run local:prepare:t04
+      - run: npm --prefix web run db:migrate:dev:t04
+      - run: npm --prefix web run db:migrate:integration:t04
+      - run: npm --prefix web run test:integration:t04
+      - run: npm --prefix web run local:prepare:t05
+      - run: npm --prefix web run db:migrate:dev:t05
+      - run: npm --prefix web run db:migrate:integration:t05
+      - run: npm --prefix web run test:integration:t05
+      - name: Preparar ferramentas de vídeo da distribuição
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y ffmpeg
+          ffmpeg -version
+          ffprobe -version
+      - run: npm --prefix web run local:prepare:t06
+      - run: npm --prefix web run db:migrate:dev:t06
+      - run: npm --prefix web run db:migrate:integration:t06
+      - run: npm --prefix web run media:fixtures
+      - run: npm --prefix web exec -- playwright install --with-deps chromium
+      - run: npm --prefix web run test:integration:t06
+      - run: npm --prefix web run local:prepare:t07
+      - run: npm --prefix web run db:migrate:dev:t07
+      - run: npm --prefix web run db:migrate:integration:t07
+      - run: npm --prefix web run media:fixtures:t07
+      - run: npm --prefix web run test:integration:t07
+      - run: npm --prefix web run local:prepare:t08
+      - run: npm --prefix web run db:migrate:dev:t08
+      - run: npm --prefix web run db:migrate:integration:t08
+      - run: npm --prefix web run media:fixtures:t08
+      - run: npm --prefix web run test:integration:t08
+      - run: npm --prefix web run local:prepare:t09
+      - run: npm --prefix web run db:migrate:dev:t09
+      - run: npm --prefix web run db:migrate:integration:t09
+      - run: npm --prefix web run media:fixtures:t09
+      - run: npm --prefix web run test:integration:t09

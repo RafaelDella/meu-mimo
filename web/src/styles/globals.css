@@ -1,0 +1,30 @@
+@import "tailwindcss";
+@import "./tokens.css";
+@import "./ui.css";
+@import "./visual-check.css";
+@import "./account.css";
+@import "./stores.css";
+
+* { box-sizing: border-box; }
+html { background: var(--background); color: var(--text); }
+body { margin: 0; font-family: var(--font-body); font-size: 1rem; line-height: 1.6; }
+a, button { touch-action: manipulation; }
+:where(a, button, input):focus-visible { outline: 3px solid var(--focus); outline-offset: 4px; }
+button, input { font: inherit; }
+.welcome { width: min(100%, 64rem); min-height: 100svh; margin: auto; display: flex; flex-direction: column; padding: max(24px, env(safe-area-inset-top)) clamp(16px, 4vw, 24px) max(24px, env(safe-area-inset-bottom)); }
+.brand { display: flex; align-items: center; gap: .6rem; font-family: var(--font-heading); font-size: 1.75rem; }
+.brand-heart, .brand-dot { color: var(--action); }
+.brand-heart { font-size: 2.25rem; line-height: 1; }
+.welcome-card { width: min(100%, 39rem); margin: auto; padding: clamp(28px, 6vw, 64px) clamp(16px, 5vw, 48px); background: var(--surface); border: 1px solid var(--border); border-radius: 2rem; text-align: center; }
+.gift-mark { display: grid; place-items: center; width: 4rem; height: 4rem; margin: 0 auto 1.5rem; border-radius: 50%; background: var(--surface-soft); color: var(--action); font-family: var(--font-heading); font-size: 2.5rem; }
+.eyebrow { margin: 0 0 .75rem; color: var(--action); font-size: .875rem; }
+h1 { margin: 0; font-family: var(--font-heading); font-size: clamp(2rem, 8vw, 3.5rem); font-weight: 400; line-height: 1.15; overflow-wrap: anywhere; }
+.introduction { margin: 1.25rem auto 1.75rem; color: var(--text-muted); max-width: 30rem; }
+.primary-link { display: inline-block; min-height: 3rem; max-width: 100%; padding: .75rem 16px; border-radius: 1rem; background: var(--action); color: #fff; font-weight: 600; text-decoration: none; overflow-wrap: anywhere; }
+.primary-link:active { background: var(--action-pressed); }
+.primary-link span { white-space: nowrap; }
+.demo-note { max-width: 25rem; margin: 1rem auto 0; color: var(--text-muted); font-size: .875rem; }
+.preview-link { display: inline-block; min-height: 48px; padding: .75rem 8px; color: var(--action); text-underline-offset: 4px; }
+footer { margin-top: 1.5rem; text-align: center; color: var(--text-muted); font-size: .875rem; }
+@media (max-width: 420px) { .welcome-card { margin-block: 2rem; } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }

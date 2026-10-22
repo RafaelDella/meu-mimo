@@ -1,16 +1,16 @@
 # Meu Mimo — roadmap de implementação
 
-> **Para quem executar:** trabalhar por tarefas verificáveis, com um escritor por arquivo e revisão independente somente leitura. Usar os recursos nativos descobertos no cliente e as skills disponíveis; nenhuma instalação adicional é pressuposta. As caixas abaixo representam trabalho futuro.
+> **Para quem executar:** trabalhar por tarefas verificáveis, com um escritor por arquivo e revisão independente somente leitura. Usar os recursos nativos descobertos no cliente e as skills disponíveis; nenhuma instalação adicional é pressuposta. Marcar caixas somente com evidência verificada.
 
 **Objetivo:** transformar a prévia em uma aplicação privada que complete o ciclo criar loja → convidar → registrar conquista → analisar → pontuar → resgatar → realizar o mimo.
 
 **Arquitetura:** preservar o protótipo como referência visual e implementar os fluxos reais por entregas completas. Autorização pertence ao servidor; pontos, estoque, tickets e notificações de domínio exigem persistência consistente. Prisma permanece responsável pelo acesso e pelas migrações do banco.
 
-**Stack:** hoje, HTML/CSS/JavaScript ESM, Node.js 24 e npm. Next.js/React/TypeScript, Tailwind/shadcn, PostgreSQL/Supabase e Vercel são a base proposta em arquitetura, sujeita à decisão T00.
+**Stack:** hoje, HTML/CSS/JavaScript ESM, Node.js 24 e npm. Em M0, D01 confirmou Next.js/React/TypeScript em `web/`, PostgreSQL/Prisma e Supabase Auth/Storage para desenvolvimento/teste local. Versões e escolhas técnicas estão em arquitetura §1.1; publicação e políticas pendentes mantêm seus próprios gates.
 
 **Especificação:** [requisitos](../../../requisitos.md), [arquitetura](../../../arquitetura.md), [design](../../../design.md) e [README](../../../README.md). Operação e qualidade: [onboarding](../../onboarding.md), [setup](../../setup.md) e [quality](../../quality.md).
 
-**Data:** 22/10/2026. **Estado:** proposta para revisão; implementação deste roadmap ainda não iniciada. O documento organiza as fontes canônicas, sem converter suas propostas em decisões aprovadas. Este pedido cobre planejamento; a execução será uma etapa posterior.
+**Data:** 22/10/2026. **Estado atual:** M0 e T01–T09 entregues localmente; T03 conserva a conferência com leitor de tela real. T09 integra catálogo, resgate atômico, estoque e histórico de tickets; evidências no [plano T09](2026-10-22-t09-catalogo-resgates.md). D06 e limites do catálogo estão confirmados. A próxima entrega é T10: combinado, realização e cancelamento/devolução. Decisões confirmadas e propostas restantes constam em requisitos §6.1. A seção 1 preserva o ponto de partida do planejamento.
 
 ## 1. Ponto de partida e restrições
 
@@ -20,7 +20,7 @@
 | Persistência de demonstração | `prototype/dist/model.js` usa `localStorage`, saldo inicial de 240 e dia em São Paulo. Esses dados e regras não migram para contas reais. |
 | Fundação de qualidade existente | A raiz oferece lint, autoverificação das regras e sete testes com `node:test`. Não há build/typecheck, backend, schema Prisma ou serviços reais. |
 | Decisões confirmadas | Mobile first, conta com papéis por contexto e várias lojas, Prisma, históricos no MVP, várias fotos/vídeos por resgate e intenção de retrospectiva futura. |
-| Infraestrutura proposta | Provedores, mecanismo de login, versões e hospedagem ainda precisam de decisão. Não há autorização implícita para serviços pagos ou publicação. |
+| Infraestrutura selecionada para implementação | D01 confirmou a base e o desenvolvimento/teste local; versões selecionadas em M0 ainda precisam de instalação/build em M1. Login, políticas e hospedagem seguem suas decisões específicas. |
 
 Restrições globais para todas as tarefas:
 
@@ -41,7 +41,7 @@ Restrições globais para todas as tarefas:
 | Construir todo o backend e depois todas as telas | Contratos podem ser organizados cedo, mas os fluxos reais e o uso móvel só aparecem no fim. | Possível, com maior risco de retrabalho de integração. |
 | Estender a demonstração local até parecer um produto completo | Reaproveita rapidamente a navegação, mas exige substituir suas suposições sobre identidade, persistência e pontos. | Inadequada como fundação das garantias do produto real. |
 
-Proposta de organização: criar a aplicação futura em `web/`, mantendo os comandos do protótipo. Esse caminho é uma escolha deste roadmap a confirmar em T00; não é um diretório já implementado. Se a organização mudar, atualizar os caminhos e as ondas antes de delegar.
+Organização confirmada em D01: criar a aplicação futura em `web/`, mantendo os comandos do protótipo. O diretório ainda não está implementado. Se a organização mudar, atualizar os caminhos e as ondas antes de delegar.
 
 O roadmap define marcos e pacotes de trabalho. Antes da execução de cada pacote, detalhar suas interfaces, nomes de testes e comandos para as versões efetivamente escolhidas. Não gerar agora código de uma stack ainda proposta.
 
@@ -81,14 +81,14 @@ T00 organiza estas decisões com o idealizador; as que não forem resolvidas blo
 
 | ID | Decisão a registrar na fonte responsável | Necessária antes de |
 | --- | --- | --- |
-| D01 | Stack, organização `web/`, versões compatíveis, provedor PostgreSQL/Auth/Storage, ambientes de desenvolvimento/teste e custo disponível. Consultar Context7 e documentação oficial antes de instalar. | T01–T02 |
+| D01 · confirmada em M0 | Next.js/React/TypeScript em `web/`, PostgreSQL/Prisma e Supabase Auth/Storage para desenvolvimento/teste local. Versões e escolhas técnicas registradas em arquitetura §1.1 após consulta a fontes oficiais; ambiente local ainda precisa ser comprovado. Nenhum custo/publicação autorizado. | T01–T02 |
 | D02 | Login, recuperação/verificação da conta, retorno seguro ao convite e proteção/provisionamento administrativo sem autocadastro. | T02 |
-| D03 | Catálogo/atividades compartilhados ou exclusivos; saldo inicial; validade/uso/revogação de convite; efeitos de pausa/encerramento. | T04, T07, T09 |
-| D04 | Início da semana, retroatividade, estados que ocupam ocorrência, alteração de fuso e limites técnicos de texto/paginação/requisições. | T04–T08, conforme o recurso |
+| D03 · confirmada em T04 | Um responsável, catálogo/atividades compartilhados, saldo zero, link portador de uso único por sete dias e efeitos de pausa/encerramento em requisitos §6.1. | T04, T07, T09 |
+| D04 | Início da semana, retroatividade, estados que ocupam ocorrência, alteração de fuso e limites técnicos de texto/paginação/requisições. Limites de autenticação precisam de decisão antes do respectivo fluxo. | T02 para autenticação; T04–T12 conforme o recurso |
 | D05 | Contestação após gasto, saldo negativo por estorno, reabertura e recomposição; preservar tickets emitidos conforme a regra aprovada. | T08 |
-| D06 | Estoque no cancelamento, pedido recusado, disputa sobre realização e procedimento de suporte no piloto. | T09–T10 |
-| D07 | Quantidade/tamanho/formato de fotos e vídeos, duração, miniaturas, orientação/remoção de localização, processamento e reprodução Android/iPhone. Fazer prova técnica com arquivos fictícios; armazenamento não garante conversão. | T06 |
-| D08 | Retenção de mídia/histórico, órfãos, relações encerradas e tickets cancelados; tratamento de pedido de exportação/exclusão e histórico compartilhado. Fluxo completo de exclusão pode evoluir depois, mas o contrato de dados é P0. | T06, T11, T14 |
+| D06 · confirmada em T09 | Baixa na emissão; futuro cancelamento devolve pontos uma vez, reposição explícita desligada por padrão, pedido bloqueia realizar e recusa motivada restaura o estado anterior. Procedimento de disputa após realização fica para T14. | T09–T10; procedimento T14 |
+| D07 · confirmada em T06 | Limites de fotos/vídeos, versões de evidência, lote/álbum, miniaturas e gateway local separado confirmados em requisitos §6.1. Prova sintética local não comprova câmera/galeria ou reprodução em Android/iPhone reais. | T06/T11; prova móvel ainda pendente |
+| D08 · confirmada em T06 | Órfãos 24h, originais até 24h após processamento, evidência 180 dias com proteção e álbum até 12 meses após encerramento. Histórico até 24 meses, backups até 30 dias e procedimento de exportação/exclusão em T14. Proteção conservadora até integrar a origem. | T06, T11, T14 |
 | D09 | Aparelhos/versões suportados, disponibilidade, limite de custo, tolerância de perda (RPO), prazo de recuperação (RTO) e operação do piloto. | T14–T15 |
 | D10 | Periodicidade, elegibilidade, corte/fuso, regeneração e compartilhamento opcional da retrospectiva. | E04; não bloqueia o MVP |
 
@@ -105,27 +105,27 @@ Os caminhos abaixo são alvos propostos, relativos à raiz, e incluem testes do 
 **Responsável:** orquestrador, com decisões do idealizador. **Depende de:** nenhuma.
 **Arquivos:** `requisitos.md`, `arquitetura.md`, `design.md`, `docs/{setup,onboarding,quality}.md` e este roadmap. **Recursos:** leitura do checkout; sem serviços mutáveis.
 
-- [ ] Conferir estado do checkout e `npm run check`; separar implementado, confirmado e proposto.
-- [ ] Registrar D01–D09, ou a tarefa exata que permanece bloqueada; deixar D10 para evolução.
-- [ ] Detalhar T01–T03 com versões, arquivos, interfaces e comandos reais; revisar a matriz de cobertura da seção 7.
-- [ ] Verificar: fontes canônicas sem contradições, responsável por cada pendência e próximo pacote liberado com aceite verificável.
+- [x] Conferir estado do checkout e `npm run check`; separar implementado, confirmado e proposto.
+- [x] Registrar D01–D09, ou a tarefa exata que permanece bloqueada; deixar D10 para evolução.
+- [x] Detalhar T01–T03 com versões, arquivos, interfaces e comandos reais; revisar a matriz de cobertura da seção 7.
+- [x] Verificar: fontes canônicas sem contradições, responsável por cada pendência e próximo pacote liberado com aceite verificável.
 
 ### T01 · Fundação executável e gates da nova aplicação
 
 **Responsável:** fundação/integração. **Depende de:** T00 e D01.
 **Arquivos:** `web/package*.json`, `web/{next.config.*,tsconfig.json,eslint.config.*,*.config.*,.env.example}`, `web/src/app/{layout.tsx,page.tsx}`, `web/tests/setup/**`, `package*.json`, `eslint.config.mjs`, `.gitignore`, `.github/workflows/quality.yml`, `docs/{setup,onboarding,quality}.md`, `README.md`. **Recursos:** instalação npm serial, porta `4301`, `web/.next/`; sem dados reais. A lista de configuração é refinada para os nomes concretos antes do despacho.
 
-- [ ] Criar somente a aplicação e ferramentas necessárias à stack confirmada, mantendo prévia e comandos atuais acessíveis.
-- [ ] Acrescentar scripts reais de lint/checagem de tipos/build e testes da aplicação; adaptar o gate às fronteiras servidor/navegador e a TS/TSX, preservando as três regras locais e limite de 350 linhas por arquivo de código.
-- [ ] Preparar execução independente de T02/T03, inclusive saídas de build e fixtures, sem instalar um segundo catálogo de ferramentas.
-- [ ] Verificar instalação reproduzível, página inicial utilizável, build e tipos da aplicação, lint sem warnings e os sete testes atuais. Documentar os comandos adicionados e refletir a instalação de `web/` no CI.
+- [x] Criar somente a aplicação e ferramentas necessárias à stack confirmada, mantendo prévia e comandos atuais acessíveis.
+- [x] Acrescentar scripts reais de lint/checagem de tipos/build e testes da aplicação; adaptar o gate às fronteiras servidor/navegador e a TS/TSX, preservando as três regras locais e limite de 350 linhas por arquivo de código.
+- [x] Preparar o executor e as fixtures da fundação para os pacotes seguintes; manter T02/T03 em série. Banco/identidade de T02 seguem como dependência explícita ainda não provisionada.
+- [x] Verificar instalação reproduzível, página inicial utilizável, build e tipos da aplicação, lint sem warnings e os sete testes atuais. Documentar os comandos adicionados e refletir a instalação de `web/` no CI.
 
 ### T02 · Conta, esquema inicial e autorização por recurso
 
-**Responsável:** backend/dados. **Depende de:** T01, D01–D02 e contratos de domínio necessários ao esquema.
-**Arquivos:** `web/prisma/**`, `web/prisma.config.*`, `web/src/server/{db,auth,authorization,audit}/**`, `web/src/app/api/auth/**`, `web/tests/integration/{auth,authorization,migrations}/**`. **Recursos:** banco `meumimo_t02`, porta `4302`, saída `web/.next-t02/`; backend de identidade de teste isolado.
+**Responsável:** backend/dados. **Depende de:** T01, D01–D02, limites de autenticação D04, ambiente local comprovado e contratos de domínio necessários ao esquema.
+**Arquivos:** `web/prisma/**`, `web/prisma.config.*`, `web/supabase/config.toml`, `web/src/server/{db,auth,authorization,audit}/**`, `web/src/app/api/auth/**`, `web/tests/integration/{auth,authorization,migrations}/**`. **Recursos:** banco `meumimo_t02`, porta `4302`, saída `web/.next/` em série; backend de identidade de teste isolado, a configurar e comprovar em T02.
 
-- [ ] Modelar o núcleo P0 e suas relações conforme arquitetura §4, com restrições e migrações revisadas; entidades futuras de retrospectiva não são necessárias agora. Evoluções posteriores do esquema continuam com um escritor por vez.
+- [ ] Modelar inicialmente identidade, loja, participação e permissão administrativa necessárias à autorização, conforme arquitetura §4. Entidades de domínio entram por migrações nas tarefas responsáveis; retrospectiva não é necessária agora. Evoluções do esquema continuam com um escritor por vez.
 - [ ] Preparar a base histórica desde o MVP: identificadores estáveis, snapshots, origens e compensações; instantes em UTC e datas distintas de atividade, envio, aprovação, crédito, resgate, realização e estorno, apresentadas no fuso da loja.
 - [ ] Implementar conta, sessão, recuperação e autorização reutilizável; contratos incluem conta, loja, participação, papel e estado. Negar administração por cadastro público.
 - [ ] Verificar migração em banco vazio e evolução com dados fictícios; não recriar schemas internos de Auth/Storage. Conferir conexão/pooling e permissões efetivas do Prisma, Data API, Storage e Realtime quando aplicáveis.
@@ -134,39 +134,56 @@ Os caminhos abaixo são alvos propostos, relativos à raiz, e incluem testes do 
 ### T03 · Identidade visual e componentes acessíveis
 
 **Responsável:** interface. **Depende de:** T01 e contrato visual existente.
-**Arquivos:** `web/src/components/ui/**`, `web/src/styles/**`, `web/src/app/visual-check/**`, `web/public/assets/**`, `web/tests/ui/foundation/**`. **Recursos:** porta `4303`, saída `web/.next-t03/`, dados estáticos; nenhum banco/bucket.
+**Arquivos:** `web/src/components/ui/**`, `web/src/styles/**`, `web/src/app/visual-check/**`, `web/public/assets/**`, `web/tests/e2e/ui-foundation.spec.ts`. **Recursos:** porta `4303`, saída `web/.next/` em série, dados estáticos; nenhum banco/bucket.
 
-- [ ] Reaproveitar assets/atribuições, tokens semânticos, DM Sans/DM Serif com alternativas, botões, formulários, estados e painéis com fechamento e foco corretos.
-- [ ] Validar três composições: Lojinha, detalhe de mimo e resumo do lojista; separar pontos disponíveis de pendentes.
-- [ ] Verificar 320 px, toque ≥44 × 44 px, texto a 200%, contraste, teclado, retorno/contenção de foco, leitor de tela e movimento reduzido. A página de conferência usa somente conteúdo fictício.
+- [x] Reaproveitar assets/atribuições, tokens semânticos, DM Sans/DM Serif com alternativas, botões, formulários, estados e painéis com fechamento e foco corretos.
+- [x] Validar três composições: Lojinha, detalhe de mimo e resumo do lojista; separar pontos disponíveis de pendentes.
+- [x] Verificar 320 px, toque ≥44 × 44 px, texto a 200%, contraste, teclado, retorno/contenção de foco e movimento reduzido. A página de conferência usa somente conteúdo fictício.
+- [ ] Conferir leitura com leitor de tela real; rótulos e ordem ARIA foram verificados no Chromium. Evidências e limites no plano da fundação §9.
 
 ### T04 · Lojas, participantes, convites e navegação contextual
 
 **Responsável:** fluxo de conta/loja. **Depende de:** T02, T03 e D03–D04 aplicáveis.
 **Arquivos:** `web/src/server/{stores,memberships,invitations}/**`, `web/src/app/{conta,convites,lojas}/**`, `web/src/components/{navigation,stores}/**`, `web/tests/{integration,e2e}/stores/**`, `web/prisma/**` se necessário. **Recursos:** padrão T04; identidades de teste.
 
-- [ ] Entregar C01–C03/C05, L01/L09–L11 e navegação por papel; uma conta cria e participa de várias lojas com busca/paginação.
-- [ ] Aceitar convite preservando destino; tratar inválido, expirado, revogado, aceito, próprio lojista e participante já vinculado sem duplicação.
-- [ ] Aplicar pausa/encerramento desde os serviços, preservando consulta e tratamento de pendências conforme contrato; limpar/isolar cache, rascunhos e preferências ao trocar conta/loja.
-- [ ] Verificar conta com uma loja própria e duas participações; dois participantes da mesma loja; convite aberto via mensageiro; logout/login no mesmo aparelho sem dados anteriores.
+- [x] Entregar base C01–C03/C05, L01/L09–L11 e navegação por papel; múltiplas lojas com busca/paginação. Mídia em T06 e conteúdo completo da lojinha em T12.
+- [x] Aceitar convite preservando destino; tratar inválido, expirado, revogado, aceito, próprio lojista e participante já vinculado sem duplicação.
+- [x] Aplicar pausa/encerramento desde os serviços e preservar consulta. T07–T10 integram análise/tickets reais; o marcador bloqueia encerramento até essa integração. Isolar estado de conta/loja.
+- [x] Provar por HTTP conta com loja própria e duas participações e privacidade entre participantes. Conferir logout/troca de conta na UI controlada.
+- [ ] Conferir convite aberto via mensageiro em Android/iPhone reais no aceite móvel T14. Em T04, provado retorno HTTP após cadastro/confirmação/login, sem aceite automático.
+
+Implementação e evidências no [plano T04](2026-10-22-t04-lojas.md);
+preparação em [lojas locais](../../stores-local.md). Nenhum serviço publicado.
 
 ### T05 · Conversas e notificações persistidas
 
 **Responsável:** backend de relação. **Depende de:** T04.
-**Arquivos:** `web/src/server/{conversations,notifications,outbox}/**`, `web/src/components/conversation/**`, `web/tests/integration/{conversations,notifications}/**`, `web/prisma/**`. **Recursos:** padrão T05; entrega de eventos exclusivamente de teste.
+**Arquivos:** `web/src/server/{conversations,notifications,outbox}/**`, `web/src/components/conversation/**`, `web/tests/integration/{conversations,notifications}/**`, `web/prisma/**`. **Recursos:** padrão T05; entrega local no PostgreSQL. Convite aceito é produtor real de T04; testes usam somente dados fictícios.
 
-- [ ] Definir comentários por registro/ticket e audiência participante–lojista; habilitar a resposta à contestação nas próximas tarefas, sem criar chat coletivo.
-- [ ] Persistir evento de domínio/outbox na mesma transação da mudança que origina uma novidade; entrega repetida não duplica a notificação. Realtime, se escolhido, apenas sinaliza nova consulta autorizada.
-- [ ] Verificar autorização da conversa, deduplicação, falha/repetição de entrega e consulta que recupera evento perdido. Não enviar e-mail, push ou mensagens externas nesta tarefa.
+- [x] Definir comentários por registro/ticket e audiência participante–lojista; registrador interno preparado para T07/T09 e componente reutilizável com prévia explicitamente fictícia. Não há criação pública de assunto ou chat coletivo.
+- [x] Persistir evento/outbox na transação de aceite ou comentário; entrega repetida/concorrente não duplica aviso. Consulta persistida recupera entrega atrasada; Realtime continua opcional.
+- [x] Verificar autorização, deduplicação, falha após inserir aviso e antes de confirmar, retry e leitura/destino atuais. Nenhuma mensagem externa enviada.
+
+Desenho/limite500 confirmados pelo idealizador. Evidências no
+[plano T05](2026-10-22-t05-relacao.md) e operação em [T05 local](../../relation-local.md).
+T07–T10 ligam conversas aos recursos reais e definem fechamento da escrita;
+T12 entrega central completa, preferências e agrupamento. Operação publicada é T14.
 
 ### T06 · Mídia privada e prova de fotos/vídeos
 
 **Responsável:** backend de mídia. **Depende de:** T05, D07–D08.
 **Arquivos:** `web/src/server/media/**`, `web/src/components/media/**`, `web/tests/integration/media/**`, `web/tests/fixtures/media/**`, `web/prisma/**`; políticas de aplicação na cadeia de migrações. **Recursos:** padrão T06 e processamento de mídia de teste conforme decisão; sem mídia pessoal.
 
-- [ ] Implementar autorização de upload/consulta, metadados, vínculos de propósito evidência/memória, estados por arquivo e limpeza de órfãos conforme retenção. Objetos ficam privados mesmo durante envio.
-- [ ] Tratar orientação e metadados de localização nas imagens disponibilizadas; validar formatos/tamanhos e miniaturas. Testar vídeos nos aparelhos escolhidos e decidir processamento necessário antes de depender dele.
-- [ ] Verificar câmera negada, galeria, upload interrompido/retomado com autorização revalidada, formato inválido, arquivo duplicado, URL expirada e acesso direto por outro participante. Conferir imagem, miniatura e reprodução privadas.
+- [x] Implementar autorização de upload/consulta, metadados, vínculos internos de propósito evidência/memória e estados por arquivo. Objetos ficam privados mesmo durante envio; origem real integra em T07/T09/T11.
+- [x] Tratar orientação/localização nas imagens; validar formatos/tamanhos, miniaturas e transcodificação MP4/MOV com arquivos sintéticos. Consulta/Range reautoriza a sessão e a audiência atuais.
+- [x] Provar upload interrompido/retomado, conflito/duplicação, formato inválido, URL expirada, revogação e acesso direto por outro participante. Câmera cancelada/galeria são estados simulados na composição, separados da prova HTTP.
+- [x] Confirmar D08 e provar limpeza de órfãos/originais, temporários abandonados e retenção protegida. Marcação lógica precede expurgo idempotente; retomada/lease atual impedem limpar trabalho ativo. Origem integra proteção e encerramento em T07/T09/T11.
+- [ ] Conferir câmera/galeria e reprodução em Android/iPhone reais da matriz D09. Chromium e vídeos sintéticos não comprovam aparelhos físicos.
+
+Desenho/D07 e D08 aprovados; implementação local verificada.
+Implementação e evidências em [plano T06](2026-10-22-t06-midia.md) e operação em
+[T06 local](../../media-local.md). A prova de câmera/galeria e reprodução em
+Android/iPhone reais permanece no aceite móvel D09/T14.
 
 ### T07 · Atividades e envio de conquistas com crédito consistente
 
@@ -182,20 +199,32 @@ Os caminhos abaixo são alvos propostos, relativos à raiz, e incluem testes do 
 **Responsável:** domínio de conquistas/pontos. **Depende de:** T07 e D05.
 **Arquivos:** `web/src/server/{submissions,points}/**`, `web/src/app/lojas/[storeId]/{registros,extrato}/**`, `web/src/components/{submissions,points}/**`, `web/tests/{integration,e2e}/points/**`, `web/prisma/**`. **Recursos:** padrão T08.
 
-- [ ] Entregar L05/P05 e extrato: aprovar, contestar com motivo/resposta/complemento, manter, anular e reabrir preservando eventos anteriores.
-- [ ] Diferenciar estado da análise e dos pontos. Contestar crédito existente não o remove; anulação/recomposição seguem D05, com compensação única e impacto claro antes de confirmar.
-- [ ] Entregar filtros/paginação por período/tipo e origem autorizada do movimento, disponíveis pelo potinho e por Meus mimos. Separar ganhos, débitos, devoluções e compensações.
-- [ ] Verificar aprovações/anulações simultâneas e repetidas, pontos já gastos, reabertura sem crédito duplicado, reconciliação do saldo com o extrato e histórico após renomear/arquivar atividade.
+- [x] Entregar L05/P05 e extrato: aprovar, contestar com motivo/resposta/complemento, manter, anular e reabrir preservando eventos anteriores.
+- [x] Diferenciar estado da análise e dos pontos. Contestar crédito existente não o remove; anulação/recomposição seguem D05, com compensação única e impacto claro antes de confirmar.
+- [x] Entregar filtros/paginação por período/tipo e origem autorizada do movimento, disponíveis pelo potinho e pela navegação da loja. Ganhos, estornos e recomposições são separados; Meus mimos, débitos/devoluções e tickets serão integrados em T09/T10.
+- [x] Verificar aprovações/anulações simultâneas e repetidas, aritmética de saldo negativo identificada, reabertura sem crédito duplicado, reconciliação do saldo com o extrato e histórico após renomear/arquivar atividade.
+
+D05 e os limites foram confirmados antes da implementação. Prova local: 175 HTTP,
+270 Chromium, migração com crédito T07 anterior preservado e revisão independente.
+T08 não introduz débito fictício. A prova com gasto real e ticket preservado
+está no plano T09. Comandos em [T08 local](../../points-local.md).
 
 ### T09 · Catálogo, resgate transacional e histórico de tickets
 
 **Responsável:** domínio de mimos/pontos. **Depende de:** T08 e D06.
 **Arquivos:** `web/src/server/{rewards,redemptions,points}/**`, `web/src/app/lojas/[storeId]/{mimos,tickets}/**`, `web/src/components/{rewards,tickets}/**`, `web/tests/{integration,e2e}/redemptions/**`, `web/prisma/**`. **Recursos:** padrão T09.
 
-- [ ] Entregar L06/L07 e P06–P09: catálogo editável, categorias, recadinho, custo e disponibilidade; confirmação com custo/saldo restante e mensagem de quanto falta.
-- [ ] Validar participação, loja, saldo e estoque; emitir ticket, débito, reserva e evento na mesma operação, com chave de repetição e estratégia de concorrência explícita.
-- [ ] Preservar nome/custo/instruções da ocasião e histórico paginado por período/estado; contador de navegação considera somente tickets a realizar.
-- [ ] Verificar dois resgates com saldo para um, disputa pelo último item entre participantes, resposta perdida após confirmação e edição/arquivamento posterior do mimo. Falha não deixa débito ou estoque reservado sem ticket.
+- [x] Entregar L06/L07 e P06–P09: catálogo editável, categorias, recadinho, custo e disponibilidade; confirmação com custo/saldo restante e mensagem de quanto falta.
+- [x] Validar participação, loja, saldo e estoque; emitir ticket, débito, reserva e evento na mesma operação, com chave de repetição e estratégia de concorrência explícita.
+- [x] Preservar nome/custo/instruções da ocasião e histórico paginado por período/estado; contador de navegação considera somente tickets a realizar.
+- [x] Verificar dois resgates com saldo para um, disputa pelo último item entre participantes, resposta perdida após confirmação e edição/arquivamento posterior do mimo. Falha não deixa débito ou estoque reservado sem ticket.
+
+D06 e limites confirmados antes de implementar. Provas locais: 211 HTTP
+(36 novos +175 regressões), 382 Chromium (112 novos +270 regressões), check,
+migração vazia/evolutiva com dez migrações e 26 tabelas RLS. Anulação após gasto
+real preservou o ticket e produziu saldo negativo. Revisão independente encerrada;
+comandos em [T09 local](../../rewards-local.md). Realização/cancelamento e álbuns
+continuam nas etapas seguintes; aparelhos físicos e leitor de tela não observados.
 
 ### T10 · Combinado, realização e cancelamento
 
@@ -266,7 +295,7 @@ Referência aplicada: [planejamento, prompt 04](https://github.com/soumatheusgom
 | --- | --- | --- |
 | 0 | T00 · orquestrador | Consolidar decisões e contratos |
 | 1 | T01 · fundação | Um escritor para dependências/configuração/CI |
-| 2 | T02 · backend/dados; T03 · interface | Paralelo somente com arquivos e recursos isolados descritos nos pacotes e verificados em T01 |
+| 2 | T02 · backend/dados; T03 · interface | Em série no mesmo checkout; T03 pode preceder T02 se identidade/serviços ainda estiverem pendentes |
 | 3 | T04 · conta/loja | Integrar identidade, contexto e navegação |
 | 4 | T05 · relação | Definir conversa e eventos que o domínio consumirá |
 | 5 | T06 · mídia | Provar privacidade e pipeline antes de usar arquivos nos registros |
@@ -280,7 +309,7 @@ Referência aplicada: [planejamento, prompt 04](https://github.com/soumatheusgom
 | 13 | T14 · integração/QA | Revisões somente leitura podem ocorrer em paralelo; checks com recursos compartilhados ficam em série |
 | 14 | T15 · operação | Somente após autorização correspondente |
 
-O backend de T02 não consome componentes de T03; a interface de T03 usa fixtures e não consome os serviços em construção. Ambos dependem dos contratos/configuração de T01. Se essa separação ou o isolamento de build/identidade não estiver comprovado, executar T02 e T03 em série. Alteração de arquivo compartilhado nunca é exceção para manter uma onda paralela.
+O backend de T02 não consome componentes de T03; a interface de T03 usa fixtures e não consome seus serviços. Ambos dependem dos contratos/configuração de T01 e são serializados neste checkout, inclusive builds e geração de tipos. Paralelismo futuro exige checkouts completos e recursos isolados comprovados; portas e `distDir` distintos não bastam. Alteração de arquivo compartilhado nunca é exceção para manter uma onda paralela.
 
 Para cada despacho: informar objetivo, fontes, arquivos permitidos, dependências, recursos concretos, aceite e comandos. Se arquivos/recursos/dependências ainda forem incertos, considerar dependência de tudo que já foi listado e serializar até esclarecer.
 
@@ -343,6 +372,10 @@ Planos/cobrança, colaboradores, transferência, múltiplas fotos por registro d
 - Duas análises independentes somente leitura: cobertura de produto/design e dependências/riscos técnicos. A revisão final de consistência identificou a falta de responsável pela integração real de L02; T12 passou a incluir o resumo do lojista e a Lojinha completa, com arquivos e critérios de contexto.
 - `npm run check` executado em 22/10/2026: três regras locais verificadas, lint sem erros/warnings e 7/7 testes aprovados. Isso verifica a base atual; não comprova os serviços futuros.
 - Skill local do Vibe Coding Toolkit descoberta no cliente e consultada, com os fluxos de planejamento/orquestração; skills locais de planejamento, brainstorming, revisão e verificação usadas de forma proporcional ao pedido documental.
-- Nenhum pacote da aplicação, provedor ou API teve sua versão escolhida neste planejamento. Context7 está descoberto nesta sessão; consultas de APIs/versões cabem a D01 antes de instalação, com documentação oficial como referência. O registro histórico de indisponibilidade em `docs/setup.md` não substitui essa descoberta atual.
+- Na elaboração inicial do roadmap, versões e provedores ainda não estavam escolhidos. M0 confirmou D01, selecionou versões e executou consultas reais ao Context7 e às fontes oficiais, registradas no plano da fundação. Isso atualiza a descoberta inicial sem alegar instalação ou integração já concluída.
 
-Próximo passo de execução: T00, começando por D01/D02 e pelas políticas que liberam a fundação. Preparar as decisões e o plano detalhado da primeira onda para revisão antes de alterar código de produto. A revisão deste roadmap não autoriza por si só publicação, cobrança ou migração em ambiente real.
+O estado atual está no início deste documento e nos planos de execução de cada
+entrega. A próxima etapa é T09, catálogo/resgate/tickets; D06 exige confirmação
+antes da respectiva regra. T08 e D05 estão registradas no plano de execução. Os demais limites pendentes mantêm suas dependências em
+requisitos §6.1. A aprovação do roadmap não autoriza publicação, cobrança ou
+migração em ambiente real.

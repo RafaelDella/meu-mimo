@@ -11,25 +11,62 @@
 
 ## Estado e comandos
 
-A implementação atual está em `prototype/`: HTML, CSS e JavaScript ESM,
-Node.js 24 e npm. `prototype/dist/` é código-fonte manual e deve ser versionado
-e verificado. Next.js/React/TypeScript e PostgreSQL são propostas futuras;
-Prisma foi escolhido para o acesso e as migrações do futuro banco.
+A demonstração está em `prototype/`: HTML, CSS e JavaScript ESM.
+`prototype/dist/` é código-fonte manual e deve ser versionado e verificado.
+A fundação Next.js/React/TypeScript está em `web/`, com Node.js 24 e npm.
+As composições de T03 estão em `/visual-check`, com dados fictícios e sem
+persistência; componentes compartilhados em `web/src/components/ui/`.
+T02 acrescenta identidade/API com Supabase Auth e PostgreSQL/Prisma locais;
+os comandos e a separação de credenciais estão em `docs/onboarding.md`.
+T04 entrega lojas, participações e convites; recursos e comandos em `docs/stores-local.md`.
+T05 prepara conversas e outbox/notificações; comandos e fronteiras em `docs/relation-local.md`.
+T06 prepara transporte e processamento de mídia privada; comandos e pendências
+de retenção em `docs/media-local.md`.
+T07 entrega atividades, conquistas e crédito automático; comandos e limites em
+`docs/activities-local.md`. T08 entrega análise, complementos, compensações e
+extrato; comandos e limites em `docs/points-local.md`.
+T09 entrega catálogo, resgates e tickets; contratos e comandos em `docs/rewards-local.md`.
+O plano da fundação e as dependências estão em
+[M0](docs/superpowers/plans/2026-10-22-m0-fundacao.md).
 
 Na raiz:
 
 ```sh
 npm ci
+npm --prefix web ci
 npm run dev
+npm run web:dev
 npm run lint
 npm run lint:rules
 npm test
 npm run check
 ```
 
-O servidor atende em `http://127.0.0.1:4173`. Não há build nem typecheck
-porque o protótipo não usa bundler ou TypeScript. Os comandos existentes de
-`prototype/package.json` continuam válidos dentro daquela pasta.
+O protótipo atende em `http://127.0.0.1:4173`; a aplicação em
+`http://127.0.0.1:4301`. Execute cada servidor em seu terminal.
+`web:typecheck` e `web:build` verificam a aplicação; `web:test:e2e` testa o build
+com Chromium previamente instalado pelo Playwright. O `check` agrega a base e
+`web/`, sem iniciar banco. Lint da raiz cobre a base; `web:lint` cobre `web/`.
+Os comandos de `prototype/package.json` continuam válidos naquela pasta.
+`WEB_TEST_PORT` altera somente a porta do servidor de testes (padrão 4301;
+T03 usa 4303). Builds, typegen e servidores continuam serializados no checkout.
+Integração real usa `web:test:integration`, stack `meumimo-t02` e aplicação 4302;
+T04 usa `npm --prefix web run test:integration:t04`, domínio `meumimo_t04` e 4310.
+T08 usa `test:integration:t08`, domínio `meumimo_t08`, Next 4310/mídia 4311,
+Storage com prefixo próprio e bancos dev/shadow separados.
+T09 usa `test:integration:t09`, domínio `meumimo_t09`, as mesmas portas em série
+e namespaces `t09-development`/`t09-integration`, com dev/shadow separados.
+T05 usa `test:integration:t05`, domínio `meumimo_t05` e a mesma porta em série;
+o consumidor local tem comando próprio e credencial restrita.
+T06 usa `test:integration:t06`, bancos `meumimo_t06`/dev/shadow e gateway local
+4311 separado; nunca passar service role ao Next. D08 foi confirmada; proteção
+de retenção permanece conservadora até a integração pela origem.
+T07 usa `test:integration:t07`, domínio `meumimo_t07`, Next 4310 e mídia 4311,
+em série com os modos anteriores. O namespace de Storage é `t07-integration`;
+desenvolvimento usa banco e namespace próprios.
+Prepare serviços e migrações conforme o onboarding. Não exponha as portas fora
+de loopback, não use o shim npm `docker` e não passe credenciais de fixture ou
+migração ao Next. Desenvolvimento, shadow e integração usam bancos separados.
 
 ## Acordos de trabalho
 

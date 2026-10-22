@@ -1,0 +1,89 @@
+# Stack exclusiva local; não usar em publicação.
+project_id = "meumimo-t02"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54322
+shadow_port = 54320
+major_version = 17
+health_timeout = "2m"
+
+[db.pooler]
+enabled = false
+
+# Somente Prisma mantém o esquema da aplicação.
+[db.migrations]
+enabled = false
+schema_paths = []
+
+[db.seed]
+enabled = false
+sql_paths = []
+
+[realtime]
+enabled = true
+
+[studio]
+enabled = false
+port = 54323
+
+# Capturador local; nenhum SMTP externo.
+[local_smtp]
+enabled = true
+port = 54324
+
+[storage]
+enabled = true
+file_size_limit = "50MiB"
+
+[storage.vector]
+enabled = false
+
+[storage.analytics]
+enabled = false
+
+[auth]
+enabled = true
+site_url = "http://127.0.0.1:4302/conta"
+additional_redirect_urls = ["http://127.0.0.1:4302/api/auth/callback", "http://127.0.0.1:4301/api/auth/callback", "http://127.0.0.1:4310/api/auth/callback"]
+jwt_expiry = 300
+enable_refresh_token_rotation = true
+refresh_token_reuse_interval = 10
+enable_signup = true
+enable_anonymous_sign_ins = false
+minimum_password_length = 8
+
+# Elevados somente no provedor local de testes; o backend aplica D04.
+[auth.rate_limit]
+email_sent = 1000
+sign_in_sign_ups = 1000
+token_refresh = 1000
+token_verifications = 1000
+
+[auth.email]
+enable_signup = true
+enable_confirmations = true
+double_confirm_changes = true
+secure_password_change = true
+max_frequency = "1s"
+otp_length = 6
+otp_expiry = 3600
+
+[auth.mfa]
+max_enrolled_factors = 10
+
+[auth.mfa.totp]
+enroll_enabled = true
+verify_enabled = true
+
+[edge_runtime]
+enabled = false
+
+[analytics]
+enabled = false

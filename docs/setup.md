@@ -175,3 +175,399 @@ A integração do GitHub disponível nesta sessão retornou falta de acesso ao
 destino; a consulta pelo Git local funcionou. A conexão local foi utilizada
 para configurar o remoto e preparar o envio. Os resultados de setup acima
 continuam sendo o histórico anterior à importação inicial.
+
+## M0 — preparação da implementação
+
+Em 22/10/2026, M0 foi preparado na branch `codex/m0-contracts`, a partir de
+`51fd20c`. O idealizador confirmou D01: Next.js/React/TypeScript em `web/`,
+PostgreSQL/Prisma e Supabase Auth/Storage, com desenvolvimento/teste local,
+sem contratação ou publicação. Versões selecionadas e escolhas técnicas
+estão em `arquitetura.md`, seção 1.1; propostas de produto e dependências em
+`requisitos.md`, seção 6.1. O [plano da fundação](superpowers/plans/2026-10-22-m0-fundacao.md)
+detalha T01–T03 e as evidências.
+
+Nesta sessão, a skill local `vibe-coding-toolkit`, as skills de processo e as
+ferramentas Context7 foram descobertas. Foram executadas resolução e consulta
+de documentação para Next, Prisma e Supabase; isso atualiza o estado de consulta
+pendente no histórico do setup acima, sem alterar ou duplicar a configuração
+global. Análises de produto/fundação foram delegadas somente para leitura;
+o orquestrador manteve a escrita dos documentos.
+
+O registro npm foi consultado e um ensaio `npm install --dry-run` em
+`.artifacts/m0/compatibility/` resolveu a árvore sem criar dependências ou
+lockfile no ensaio. A aplicação continua sem `web/` ou dependências de produção.
+Next/React/TS, Prisma e Supabase não foram instalados. O engine de contêineres
+não foi comprovado e a CLI Supabase não está no PATH; preparar serviços locais
+é dependência de T02. T01 não exige esses serviços. Os gates atuais passaram
+com as três regras locais e 7/7 testes da demonstração.
+
+## M1/T01 — fundação da aplicação
+
+T01 acrescenta `web/` como pacote independente, com lockfile próprio e versões
+de aplicação/CSS/testes registradas em arquitetura §1.1. O parser
+`typescript-eslint` 8.72.0 foi declarado diretamente para os testes de AST.
+Banco, Prisma e Supabase continuam sem instalação ou serviço em T01.
+
+O lint da raiz permanece no ESLint 10; `web/` usa ESLint 9 por compatibilidade
+declarada dos plugins do preset Next. O npm informa que essa linha do ESLint
+está fora de suporte; reavaliar a versão quando os plugins aceitarem a linha
+suportada, sem forçar peers ou enfraquecer gates. A instalação também informou
+postinstall de `unrs-resolver` não aprovado pelo npm local; lint e builds passaram
+com a configuração efetiva, sem mudar permissões globais.
+
+Context7 foi consultado para configuração Next, Tailwind/PostCSS e Playwright.
+Os casos das regras existentes foram compartilhados, e novos casos usam AST
+TS/TSX real. O build descartável rejeita o marcador `server-only` no cliente;
+o layout normal o importa no servidor. Testes Chromium usam o build de produção,
+com servidor próprio em 4301 e encerramento pelo Playwright. Capturas e traces
+ficam em `web/test-results/`, ignorado pelo Git.
+
+A inspeção de texto 200% encontrou rótulo do botão fora de sua superfície;
+o teste foi fortalecido para conferir os retângulos de texto e reproduziu a
+falha em 320/390 px. O reflow e os espaçamentos foram corrigidos, com os oito
+cenários aprovados em seguida. A conferência não substitui leitor de tela ou
+Android/iPhone reais. O workflow foi preparado para Windows/Ubuntu; execução
+remota ainda não foi observada.
+
+Conferência final de T01: `npm run check` aprovado com três autoverificações,
+7/7 testes do protótipo, 5/5 testes nativos de `web/`, lint sem warnings,
+tipagem e build. O navegador aprovou 8/8 cenários. Os dois lockfiles também
+foram instalados com `npm ci` em snapshot limpo sem dependências/Git interno,
+seguido do mesmo check agregado. A auditoria de produção de `web/` retornou
+zero avisos; o relatório permanece em `.artifacts/`, fora do Git. A revisão
+independente foi aprovada após a correção do CTA. T02/T03 não foram iniciadas.
+
+## M1/T03 — componentes e composições
+
+Em 22/10/2026, T03 acrescentou cinco componentes próprios e a rota
+`/visual-check`, com três composições de dados fictícios. Não houve instalação
+de pacotes ou serviços. Fontes locais têm licenças em `web/public/assets/`;
+o protótipo foi preservado. O [plano da fundação, seção 9](superpowers/plans/2026-10-22-m0-fundacao.md#9-execução-de-t03--interface-de-referência)
+registra execução, falhas tratadas, contraste, gates e limites.
+
+A skill local do Vibe Coding Toolkit e as ferramentas nativas de agentes
+foram usadas com dois escritores de escopo separado e dois revisores somente
+leitura; o integrador executou builds/testes em série e preparou o commit.
+Context7 foi consultado para React 19 (`ref` e sincronização de diálogo),
+Next (Link/Image e worker Webpack), sem enviar código ou dados privados.
+Fontes oficiais complementares: [React: Effect](https://react.dev/reference/react/useEffect),
+[MDN: dialog](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/dialog),
+[Next: build worker](https://nextjs.org/docs/app/guides/memory-usage#webpack-build-worker)
+e [Google Fonts na revisão utilizada](https://github.com/google/fonts/tree/45e3d5269e4a17d823f6d84470bc084dc5ae46f6/ofl).
+
+O servidor de testes aceita `WEB_TEST_PORT` (padrão 4301; T03 em 4303).
+O fixture negativo agora tem configuração própria para executar o compilador
+Webpack sem worker intermediário; a configuração de produção e a exigência
+do diagnóstico de fronteira permanecem. Conferência final: check agregado
+aprovado e 20/20 cenários Chromium. Não foi usado leitor de tela real nem
+aparelho móvel real. T02 permanece pendente; M1 ainda está incompleto.
+
+## Preparação de M1/T02
+
+Registro histórico anterior à instalação; o estado atual está na execução abaixo.
+
+O idealizador confirmou D02 em 22/10/2026: e-mail/senha com verificação,
+recuperação, retorno seguro ao convite e MFA/TOTP obrigatório para acesso
+administrativo provisionado separadamente. Os limites de autenticação D04
+e a preparação do runtime continuam aguardando respostas próprias.
+
+Dois agentes investigaram contratos e ambiente somente em leitura. WSL2,
+virtualização e recursos do Windows estavam habilitados; nenhum engine
+Docker/Podman ou Supabase local foi comprovado. Docker Desktop por usuário é
+uma alternativa documentada sem elevação; não há indicação observada de
+reinício pendente. Nenhuma instalação ou alteração global foi executada.
+
+Foi preparado o helper puro de destino após autenticação e um runner de
+integração separado. `npm run check` passou com 7 testes do protótipo e 8 da
+aplicação. Um ensaio isolado em `.artifacts/t02-discovery-*` comprovou que o
+runner padrão exclui integração, o modo de integração executa uma suíte e
+uma pasta vazia falha. Isso testa descoberta, não Supabase/Prisma/HTTP real.
+O comando do projeto falha explicitamente por não haver integração implementada.
+
+Context7 foi consultado para Prisma v7 e Supabase SSR; as versões previamente
+selecionadas de Prisma e bibliotecas Auth foram conferidas no registro npm,
+sem instalação. A descoberta do ambiente foi confrontada com
+[Docker no Windows](https://docs.docker.com/desktop/setup/install/windows-install/)
+e [Supabase local](https://supabase.com/docs/guides/local-development/cli/getting-started).
+O [registro de T02](superpowers/plans/2026-10-22-t02-identidade.md) acompanha
+as dependências e o aceite restante. Não há migração, sessão ou autorização
+de recursos implementada nesta preparação.
+
+## Execução de M1/T02
+
+O idealizador confirmou os limites de autenticação D04, autorizou a preparação
+por usuário e instalou Docker Desktop manualmente. Verificados Docker Desktop
+4.96.2, engine Linux 29.9.2, WSL2 e PostgreSQL 17.11. Supabase CLI 2.121.0 está
+no pacote; Prisma CLI/cliente/adapter 7.10.1 e bibliotecas Auth constam no lockfile.
+Os [comandos locais](identity-local.md) preparam bancos, papéis e credenciais
+isolados. A CLI real do Docker é selecionada por processo, sem alterar o PATH
+global. Uma saída acidental do shim npm foi preservada nos artefatos ignorados.
+
+API, PostgreSQL e Mailpit ficaram saudáveis em 127.0.0.1:54321/54322/54324.
+O helper conserva configuração, mounts e arquivos internos dos contêineres ao
+restringir o bind; predecessores ficam parados para reversão. Seis sondagens
+pelos endereços não locais da máquina não alcançaram essas portas. Não houve
+mudança global de Docker, firewall, modelo ou permissões do cliente.
+
+A orquestração do Vibe Coding Toolkit usou escritores separados para dados,
+identidade e testes HTTP, investigação de runtime e duas revisões independentes
+somente leitura. O integrador instalou, migrou, testou e revisou os resultados.
+Foram corrigidos o contexto PKCE adulterável e a reutilização de challenge de
+signup no recover público com contexto HMAC e método AMR assinado pelo Auth;
+os dois ataques foram reproduzidos antes da correção. Também foram corrigidos
+o QR de MFA, os guardas de conexão local e o diagnóstico de rollback.
+
+Context7 e o código instalado foram consultados para Prisma v7, Supabase
+SSR/PKCE e CLI. Fontes oficiais adicionais: [Auth v2.197.0](https://github.com/supabase/auth/tree/v2.197.0),
+[CLI v2.121.0](https://github.com/supabase/cli/tree/v2.121.0) e
+[publicação de portas Docker](https://docs.docker.com/engine/network/port-publishing/).
+Nenhum código privado, dado pessoal ou segredo foi enviado nas consultas.
+
+Verificação local: check agregado com 7 testes do protótipo e 9 nativos,
+26 testes HTTP reais, 28 casos Chromium e prova de migração vazia/evolutiva,
+dados preservados, RLS e papéis efetivos. Os dois `npm ci` e o check também
+passaram em snapshot limpo, sem `.env`, dependências ou Git interno copiados.
+O workflow acrescenta integração
+Ubuntu com Docker; sua execução remota não foi observada. Leitor de tela real
+e aparelhos móveis continuam pendentes. As demais decisões D03–D09 e os fluxos
+do domínio permanecem no roadmap; M1 conserva a pendência manual de T03.
+
+Auditoria de produção da raiz e de `web/`: zero vulnerabilidades. A árvore de
+desenvolvimento de `web/` tem cinco avisos altos na cadeia braces/micromatch/
+fast-glob do preset ESLint Next. Não há correção compatível indicada no relatório;
+não foi aplicado downgrade forçado. Relatórios, estado local, mensagens e
+credenciais de teste ficam ignorados em `.artifacts/`/serviços locais.
+
+## Execução de T04
+
+D03, convites, limites D04 aplicáveis e complemento foram confirmados pelo
+idealizador. O Vibe Coding Toolkit orientou três escritores com arquivos
+exclusivos (backend, UI e testes), integração serial e painel independente
+somente leitura de segurança e UI. Revisão focal conferiu as correções.
+Versões e dependências de T02 foram preservadas; nenhuma dependência nova.
+
+Context7 e a documentação oficial v7 do Prisma foram consultados; Context7
+retornou API de outra geração, então os tipos instalados e a documentação
+versionada prevaleceram. Não houve envio de código privado/segredos.
+
+Conferidos check 7+9, 26 HTTP T02, 48 HTTP T04, 74 Chromium e migração
+vazia/evolutiva com dados preservados, unicidade e permissões efetivas.
+Recursos, comandos, detalhes de callback e limitações em [T04 local](stores-local.md)
+e [registro de implementação](superpowers/plans/2026-10-22-t04-lojas.md).
+O workflow agora executa T04 após T02; execução remota não foi observada.
+As referências históricas de T02 acima descrevem o estado antes de T04.
+
+## Execução de T05
+
+O idealizador aprovou o desenho e o limite de 500 caracteres Unicode por
+comentário. A orquestração do toolkit usou análise do domínio/entrega, revisão
+do desenho, três escritores exclusivos e integração serial. Revisores novos
+examinaram segurança/backend e UI/TypeScript/acessibilidade somente por leitura.
+Os achados confirmados de UI receberam regressões antes das correções.
+
+Prisma/SQL geraram a quinta migração: quatro tabelas, vínculos de loja/relação,
+restrições de origem/limite e grants/RLS. A cadeia foi aplicada nos bancos locais
+T02/T04/T05, sem reset; prova vazia/evolutiva preservou dados e conferiu 13 tabelas
+com RLS e permissões efetivas. Worker Node24 usa --conditions=react-server e
+credencial restrita, sem instalar dependência adicional.
+
+Context7 voltou a retornar API de outra geração do Prisma. Tipos instalados e
+documentação oficial v7 prevaleceram; PostgreSQL17 documenta SKIP LOCKED usado
+no consumidor. Fontes no [plano T05](superpowers/plans/2026-10-22-t05-relacao.md).
+Consultas não incluíram código privado, dados pessoais ou segredos.
+
+HTTP T05: 65/65 casos, incluindo 48 regressões; modos T02/T04 também passaram
+isoladamente. O CLI --once entregou um evento fictício e sua repetição não criou
+outro aviso. Testes de browser usam composição fictícia; aparelhos reais,
+mensageiro, leitor de tela e CI remoto continuam não observados.
+Comandos e fronteiras em [T05 local](relation-local.md). Nenhuma publicação.
+
+Após corrigir os achados de interface, check7+9 e96 casos Chromium passaram.
+As quatro regressões reproduziram as falhas antes do ajuste; revisão focal não
+encontrou novo achado. O scan de292 arquivos versionáveis/estáticos não encontrou
+segredos locais. Evidências detalhadas permanecem no plano de T05.
+
+## Execução de T06
+
+O idealizador confirmou desenho/D07 e, em resposta separada, D08. O toolkit
+orientou reconhecimentos do domínio e processamento, revisão do desenho,
+escritores com arquivos exclusivos e integração serial pelo root. Revisores
+independentes de segurança e UI trabalharam somente por leitura; a rodada focal
+conferiu as correções. Não houve mudança de cliente, modelo ou configuração global.
+
+Sharp 0.35.5 passou a dependência direta; as demais versões foram preservadas.
+FFmpeg/ffprobe 9.0.2 Essentials foram preparados em diretório ignorado no Windows,
+sem instalação global, após conferir o SHA-256 fixado do arquivo completo.
+O download pode retomar partes, mas não extrai um pacote incompleto ou sem hash
+válido. Fontes: [FFmpeg](https://www.ffmpeg.org/download.html),
+[distribuidor Gyan](https://www.gyan.dev/ffmpeg/builds/) e
+[Sharp](https://sharp.pixelplumbing.com/api-output/).
+No CI Ubuntu 24.04, o job instala FFmpeg da distribuição e Chromium explicitamente;
+execução remota não foi observada. A opção de rotação foi conferida também na
+[documentação oficial 6.1](https://github.com/FFmpeg/FFmpeg/blob/n6.1/doc/ffmpeg.texi).
+
+Context7 foi descoberto e consultado para Storage privado/assinaturas. O SDK
+Supabase instalado e a documentação oficial de
+[acesso](https://supabase.com/docs/guides/storage/security/access-control) e
+[download](https://supabase.com/docs/guides/storage/serving/downloads) embasaram o
+gateway com autorização atual em cada parte/GET/Range. Nenhum código privado,
+dado pessoal ou segredo foi enviado nas consultas. Service role permanece apenas
+no processo local separado; o Next usa banco restrito e o segredo interno do gateway.
+
+A sexta migração acrescentou três tabelas, CHECKs, FKs compostas, grants/RLS,
+preservando as FKs manuais de T05. A cadeia foi aplicada aos bancos locais
+T02/T04/T05/T06 sem reset; a prova vazia/evolutiva preservou dados e conferiu
+16 tabelas com RLS e permissões efetivas. O bucket continua privado e políticas
+restritivas negam acesso direto a anon/authenticated.
+
+Falhas reproduzidas e corrigidas: prefixo Storage para UUID em caixa diferente;
+descarte após 429 sem reserva; original diferente no mesmo tamanho/MIME ao
+retomar; remoção de mídia pronta sem confirmação. A revisão também acrescentou
+a instalação de Chromium no job HTTP e corrigiu temporário Sharp no Windows.
+Outra regressão reproduziu original cru abandonado após queda sem finally;
+a manutenção passou a reconciliar temporários antigos e preservar leases ativos.
+Uma prova adicional encerrou e reiniciou o broker, recuperou 503/partes persistidas
+sem duplicação e processou a fila em outro processo.
+
+Comandos, formatos, limites operacionais e fronteiras de T07/T09/T11/T14 em
+[mídia local](media-local.md). Evidências finais e pendências móveis no
+[plano T06](superpowers/plans/2026-10-22-t06-midia.md). Arquivos de teste são
+sintéticos; câmera/galeria, leitor de tela e reprodução em aparelhos reais
+continuam não observados. Nenhum serviço pago ou publicação.
+
+Verificação final T06: check com 7+9 testes, lint/tipos/build, 101 cenários
+HTTP/pipeline (65 regressões e 36 de mídia/D08), 136 Chromium e manutenção por
+CLI aprovados. O scan de 353 arquivos versionáveis/estáticos não encontrou
+segredos locais. A revisão focal final não trouxe novo achado concreto.
+
+## Execução de T07
+
+O idealizador pediu implementação e commit com a orquestração do Vibe Coding
+Toolkit. A skill foi descoberta no cliente e consultada na mesma revisão
+790a895304e0c08b70a5b215c9d334f1c86b816c já adotada. O fluxo usa contratos antes
+dos despachos, arquivos exclusivos, integração serial e painel independente
+somente leitura. `brainstorming`, `writing-plans`, `requesting-code-review` e
+`verification-before-completion` foram aplicadas; as subskills de execução não
+descobertas foram substituídas pelo equivalente nativo, sem instalar catálogo.
+O desenho e D04 foram confirmados explicitamente antes da implementação.
+
+Context7 foi consultado para transações na linha Prisma instalada; a resposta
+misturou referências de versões 6/7, portanto prevaleceram os tipos locais e a
+[documentação oficial Prisma7](https://www.prisma.io/docs/orm/v7/prisma-client/queries/transactions).
+Calendário e índice parcial foram conferidos nas fontes oficiais do
+[PostgreSQL17](https://www.postgresql.org/docs/17/functions-datetime.html) e
+[índices parciais](https://www.postgresql.org/docs/17/indexes-partial.html).
+Nenhum código privado ou segredo foi enviado às consultas.
+
+O root aplicou a sétima migração nos bancos locais T02/T04/T05/T06 e T07, sem
+reset. A prova de banco vazio/evolução preservou dados e verificou RLS das 21
+tabelas, permissões efetivas, snapshot imutável, origem composta e crédito único.
+Auth/Storage continuam na stack meumimo-t02. T07 tem domínio/dev/shadow,
+gateway/consumidor restritos e namespace de bytes/temporários próprios.
+
+A revisão independente de segurança encontrou meia-noite repetida em Havana;
+o root reproduziu o deslocamento de uma hora no PostgreSQL e corrigiu o calendário.
+Candidatos dos offsets dos dois lados escolhem a primeira meia-noite; fronteira
+inexistente usa busca até o primeiro instante válido. A regressão cobre Havana
+23/25h, ambas as 00:30, dia anterior e Lisboa/semana de 169h. A revisão de UI encontrou
+401 durante envio sem retorno ao login e validação sem foco no campo inválido.
+As duas falhas foram reproduzidas antes das correções, preservando o caso 404
+que já funcionava. Revisores focais não encontraram novos achados concretos.
+
+Comandos e fronteiras estão em [T07 local](activities-local.md); desenho,
+despachos, checks e limites no [plano T07](superpowers/plans/2026-10-22-t07-atividades.md).
+Câmera/galeria em aparelhos físicos, leitor de tela, CI remoto e ambiente
+publicado continuam não observados. Nenhum serviço pago ou publicação.
+
+Verificação final T07: check com lint/tipos/build e 7+9 testes; migração
+vazia/evolutiva e permissões; 138 HTTP (37 T07, 101 regressões); 166 Chromium
+(30 T07, 136 regressões). Após isolar um estilo do resumo diário, check e os
+30 Chromium de T07 foram repetidos. Capturas normais e a 200% foram examinadas.
+O scan de 410 arquivos versionáveis/estáticos não encontrou segredos locais.
+
+## Execução de T08
+
+O idealizador confirmou o desenho, D05 e os limites de análise/complemento antes
+da implementação e pediu commit ao concluir. A skill local do Vibe Coding
+Toolkit foi descoberta e aplicada com plano de ondas e revisão independente.
+Três escritores atuaram em domínio/API, UI/E2E e HTTP, com escopos exclusivos.
+O root integrou DTO/schema, migrações, mídia/outbox/lifecycle, scripts e documentos;
+executou os recursos mutáveis e Git. Uma atribuição focal criou a prova SQL,
+sem execução pelo escritor. Revisores novos receberam contexto explícito,
+sem histórico herdado, e trabalharam somente em leitura.
+
+Context7 foi consultado, mas misturou APIs atuais e v7. A integração preservou
+os tipos Prisma 7.10.1 e o helper transacional existente, conferidos com a
+[documentação oficial v7](https://www.prisma.io/docs/orm/v7/prisma-client/queries/transactions).
+Nenhum código privado ou segredo foi enviado. Executing-plans e
+subagent-driven-development não foram descobertas neste cliente; a execução
+usou o equivalente nativo documentado no plano.
+
+T08 tem bancos `meumimo_t08`/dev/shadow separados, prefixos Storage próprios e
+Next 4310/mídia 4311 em loopback. Auth/Storage continuam na stack meumimo-t02.
+As duas migrações aditivas foram aplicadas nos bancos locais T02/T04/T05/T06/T07
+e T08, incluindo desenvolvimento e integração, preservando as migrações
+anteriores. São nove migrações e 22 tabelas com RLS. Não houve reset ou migração
+em ambiente real, alteração de dependências ou publicação.
+
+Verificação: `check` com lint/tipos/build e 7+9 testes; migração vazia/evolutiva
+com crédito T07 preservado; 175 HTTP e 270 Chromium. Os cinco HTTP de mídia
+afetados pela ordenação das evidências passaram novamente depois do ajuste.
+Revisão independente encerrada após reprodução/correção dos achados; capturas
+normais e a 200% conferidas. Comandos, contratos e limites em
+[T08 local](points-local.md); despachos e evidências no
+[plano T08](superpowers/plans/2026-10-22-t08-analise-extrato.md).
+
+Resgates/tickets continuam em T09/T10. O caso completo de anulação após gasto
+não foi simulado por débito fictício. Aparelhos físicos, leitor de tela,
+CI remoto e publicação permanecem não observados.
+
+O scan T08 de 462 arquivos versionáveis/estáticos não encontrou segredos locais
+ou chaves privadas. Artefatos, credenciais e capturas permanecem fora do Git.
+
+## Execução de T09
+
+O idealizador confirmou desenho, D06 e limites do catálogo antes da implementação,
+com autorização para concluir e fazer commit. O Vibe Coding Toolkit foi aplicado
+com reconhecimento, builder check, plano, escritores de domínio/API, UI/E2E e
+HTTP/runtime com arquivos exclusivos. Root integrou contratos, schema, SQL,
+ledger/outbox, scripts e documentos; executou serviços, checks e Git em série.
+Revisores novos avaliaram SQL/segurança, TypeScript/API e React/privacidade em
+leitura, com verificações focais após correções.
+
+Context7 retornou Prisma Next; a integração preservou Prisma 7.10.1, o helper
+transacional e a documentação oficial v7 registrada no desenho. Next 16.4.2 não
+tem índice exato no Context7; a History API foi conferida na documentação atual
+e nos fluxos de rota/reload do build instalado. Não foram enviados dados privados
+ou segredos. A execução usou o equivalente nativo das subskills não descobertas.
+
+T09 tem bancos `meumimo_t09`/dev/shadow, namespaces Storage próprios e Next4310/
+mídia4311 em loopback; Auth/Storage continuam na stack meumimo-t02. A décima
+migração aditiva foi aplicada a desenvolvimento/integração T09, sem reset dos
+bancos existentes. São26 tabelas com RLS; evolução T07→T08→T09 preserva IDs,
+snapshots e a cadeia financeira anterior, com privilégios efetivos restritos.
+
+Revisão reproduziu e corrigiu variável SQL ambígua e reserva que aceitava
+auditoria administrativa tardia. A correção foi comprovada antes de aplicar a
+migração aos bancos T09 persistentes. UI preserva pageSize, busca80 Unicode,
+três abas e contador compartilhado, snapshot do ticket e recuperação por UUID;
+negação de qualquer fonte retira toda a área privada.
+
+`check` passou com lint/tipos/build e 7+9 testes. HTTP real 211/211 (36 novos +175
+regressões), sem skips, incluindo crédito15→gasto10→anulação−15, saldo−10 e ticket
+preservado. A primeira execução registrou um timeout no login da fixture; a
+repetição integral passou sem ampliar prazos. Chromium 382/382 (112 novos +270
+regressões), com capturas normais/a 200% examinadas e revisão encerrada. O scan
+de 495 arquivos não encontrou segredos locais ou chaves privadas; links e diff
+foram conferidos. Artefatos e credenciais permanecem ignorados pelo Git.
+Comandos em [T09 local](rewards-local.md), despachos e evidências no
+[plano T09](superpowers/plans/2026-10-22-t09-catalogo-resgates.md).
+
+Realização/cancelamento e devolução são T10; álbuns T11 e telas iniciais completas
+T12. Aparelhos físicos, leitor de tela, CI remoto e publicação continuam não
+observados. Nenhum serviço pago ou mudança de dependências.
+
+A migração T09 tem fins de linha mistos já aplicados. Uma regra `-text` em
+`.gitattributes`, restrita a esse arquivo, preserva seus bytes no Git. Os hashes
+do índice e dos dois bancos foram comparados, sem alterar migrações anteriores
+ou checksums aplicados. A exceção cosmética de whitespace está no plano T09.

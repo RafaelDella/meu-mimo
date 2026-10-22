@@ -1,0 +1,2 @@
+# Preserva os bytes da migração T09 já aplicada; não normalizar seu checksum.
+web/prisma/migrations/20261022235940_rewards_redemptions/migration.sql -text

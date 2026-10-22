@@ -12,7 +12,15 @@
     "test": "npm --prefix prototype test",
     "lint": "eslint . --max-warnings 0",
     "lint:rules": "node scripts/verify-quality-rules.mjs",
-    "check": "npm run lint:rules && npm run lint && npm test"
+    "web:dev": "npm --prefix web run dev",
+    "web:lint": "npm --prefix web run lint",
+    "web:typecheck": "npm --prefix web run typecheck",
+    "web:test": "npm --prefix web test",
+    "web:test:integration": "npm --prefix web run test:integration",
+    "web:build": "npm --prefix web run build",
+    "web:check": "npm --prefix web run check",
+    "web:test:e2e": "npm --prefix web run test:e2e",
+    "check": "npm run lint:rules && npm run lint && npm test && npm run web:check"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
