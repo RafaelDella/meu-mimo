@@ -39,13 +39,15 @@ export type PointsBalance = {
   today: { localDate: string; timezone: string; submitted: number; approved: number; credited: string; adjusted: string };
 };
 export type PointsEntryView = {
-  id: string; storeId: string; participantMembershipId: string; submissionId: string;
+  id: string; storeId: string; participantMembershipId: string; submissionId: string | null;
+  redemptionId: string | null; rewardName: string | null;
+  origin: { type: 'SUBMISSION' | 'REDEMPTION'; id: string; name: string };
   kind: PointsKind; amount: string; createdAt: string;
-  participant: { displayName: string | null }; actor: { displayName: string | null }; activityName: string; path: string;
+  participant: { displayName: string | null }; actor: { displayName: string | null }; activityName: string | null; path: string;
   reviewEventId: string | null; compensatesEntryId: string | null;
 };
 export type ReviewAction = 'APPROVE' | 'CONTEST' | 'VOID' | 'REOPEN';
-export type PointsKind = 'ACTIVITY_CREDIT' | 'ACTIVITY_REVERSAL' | 'ACTIVITY_RESTORE';
+export type PointsKind = 'ACTIVITY_CREDIT' | 'ACTIVITY_REVERSAL' | 'ACTIVITY_RESTORE' | 'REDEMPTION_DEBIT';
 export type ReviewImpact = { available: string; delta: string; resulting: string };
 export type ReviewEventView = {
   id: string; submissionId: string; kind: ReviewAction | 'RESPOND' | 'RECEIVED' | 'AUTO_APPROVED';

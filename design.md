@@ -1,6 +1,13 @@
 # Meu Mimo — identidade visual, telas e fluxos do app
 
-Especificação para o designer. Atualizada em 21 de outubro de 2026.
+Especificação para o designer. Atualizada em 22 de outubro de 2026.
+
+Recorte T09: catálogo e emissão/histórico de tickets seguem o
+[desenho confirmado](docs/superpowers/specs/2026-10-22-t09-catalogo-resgates-design.md).
+Detalhe usa página responsiva e confirmação em diálogo; catálogo seleciona
+ilustrações locais. Quantidade é a disponível agora; edição antiga não repõe
+unidades consumidas. Vale preserva o conteúdo da ocasião. Realização/cancelamento
+pertencem a T10, álbum a T11 e composição completa da Lojinha a T12.
 
 Este documento reúne a direção visual existente, a experiência aprovada como referência no protótipo e a proposta de produto. As decisões confirmadas pelo idealizador estão na seção 5; os comportamentos operacionais propostos para completar os fluxos estão identificados ao longo do documento. A seção 21 registra a consolidação do protótipo com esta especificação; `requisitos.md` complementa as regras de implementação.
 

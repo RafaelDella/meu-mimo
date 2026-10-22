@@ -6,7 +6,7 @@ const action = process.argv[2];
 const task = process.argv[3] ?? 't02';
 const state = readState(task);
 const commands = {
-  create: ['migrate', 'dev', '--create-only', '--name', { t02: 'identity_foundation', t04: 'stores_invitations', t05: 'conversations_notifications', t06: 'private_media', t07: 'activities_submissions', t08: 'submission_reviews' }[task]],
+  create: ['migrate', 'dev', '--create-only', '--name', { t02: 'identity_foundation', t04: 'stores_invitations', t05: 'conversations_notifications', t06: 'private_media', t07: 'activities_submissions', t08: 'submission_reviews', t09: 'rewards_redemptions' }[task]],
   development: ['migrate', 'deploy'],
   integration: ['migrate', 'deploy'],
   status: ['migrate', 'status'],

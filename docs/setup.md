@@ -524,3 +524,50 @@ CI remoto e publicação permanecem não observados.
 
 O scan T08 de 462 arquivos versionáveis/estáticos não encontrou segredos locais
 ou chaves privadas. Artefatos, credenciais e capturas permanecem fora do Git.
+
+## Execução de T09
+
+O idealizador confirmou desenho, D06 e limites do catálogo antes da implementação,
+com autorização para concluir e fazer commit. O Vibe Coding Toolkit foi aplicado
+com reconhecimento, builder check, plano, escritores de domínio/API, UI/E2E e
+HTTP/runtime com arquivos exclusivos. Root integrou contratos, schema, SQL,
+ledger/outbox, scripts e documentos; executou serviços, checks e Git em série.
+Revisores novos avaliaram SQL/segurança, TypeScript/API e React/privacidade em
+leitura, com verificações focais após correções.
+
+Context7 retornou Prisma Next; a integração preservou Prisma 7.10.1, o helper
+transacional e a documentação oficial v7 registrada no desenho. Next 16.4.2 não
+tem índice exato no Context7; a History API foi conferida na documentação atual
+e nos fluxos de rota/reload do build instalado. Não foram enviados dados privados
+ou segredos. A execução usou o equivalente nativo das subskills não descobertas.
+
+T09 tem bancos `meumimo_t09`/dev/shadow, namespaces Storage próprios e Next4310/
+mídia4311 em loopback; Auth/Storage continuam na stack meumimo-t02. A décima
+migração aditiva foi aplicada a desenvolvimento/integração T09, sem reset dos
+bancos existentes. São26 tabelas com RLS; evolução T07→T08→T09 preserva IDs,
+snapshots e a cadeia financeira anterior, com privilégios efetivos restritos.
+
+Revisão reproduziu e corrigiu variável SQL ambígua e reserva que aceitava
+auditoria administrativa tardia. A correção foi comprovada antes de aplicar a
+migração aos bancos T09 persistentes. UI preserva pageSize, busca80 Unicode,
+três abas e contador compartilhado, snapshot do ticket e recuperação por UUID;
+negação de qualquer fonte retira toda a área privada.
+
+`check` passou com lint/tipos/build e 7+9 testes. HTTP real 211/211 (36 novos +175
+regressões), sem skips, incluindo crédito15→gasto10→anulação−15, saldo−10 e ticket
+preservado. A primeira execução registrou um timeout no login da fixture; a
+repetição integral passou sem ampliar prazos. Chromium 382/382 (112 novos +270
+regressões), com capturas normais/a 200% examinadas e revisão encerrada. O scan
+de 495 arquivos não encontrou segredos locais ou chaves privadas; links e diff
+foram conferidos. Artefatos e credenciais permanecem ignorados pelo Git.
+Comandos em [T09 local](rewards-local.md), despachos e evidências no
+[plano T09](superpowers/plans/2026-10-22-t09-catalogo-resgates.md).
+
+Realização/cancelamento e devolução são T10; álbuns T11 e telas iniciais completas
+T12. Aparelhos físicos, leitor de tela, CI remoto e publicação continuam não
+observados. Nenhum serviço pago ou mudança de dependências.
+
+A migração T09 tem fins de linha mistos já aplicados. Uma regra `-text` em
+`.gitattributes`, restrita a esse arquivo, preserva seus bytes no Git. Os hashes
+do índice e dos dois bancos foram comparados, sem alterar migrações anteriores
+ou checksums aplicados. A exceção cosmética de whitespace está no plano T09.

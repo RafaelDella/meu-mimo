@@ -112,6 +112,7 @@ reautorizado. A central completa permanece em T12.
 
 Resgates e tickets são T09/T10. A prova de saldo negativo nesta etapa é
 aritmética assinada e interface controlada, além do estorno real por HTTP.
-O cenário completo gastar → anular → preservar ticket será verificado em T09;
-nenhum débito fictício é introduzido no ledger para simular essa integração.
+O cenário completo gastar → anular → preservar ticket foi verificado em
+[T09](rewards-local.md), com crédito e débito reais. O extrato atual inclui
+REDEMPTION_DEBIT, separado da cadeia da conquista; T08 não usou débito fictício.
 Dispositivos físicos, leitor de tela, CI remoto e publicação continuam pendentes.

@@ -54,7 +54,7 @@ export function pagination(query = new URLSearchParams()): Pagination {
   const page = integer('page', 1, 1_000_000);
   const pageSize = integer('pageSize', 20, 50);
   const q = query.get('q')?.trim() ?? '';
-  if (q.length > 80 || /[\u0000-\u001f\u007f]/.test(q)) invalidField();
+  if ([...q].length > 80 || /[\u0000-\u001f\u007f]/.test(q) || /[\uD800-\uDFFF]/u.test(q)) invalidField();
   return { page, pageSize, skip: (page - 1) * pageSize, q };
 }
 

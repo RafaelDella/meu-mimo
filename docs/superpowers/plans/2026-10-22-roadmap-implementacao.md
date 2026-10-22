@@ -10,7 +10,7 @@
 
 **Especificação:** [requisitos](../../../requisitos.md), [arquitetura](../../../arquitetura.md), [design](../../../design.md) e [README](../../../README.md). Operação e qualidade: [onboarding](../../onboarding.md), [setup](../../setup.md) e [quality](../../quality.md).
 
-**Data:** 22/10/2026. **Estado atual:** M0 e T01–T08 entregues localmente; T03 conserva a conferência com leitor de tela real. T08 integra análise, complementos, compensações e extrato, com evidências no [plano T08](2026-10-22-t08-analise-extrato.md). A próxima entrega é T09, catálogo/resgate/tickets, dependente de D06. Decisões confirmadas e propostas restantes constam em requisitos §6.1. A seção 1 preserva o ponto de partida do planejamento.
+**Data:** 22/10/2026. **Estado atual:** M0 e T01–T09 entregues localmente; T03 conserva a conferência com leitor de tela real. T09 integra catálogo, resgate atômico, estoque e histórico de tickets; evidências no [plano T09](2026-10-22-t09-catalogo-resgates.md). D06 e limites do catálogo estão confirmados. A próxima entrega é T10: combinado, realização e cancelamento/devolução. Decisões confirmadas e propostas restantes constam em requisitos §6.1. A seção 1 preserva o ponto de partida do planejamento.
 
 ## 1. Ponto de partida e restrições
 
@@ -86,7 +86,7 @@ T00 organiza estas decisões com o idealizador; as que não forem resolvidas blo
 | D03 · confirmada em T04 | Um responsável, catálogo/atividades compartilhados, saldo zero, link portador de uso único por sete dias e efeitos de pausa/encerramento em requisitos §6.1. | T04, T07, T09 |
 | D04 | Início da semana, retroatividade, estados que ocupam ocorrência, alteração de fuso e limites técnicos de texto/paginação/requisições. Limites de autenticação precisam de decisão antes do respectivo fluxo. | T02 para autenticação; T04–T12 conforme o recurso |
 | D05 | Contestação após gasto, saldo negativo por estorno, reabertura e recomposição; preservar tickets emitidos conforme a regra aprovada. | T08 |
-| D06 | Estoque no cancelamento, pedido recusado, disputa sobre realização e procedimento de suporte no piloto. | T09–T10 |
+| D06 · confirmada em T09 | Baixa na emissão; futuro cancelamento devolve pontos uma vez, reposição explícita desligada por padrão, pedido bloqueia realizar e recusa motivada restaura o estado anterior. Procedimento de disputa após realização fica para T14. | T09–T10; procedimento T14 |
 | D07 · confirmada em T06 | Limites de fotos/vídeos, versões de evidência, lote/álbum, miniaturas e gateway local separado confirmados em requisitos §6.1. Prova sintética local não comprova câmera/galeria ou reprodução em Android/iPhone reais. | T06/T11; prova móvel ainda pendente |
 | D08 · confirmada em T06 | Órfãos 24h, originais até 24h após processamento, evidência 180 dias com proteção e álbum até 12 meses após encerramento. Histórico até 24 meses, backups até 30 dias e procedimento de exportação/exclusão em T14. Proteção conservadora até integrar a origem. | T06, T11, T14 |
 | D09 | Aparelhos/versões suportados, disponibilidade, limite de custo, tolerância de perda (RPO), prazo de recuperação (RTO) e operação do piloto. | T14–T15 |
@@ -206,18 +206,25 @@ Android/iPhone reais permanece no aceite móvel D09/T14.
 
 D05 e os limites foram confirmados antes da implementação. Prova local: 175 HTTP,
 270 Chromium, migração com crédito T07 anterior preservado e revisão independente.
-O cenário completo de gasto → anulação → ticket preservado depende de T09; T08
-não introduz débito fictício. Comandos em [T08 local](../../points-local.md).
+T08 não introduz débito fictício. A prova com gasto real e ticket preservado
+está no plano T09. Comandos em [T08 local](../../points-local.md).
 
 ### T09 · Catálogo, resgate transacional e histórico de tickets
 
 **Responsável:** domínio de mimos/pontos. **Depende de:** T08 e D06.
 **Arquivos:** `web/src/server/{rewards,redemptions,points}/**`, `web/src/app/lojas/[storeId]/{mimos,tickets}/**`, `web/src/components/{rewards,tickets}/**`, `web/tests/{integration,e2e}/redemptions/**`, `web/prisma/**`. **Recursos:** padrão T09.
 
-- [ ] Entregar L06/L07 e P06–P09: catálogo editável, categorias, recadinho, custo e disponibilidade; confirmação com custo/saldo restante e mensagem de quanto falta.
-- [ ] Validar participação, loja, saldo e estoque; emitir ticket, débito, reserva e evento na mesma operação, com chave de repetição e estratégia de concorrência explícita.
-- [ ] Preservar nome/custo/instruções da ocasião e histórico paginado por período/estado; contador de navegação considera somente tickets a realizar.
-- [ ] Verificar dois resgates com saldo para um, disputa pelo último item entre participantes, resposta perdida após confirmação e edição/arquivamento posterior do mimo. Falha não deixa débito ou estoque reservado sem ticket.
+- [x] Entregar L06/L07 e P06–P09: catálogo editável, categorias, recadinho, custo e disponibilidade; confirmação com custo/saldo restante e mensagem de quanto falta.
+- [x] Validar participação, loja, saldo e estoque; emitir ticket, débito, reserva e evento na mesma operação, com chave de repetição e estratégia de concorrência explícita.
+- [x] Preservar nome/custo/instruções da ocasião e histórico paginado por período/estado; contador de navegação considera somente tickets a realizar.
+- [x] Verificar dois resgates com saldo para um, disputa pelo último item entre participantes, resposta perdida após confirmação e edição/arquivamento posterior do mimo. Falha não deixa débito ou estoque reservado sem ticket.
+
+D06 e limites confirmados antes de implementar. Provas locais: 211 HTTP
+(36 novos +175 regressões), 382 Chromium (112 novos +270 regressões), check,
+migração vazia/evolutiva com dez migrações e 26 tabelas RLS. Anulação após gasto
+real preservou o ticket e produziu saldo negativo. Revisão independente encerrada;
+comandos em [T09 local](../../rewards-local.md). Realização/cancelamento e álbuns
+continuam nas etapas seguintes; aparelhos físicos e leitor de tela não observados.
 
 ### T10 · Combinado, realização e cancelamento
 

@@ -48,6 +48,8 @@ T07 entrega atividades, conquistas e crédito automático único, com foto priva
 histórico e saldo real da participação. Preparação em [atividades locais](docs/activities-local.md).
 T08 acrescenta aprovação manual, contestação/complemento, compensações e extrato
 com filtros. Preparação em [análise e extrato locais](docs/points-local.md).
+T09 acrescenta catálogo, confirmação de resgate, débito/estoque atômicos e
+histórico de tickets. Preparação em [catálogo e resgates locais](docs/rewards-local.md).
 O servidor da prévia em 4173 continua independente.
 
 Para verificar o navegador depois de `npm run check`:
@@ -71,7 +73,8 @@ Auth/PostgreSQL/Prisma. A prévia visual não salva dados nem desconta pontos.
 T05 acrescenta APIs de conversa e notificações persistidas com outbox. T06 prepara
 mídia privada com derivados e retomada. T07 integra registros reais de atividade,
 pendência manual e crédito automático consultável. T08 integra análise,
-complementos, estorno/recomposição e extrato real. Resgates/tickets, álbuns,
+complementos, estorno/recomposição e extrato real. T09 integra catálogo,
+resgate/ticket com snapshot e conversa. Realização/cancelamento, álbuns,
 Realtime e a central completa de novidades
 permanecem no roadmap.
 

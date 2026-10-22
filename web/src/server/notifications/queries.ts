@@ -13,6 +13,7 @@ export const notificationSelect = {
     comment: { select: { conversation: { select: { id: true, subjectType: true, subjectId: true } } } },
     submission: { select: { id: true, status: true } },
     reviewEvent: { select: { id: true } },
+    redemption: { select: { id: true } },
   } },
 } satisfies Prisma.NotificationSelect;
 
@@ -32,6 +33,7 @@ export function notificationAudience(identity: Identity, storeId?: string): Pris
         recipientMembership: { role: 'PARTICIPANT' } },
       { kind: 'SUBMISSION_RESPONDED', reviewEventId: { not: null }, submission: { status: { not: 'DRAFT' } },
         recipientMembership: { role: 'MERCHANT' } },
+      { kind: 'REDEMPTION_ISSUED', redemptionId: { not: null }, recipientMembership: { role: 'MERCHANT' } },
     ],
   } };
 }
@@ -49,6 +51,11 @@ export async function notificationTarget(notification: SelectedNotification, tx:
   const { event } = notification;
   const common = { storeId: event.storeId, participantMembershipId: event.participantMembershipId };
   if (event.kind === 'INVITATION_ACCEPTED') return { ...common, type: 'membership', path: `/lojas/${event.storeId}/pessoas` };
+  if (event.kind === 'REDEMPTION_ISSUED') {
+    if (!event.redemption) unavailable();
+    return { ...common, type: 'ticket', subjectId: event.redemption.id,
+      path: `/lojas/${event.storeId}/tickets/${event.redemption.id}` };
+  }
   if (['SUBMISSION_RECEIVED', 'SUBMISSION_REVIEWED', 'SUBMISSION_RESPONDED'].includes(event.kind)) {
     if (!event.submission || event.submission.status === 'DRAFT') unavailable();
     return { ...common, type: 'submission', subjectId: event.submission.id,
@@ -60,9 +67,14 @@ export async function notificationTarget(notification: SelectedNotification, tx:
     where: { id: conversation.subjectId, storeId: event.storeId,
       participantMembershipId: event.participantMembershipId, receivedAt: { not: null } }, select: { id: true },
   }) : null;
+  const ticket = conversation.subjectType === 'TICKET' ? await tx.redemption.findFirst({
+    where: { id: conversation.subjectId, storeId: event.storeId,
+      participantMembershipId: event.participantMembershipId }, select: { id: true },
+  }) : null;
   return {
     ...common, type: 'conversation', conversationId: conversation.id,
     subjectType: conversation.subjectType, subjectId: conversation.subjectId,
-    path: submission ? `/lojas/${event.storeId}/registros/${submission.id}` : null,
+    path: submission ? `/lojas/${event.storeId}/registros/${submission.id}` :
+      ticket ? `/lojas/${event.storeId}/tickets/${ticket.id}` : null,
   };
 }

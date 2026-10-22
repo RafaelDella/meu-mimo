@@ -34,7 +34,7 @@ for (const resource of ['balance', 'people'] as const) {
     }
     if (status === 401) await expect(page.getByRole('heading', { name: 'Acesse sua conta', exact: true })).toBeVisible();
     else {
-      await expect(page.getByRole('heading', { name: /indisponível/i })).toBeVisible();
+      await expect(page.getByRole('heading', { name: /indisponível|indisponíveis/i })).toBeVisible();
       await expect(page.getByRole('link', { name: 'Entrar na conta', exact: true })).toHaveCount(0);
     }
     await expect(page.getByRole('heading', { name: '+15 pontos · Leitura da ocasião', exact: true })).toHaveCount(0);

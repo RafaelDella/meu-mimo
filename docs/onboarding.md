@@ -133,3 +133,8 @@ Para análise, complemento, compensações e extrato real, siga [T08 local](poin
 O preparo seleciona desenvolvimento T08; integração usa `meumimo_t08`, prefixo
 Storage próprio e Next 4310/mídia 4311. Os workers usam os comandos T08;
 builds e execuções continuam em série com as tarefas anteriores.
+
+Para catálogo, emissão e histórico de tickets, siga [T09 local](rewards-local.md).
+O preparo seleciona desenvolvimento T09; integração usa `meumimo_t09`, prefixos
+próprios e Next4310/mídia4311. Execute os comandos/migrações T09 antes de abrir
+o catálogo. Não reutilize o estado da demonstração como saldo ou dados reais.

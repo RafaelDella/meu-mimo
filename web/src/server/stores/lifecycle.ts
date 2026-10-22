@@ -5,7 +5,7 @@ import { unavailable } from './validation.ts';
 
 export const LIFECYCLE_DEPENDENCIES_STAGE = 'T08_REVIEW' as const;
 
-/** A origem consulta pendências no mesmo lock da loja; T09 acrescenta os tickets. */
+/** Análises pendentes bloqueiam encerramento; tickets preservados não bloqueiam (D03). */
 export async function assertLifecycleDependencies(
   tx: StoreTransaction,
   scope: { storeId: string; membershipId?: string },

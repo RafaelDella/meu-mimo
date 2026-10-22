@@ -25,6 +25,7 @@ de retenção em `docs/media-local.md`.
 T07 entrega atividades, conquistas e crédito automático; comandos e limites em
 `docs/activities-local.md`. T08 entrega análise, complementos, compensações e
 extrato; comandos e limites em `docs/points-local.md`.
+T09 entrega catálogo, resgates e tickets; contratos e comandos em `docs/rewards-local.md`.
 O plano da fundação e as dependências estão em
 [M0](docs/superpowers/plans/2026-10-22-m0-fundacao.md).
 
@@ -53,6 +54,8 @@ Integração real usa `web:test:integration`, stack `meumimo-t02` e aplicação 
 T04 usa `npm --prefix web run test:integration:t04`, domínio `meumimo_t04` e 4310.
 T08 usa `test:integration:t08`, domínio `meumimo_t08`, Next 4310/mídia 4311,
 Storage com prefixo próprio e bancos dev/shadow separados.
+T09 usa `test:integration:t09`, domínio `meumimo_t09`, as mesmas portas em série
+e namespaces `t09-development`/`t09-integration`, com dev/shadow separados.
 T05 usa `test:integration:t05`, domínio `meumimo_t05` e a mesma porta em série;
 o consumidor local tem comando próprio e credencial restrita.
 T06 usa `test:integration:t06`, bancos `meumimo_t06`/dev/shadow e gateway local

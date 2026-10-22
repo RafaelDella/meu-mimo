@@ -27,7 +27,7 @@ export function assertMutationOrigin(request: Request): void {
   }
 }
 
-export async function readJsonObject(request: Request): Promise<Record<string, unknown>> {
+export async function readJsonObject(request: Request, maximumBytes = 8192): Promise<Record<string, unknown>> {
   assertMutationOrigin(request);
   if (!/^application\/json(?:;|$)/i.test(request.headers.get('content-type') ?? '')) {
     throw new AppError('content_type_invalid', 415, 'Envie os dados no formato esperado pelo formulário.');
@@ -40,7 +40,7 @@ export async function readJsonObject(request: Request): Promise<Record<string, u
       const part = await reader.read();
       if (part.done) break;
       length += part.value.length;
-      if (length > 8192) {
+      if (length > maximumBytes) {
         await reader.cancel();
         throw new AppError('body_too_large', 413, 'Os dados enviados são grandes demais.');
       }

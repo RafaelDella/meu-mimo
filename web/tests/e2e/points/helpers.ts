@@ -41,6 +41,7 @@ export function analysis(state: ReviewState) {
 }
 export function entry(kind: PointsEntryView['kind'], amount: string, overrides: Partial<PointsEntryView> = {}): PointsEntryView {
   return { id: eventId, storeId: ids.first, participantMembershipId: store().membershipId, submissionId, kind, amount,
+    redemptionId: null, rewardName: null, origin: { type: 'SUBMISSION', id: submissionId, name: 'Leitura da ocasião' },
     createdAt: now, actor: { displayName: 'Rafa' }, participant: { displayName: 'Ana' }, activityName: 'Leitura da ocasião',
     path: `${originPath}?evento=${eventId}`, reviewEventId: eventId, compensatesEntryId: null, ...overrides };
 }

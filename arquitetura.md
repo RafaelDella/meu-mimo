@@ -1,7 +1,7 @@
 # Meu Mimo — proposta técnica e decisões de dados
 
 Atualizado em 22 de outubro de 2026. Complementa `design.md` e `requisitos.md`.
-Registra decisões, propostas futuras e o escopo local de T01–T08. D07 e D08
+Registra decisões, propostas futuras e o escopo local de T01–T09. D07 e D08
 foram confirmadas em T06; T07 integra a origem de conquistas.
 
 ## 1. Decisões e base da implementação
@@ -89,7 +89,7 @@ O desenho de T05 e comentários privados/imutáveis de até500 caracteres Unicod
 foram confirmados em 22/10/2026. Conversation associa assunto tipado de registro
 ou ticket a uma participação; Comment tem autor/instante e UUID de repetição.
 O registro da conversa é interno e usa a mesma transação do recurso de origem,
-a ser integrado por T07/T09. Não há endpoint público para criar assunto solto.
+integrado por T07/T09. Não há endpoint público para criar assunto solto.
 Fechamento preserva consulta e a conversa necessária a pendências; revogação
 continua negando acesso. A origem define commentsClosedAt para fechar escrita.
 
@@ -103,7 +103,7 @@ código sanitizado, sem texto do comentário ou token no diagnóstico.
 
 As consultas revalidam destinatário, vínculos e recurso; a ordenação pela
 entrega recupera eventos antigos processados mais tarde. Destinos são tipados e
-derivados; T07/T09 integrarão as telas reais de registro/ticket. Realtime é
+derivados; T07/T09 integram as telas reais de registro/ticket. Realtime é
 opcional e não foi necessário ao consumidor SQL; central/preferências e demais
 interações ficam em T12. Comandos e fronteiras em [T05 local](docs/relation-local.md).
 
@@ -114,7 +114,7 @@ MediaCollection associa propósito/origem tipada à loja e participação. Evid�
 tem uma foto por revisão e preserva as anteriores; memória admite 20 itens.
 MediaAsset usa UUID da operação e metadados imutáveis; MediaPart persiste offset,
 tamanho e checksum. Registro de coleção, revisão e publicação são internos à
-transação da origem, a integrar com T07/T09/T11.
+transação da origem, integrada em T07/T08 para evidências; álbuns são T11.
 
 Next mantém credencial restrita e autorização de sessão/contexto. O processo de
 mídia em loopback recebe service role separadamente para o bucket privado
@@ -186,7 +186,7 @@ Para a implantação serverless proposta, definir pooling, orçamento de conexõ
 
 Referências técnicas: [Prisma com Supabase](https://supabase.com/docs/guides/database/prisma), [customização de migrações](https://www.prisma.io/docs/orm/v7/prisma-migrate/workflows/customizing-migrations), [desenvolvimento e produção](https://www.prisma.io/docs/orm/v7/prisma-migrate/workflows/development-and-production). As duas últimas descrevem Prisma ORM v7 e precisam ser revalidadas se outra versão for escolhida.
 
-### 3.1. Fundação local e evolução até T08
+### 3.1. Fundação local e evolução até T09
 
 O schema privado `app` iniciou com Profile, Store, Membership e AdminGrant;
 T04 acrescenta os estados de loja/participação, Invitation e StoreAudit; T05,
@@ -277,12 +277,42 @@ CLOSED permite consulta/replay. Encerramento bloqueia PENDING/CONTESTED.
 Histórico une eventos T07/T08. Extrato usa datas inclusivas no fuso atual da
 loja, tipo e pessoa; os totais usam SUM→texto/BigInt. Primeiras aprovações e
 ajustes diários são separados. Novidades apontam ao evento reautorizado.
-Contratos e comandos em [T08 local](docs/points-local.md). Gastos/tickets seguem
-para T09; a prova completa de saldo negativo após gasto depende dessa etapa.
+Contratos e comandos em [T08 local](docs/points-local.md). Gastos e tickets
+integram o mesmo saldo na etapa T09 descrita abaixo.
+
+### 3.4. Catálogo e emissão em T09
+
+D06 e limites do catálogo foram confirmados. Reward guarda a configuração;
+RewardEvent audita UUID/digest/versão. stockRevision é separado: consumo muda
+quantidade e revisão, sem alterar preço/regra. Edição confirma ambas as versões
+e audita a quantidade disponível agora. Catálogo usa stickers locais.
+
+Redemption.id é a UUID da intenção. Código, conteúdo, custo, data/fuso, saldos
+e reserva da ocasião são snapshots imutáveis; RedemptionEvent registra emissão.
+O lock da loja serializa saldo/estoque/análise/encerramento. Emissão, débito
+REDEMPTION_DEBIT, reserva limitada, evento, conversa TICKET e outbox confirmam
+na mesma transação. A nova origem de PointsEntry é exclusiva da conquista;
+checks explícitos, FKs compostas e triggers preservam as proteções T08.
+Reserva limitada exige alteração real na transação e revisão sem auditoria
+administrativa; a verificação diferida também impede auditoria inserida depois.
+
+Saldo continua SUM→texto/BigInt. Gasto não altera a cadeia da conquista nem
+ganhos/ajustes diários. Anular crédito gasto pode deixar saldo negativo,
+preservando o ticket; um novo resgate exige saldo suficiente. Tickets não
+bloqueiam encerramento. Replay reautoriza antes de recuperar, inclusive após
+pausa/encerramento. UUID não troca autor, loja, mimo ou corpo.
+
+URL contém apenas UUID opaca para recuperar resposta perdida/reload. Consulta
+de operação autoriza a origem e retorna ticket ou null; null exige nova prévia
+e confirmação da mesma intenção. Nunca persistir saldo/conteúdo em localStorage.
+Histórico usa período inclusivo no fuso e audiência atual; contador é separado
+dos filtros/página. Avisos/comentários resolvem o ticket real. Contratos e
+comandos em [T09 local](docs/rewards-local.md). Transições/devolução seguem em
+T10, álbum em T11 e composição completa da Lojinha/novidades em T12.
 
 ## 4. Modelo conceitual de dados
 
-A tabela descreve o modelo completo proposto. T02/T04/T05/T06/T07/T08 implementam os
+A tabela descreve o modelo completo proposto. T02/T04/T05/T06/T07/T08/T09 implementam os
 subconjuntos das seções 1.2–1.4, 3.1 e do contrato T07 abaixo; os demais modelos
 permanecem futuros.
 
@@ -298,7 +328,8 @@ permanecem futuros.
 | MediaAttachment | Autor, tipo foto/vídeo, propósito evidência/memória, loja, participação, registro ou resgate de origem, objeto privado, estado, legenda, ordem, duração/dimensões quando aplicáveis e política de retenção |
 | PointsWallet | Participação, saldo de consulta e versão para controle de concorrência, se houver saldo materializado |
 | PointsEntry | Movimento confirmado, valor inteiro com sinal, tipo, origem, autor, data e referência de compensação |
-| Reward | Definição editável, custo, categoria, disponibilidade e instruções |
+| Reward | Definição editável, custo, categoria, disponibilidade, estoque versionado e instruções |
+| RewardEvent | Auditoria imutável da configuração, UUID/digest, versão, autor e instante |
 | Redemption | Participação, ticket, custo e conteúdo da ocasião do resgate, estado e datas de marcos |
 | RedemptionEvent | Linha do tempo de combinado, realização, pedido/resolução de cancelamento e motivos |
 | Comment / Reaction | Conversa/reação vinculada a registro ou ticket, com audiência da relação |

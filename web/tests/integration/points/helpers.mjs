@@ -66,7 +66,7 @@ export async function reviewFixture(t) {
     finally { await f.database.query(`ALTER TABLE app."${table}" DROP CONSTRAINT "${constraint}"`); }
   }
   async function photo(record, person = f.ana) {
-    assert.equal(process.env.MEDIA_PREFIX, 't08-integration');
+    assert.equal(process.env.MEDIA_PREFIX, `${process.env.T02_TASK}-integration`);
     const directory = process.env.T06_MEDIA_FIXTURES;
     assert.ok(directory, 'T08 exige fotos sintéticas próprias, sem dados pessoais.');
     const bytes = await readFile(path.join(directory, 'photo.png'));

@@ -15,6 +15,7 @@
 | `npm --prefix web run test:integration:t06` | Domínio T06 em 4310, processo de mídia 4311, Storage privado, pipeline real e regressões T02/T04/T05 |
 | `npm --prefix web run test:integration:t07` | Atividades, calendário/DST, concorrência, ledger, foto real e regressões anteriores no domínio T07, com Next4310/mídia4311 |
 | `npm --prefix web run test:integration:t08` | Análise, complementos, compensações, extrato, mídia real e regressões no domínio T08, com Next 4310/mídia 4311 |
+| `npm --prefix web run test:integration:t09` | Catálogo, emissão/débito/estoque atômicos, histórico de tickets e regressões no domínio T09, em série |
 | `npm --prefix web run db:migrate:check` | Banco vazio, evolução com dados fictícios preservados, RLS e permissões efetivas |
 | `npm run web:build` | Build real de produção Next |
 | `npm run web:test:e2e` | Smoke do build em Chromium a 320/390 px; requer browser instalado |
@@ -126,6 +127,15 @@ Revise o diff e os chamadores afetados. Mudanças relevantes recebem uma revisã
 independente quando disponível, somente leitura e com cenário concreto para cada
 achado. Corrija os achados confirmados e repita apenas os checks afetados.
 Registre limitações; ausência de achados não prova segurança absoluta.
+
+T09 acrescenta 36 HTTP reais (211 com regressões) e 112 Chromium (382 no total).
+As provas cobrem saldo/último estoque concorrentes, emissão idempotente e rollback
+de cada efeito, snapshot após edição/arquivo, gasto real seguido de anulação,
+histórico/DST/filtros, contador e privacidade entre pessoas. Chromium cobre
+reload/resposta perdida, três abas, paginação de 50, Unicode, erros associados,
+foco/teclado, 320/390 e texto 200%. A evolução preserva dados T07/T08 e nega
+emissão gratuita, reserva sem ticket e auditoria administrativa tardia.
+Evidências, revisão e limites no [plano T09](superpowers/plans/2026-10-22-t09-catalogo-resgates.md).
 
 ## Revisão de segurança reutilizável
 

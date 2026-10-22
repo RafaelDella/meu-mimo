@@ -5,7 +5,7 @@ import { operationConflict, resourceId, unavailable } from '../stores/validation
 
 type EventInput = Pick<Prisma.OutboxEventUncheckedCreateInput,
   'key' | 'kind' | 'storeId' | 'participantMembershipId' | 'actorProfileId' |
-  'recipientMembershipId' | 'invitationId' | 'commentId' | 'submissionId' | 'reviewEventId'>;
+  'recipientMembershipId' | 'invitationId' | 'commentId' | 'submissionId' | 'reviewEventId' | 'redemptionId'>;
 
 async function persistEvent(tx: StoreTransaction, input: EventInput): Promise<void> {
   // A unicidade também cobre duas transações que chegaram aqui ao mesmo tempo.
@@ -16,7 +16,8 @@ async function persistEvent(tx: StoreTransaction, input: EventInput): Promise<vo
       existing.actorProfileId !== input.actorProfileId || existing.recipientMembershipId !== input.recipientMembershipId ||
       existing.invitationId !== (input.invitationId ?? null) || existing.commentId !== (input.commentId ?? null) ||
       existing.submissionId !== (input.submissionId ?? null) ||
-      existing.reviewEventId !== (input.reviewEventId ?? null)) operationConflict();
+      existing.reviewEventId !== (input.reviewEventId ?? null) ||
+      existing.redemptionId !== (input.redemptionId ?? null)) operationConflict();
 }
 
 async function audience(tx: StoreTransaction, storeId: string, participantMembershipId: string) {
@@ -96,4 +97,16 @@ export async function enqueueSubmissionReview(tx: StoreTransaction, eventId: str
     participantMembershipId: participant.id, actorProfileId: event.actorProfileId,
     recipientMembershipId: responding ? merchant.id : participant.id,
     submissionId: event.submissionId, reviewEventId: id, invitationId: null, commentId: null });
+}
+
+/** O ticket, seu débito e este aviso confirmam juntos; não aceita destinatário do cliente. */
+export async function enqueueRedemptionIssued(tx: StoreTransaction, redemptionId: string): Promise<void> {
+  const id = resourceId(redemptionId);
+  const ticket = await tx.redemption.findUnique({ where: { id } });
+  if (!ticket) unavailable();
+  const { participant, merchant } = await audience(tx, ticket.storeId, ticket.participantMembershipId);
+  if (ticket.authorProfileId !== participant.profileId) unavailable();
+  await persistEvent(tx, { key: `redemption.issued:${id}`, kind: 'REDEMPTION_ISSUED',
+    storeId: ticket.storeId, participantMembershipId: participant.id, actorProfileId: participant.profileId,
+    recipientMembershipId: merchant.id, redemptionId: ticket.id });
 }

@@ -39,6 +39,7 @@ enum NotificationKind {
   SUBMISSION_RECEIVED
   SUBMISSION_REVIEWED
   SUBMISSION_RESPONDED
+  REDEMPTION_ISSUED
 
   @@schema("app")
 }
@@ -53,6 +54,15 @@ enum ActivityFrequency {
 enum ApprovalMode {
   MANUAL
   AUTOMATIC
+  @@schema("app")
+}
+
+enum RedemptionStatus {
+  WAITING_AGREEMENT
+  AGREED
+  FULFILLED
+  CANCELLATION_REQUESTED
+  CANCELLED
   @@schema("app")
 }
 
@@ -111,6 +121,10 @@ model Profile {
   submissionEvents SubmissionEvent[]
   pointsEntries PointsEntry[]
   reviewEvents SubmissionReviewEvent[]
+  authoredRewards Reward[]
+  rewardEvents RewardEvent[]
+  authoredRedemptions Redemption[]
+  redemptionEvents RedemptionEvent[]
 
   @@schema("app")
 }
@@ -142,6 +156,10 @@ model Store {
   submissionEvents SubmissionEvent[]
   pointsEntries PointsEntry[]
   reviewEvents SubmissionReviewEvent[]
+  rewards Reward[]
+  rewardEvents RewardEvent[]
+  redemptions Redemption[]
+  redemptionEvents RedemptionEvent[]
 
   @@index([createdByProfileId])
   @@schema("app")
@@ -164,6 +182,8 @@ model Membership {
   receivedEvents OutboxEvent[] @relation("EventRecipient")
   submissions ActivitySubmission[]
   pointsEntries PointsEntry[]
+
+  redemptions Redemption[]
 
   @@unique([storeId, profileId])
   @@unique([id, storeId])
@@ -251,6 +271,7 @@ model OutboxEvent {
   commentId String? @db.Uuid
   submissionId String? @db.Uuid
   reviewEventId String? @db.Uuid
+  redemptionId String? @db.Uuid
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   availableAt DateTime @default(now()) @db.Timestamptz(6)
   processedAt DateTime? @db.Timestamptz(6)
@@ -264,6 +285,7 @@ model OutboxEvent {
   comment Comment? @relation(fields: [commentId], references: [id], onDelete: Restrict)
   submission ActivitySubmission? @relation(fields: [submissionId], references: [id], onDelete: Restrict)
   reviewEvent SubmissionReviewEvent? @relation(fields: [reviewEventId], references: [id], onDelete: Restrict)
+  redemption Redemption? @relation(fields: [redemptionId], references: [id], onDelete: Restrict)
   notification Notification?
 
   @@index([processedAt, availableAt, id])
@@ -474,7 +496,8 @@ model PointsEntry {
   id String @id @default(uuid()) @db.Uuid
   storeId String @db.Uuid
   participantMembershipId String @db.Uuid
-  submissionId String @db.Uuid
+  submissionId String? @db.Uuid
+  redemptionId String? @unique @db.Uuid
   actorProfileId String @db.Uuid
   kind String
   amount BigInt
@@ -484,7 +507,8 @@ model PointsEntry {
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   store Store @relation(fields: [storeId], references: [id], onDelete: Restrict)
   participant Membership @relation(fields: [participantMembershipId], references: [id], onDelete: Restrict)
-  submission ActivitySubmission @relation(fields: [submissionId], references: [id], onDelete: Restrict)
+  submission ActivitySubmission? @relation(fields: [submissionId], references: [id], onDelete: Restrict)
+  redemption Redemption? @relation(fields: [redemptionId], references: [id], onDelete: Restrict)
   actor Profile @relation(fields: [actorProfileId], references: [id], onDelete: Restrict)
   reviewEvent SubmissionReviewEvent? @relation(fields: [reviewEventId], references: [id], onDelete: Restrict)
   compensates PointsEntry? @relation("PointsCompensation", fields: [compensatesEntryId], references: [id], onDelete: Restrict)
@@ -492,6 +516,107 @@ model PointsEntry {
 
   @@unique([id, storeId, participantMembershipId, submissionId])
   @@index([storeId, participantMembershipId, createdAt, id])
+  @@schema("app")
+}
+
+model Reward {
+  id String @id @db.Uuid
+  storeId String @db.Uuid
+  createdByProfileId String @db.Uuid
+  name String
+  description String @default("")
+  category String @default("")
+  sticker String @default("gift")
+  cost Int
+  note String @default("")
+  instructions String @default("")
+  available Boolean @default(true)
+  stock Int?
+  version Int @default(1)
+  stockRevision Int @default(1)
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  archivedAt DateTime? @db.Timestamptz(6)
+  store Store @relation(fields: [storeId], references: [id], onDelete: Restrict)
+  creator Profile @relation(fields: [createdByProfileId], references: [id], onDelete: Restrict)
+  events RewardEvent[]
+  redemptions Redemption[]
+
+  @@unique([id, storeId])
+  @@index([storeId, archivedAt, createdAt, id])
+  @@schema("app")
+}
+
+model RewardEvent {
+  id String @id @db.Uuid
+  storeId String @db.Uuid
+  rewardId String @db.Uuid
+  actorProfileId String @db.Uuid
+  version Int
+  kind String
+  requestDigest String
+  configuration Json
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  store Store @relation(fields: [storeId], references: [id], onDelete: Restrict)
+  reward Reward @relation(fields: [rewardId], references: [id], onDelete: Restrict)
+  actor Profile @relation(fields: [actorProfileId], references: [id], onDelete: Restrict)
+
+  @@unique([rewardId, version])
+  @@index([storeId, createdAt, id])
+  @@schema("app")
+}
+
+model Redemption {
+  id String @id @db.Uuid
+  storeId String @db.Uuid
+  rewardId String @db.Uuid
+  participantMembershipId String @db.Uuid
+  authorProfileId String @db.Uuid
+  code String @unique
+  status RedemptionStatus @default(WAITING_AGREEMENT)
+  requestDigest String
+  expectedBalance BigInt
+  rewardVersion Int
+  rewardName String
+  rewardDescription String
+  rewardCategory String
+  rewardSticker String
+  rewardCost Int
+  rewardNote String
+  rewardInstructions String
+  balanceBefore BigInt
+  balanceAfter BigInt
+  stockBefore Int?
+  stockAfter Int?
+  stockRevision Int?
+  timezone String
+  localDate String @db.VarChar(10)
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  store Store @relation(fields: [storeId], references: [id], onDelete: Restrict)
+  reward Reward @relation(fields: [rewardId], references: [id], onDelete: Restrict)
+  participant Membership @relation(fields: [participantMembershipId], references: [id], onDelete: Restrict)
+  author Profile @relation(fields: [authorProfileId], references: [id], onDelete: Restrict)
+  events RedemptionEvent[]
+  pointsEntries PointsEntry[]
+  outboxEvents OutboxEvent[]
+
+  @@unique([id, storeId, participantMembershipId])
+  @@index([storeId, participantMembershipId, status, createdAt, id])
+  @@schema("app")
+}
+
+model RedemptionEvent {
+  id String @id @default(uuid()) @db.Uuid
+  storeId String @db.Uuid
+  redemptionId String @db.Uuid
+  actorProfileId String @db.Uuid
+  kind String
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  store Store @relation(fields: [storeId], references: [id], onDelete: Restrict)
+  redemption Redemption @relation(fields: [redemptionId], references: [id], onDelete: Restrict)
+  actor Profile @relation(fields: [actorProfileId], references: [id], onDelete: Restrict)
+
+  @@unique([redemptionId, kind])
+  @@index([storeId, createdAt, id])
   @@schema("app")
 }
 

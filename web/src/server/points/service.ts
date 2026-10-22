@@ -63,7 +63,7 @@ export async function readPoints(identity: Identity, storeId: string, query = ne
 
 export async function listPointsEntries(identity: Identity, storeId: string, query = new URLSearchParams()): Promise<PageResult<PointsEntryView>> {
   const page = pagination(query);
-  const kind = choice(query, 'kind', ['ACTIVITY_CREDIT', 'ACTIVITY_REVERSAL', 'ACTIVITY_RESTORE'] as const);
+  const kind = choice(query, 'kind', ['ACTIVITY_CREDIT', 'ACTIVITY_REVERSAL', 'ACTIVITY_RESTORE', 'REDEMPTION_DEBIT'] as const);
   const from = query.has('from') ? localDate(query.get('from')) : null;
   const to = query.has('to') ? localDate(query.get('to')) : null;
   if (from && to && from > to) invalidField();
@@ -76,13 +76,18 @@ export async function listPointsEntries(identity: Identity, storeId: string, que
     const total = await scope.tx.pointsEntry.count({ where });
     const rows = await scope.tx.pointsEntry.findMany({ where,
       include: { actor: { select: { displayName: true } }, submission: { select: { activityName: true } },
+        redemption: { select: { rewardName: true } },
         participant: { select: { profile: { select: { displayName: true } } } } },
       orderBy: [{ createdAt: 'desc' }, { id: 'desc' }], skip: page.skip, take: page.pageSize });
     return { items: rows.map(row => ({ id: row.id, storeId: row.storeId, participantMembershipId: row.participantMembershipId,
       submissionId: row.submissionId, kind: row.kind as PointsKind, amount: row.amount.toString(), createdAt: row.createdAt.toISOString(),
-      actor: row.actor, participant: row.participant.profile, activityName: row.submission.activityName!,
+      actor: row.actor, participant: row.participant.profile, activityName: row.submission?.activityName ?? null,
+      redemptionId: row.redemptionId, rewardName: row.redemption?.rewardName ?? null,
+      origin: row.redemptionId ? { type: 'REDEMPTION' as const, id: row.redemptionId, name: row.redemption!.rewardName } :
+        { type: 'SUBMISSION' as const, id: row.submissionId!, name: row.submission!.activityName! },
       reviewEventId: row.reviewEventId, compensatesEntryId: row.compensatesEntryId,
-      path: `/lojas/${row.storeId}/registros/${row.submissionId}${row.reviewEventId ? `?evento=${row.reviewEventId}` : ''}` })),
+      path: row.redemptionId ? `/lojas/${row.storeId}/tickets/${row.redemptionId}` :
+        `/lojas/${row.storeId}/registros/${row.submissionId}${row.reviewEventId ? `?evento=${row.reviewEventId}` : ''}` })),
     total, page: page.page, pageSize: page.pageSize };
   });
 }

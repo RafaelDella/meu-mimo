@@ -7,6 +7,7 @@ import pg from 'pg';
 import { artifactRoot, readState, webRoot } from './local-runtime.mjs';
 import { checkActivitiesMigration } from './check-activities-migration.mjs';
 import { checkReviewsMigration } from './check-reviews-migration.mjs';
+import { checkRedemptionsMigration } from './check-redemptions-migration.mjs';
 
 const state = readState();
 const databaseName = `meumimo_t02_migrations_${randomUUID().replaceAll('-', '')}`;
@@ -152,11 +153,12 @@ try {
   await assert.rejects(runtime.query('CREATE TABLE app.forbidden (id int)'), { code: '42501' });
   await checkActivitiesMigration(runtime, { storeId, merchantId: id, participantId, profileId: secondProfile, otherStoreId });
   // O crédito T07 existe antes da evolução de análise e deve sobreviver intacto.
-  for (const name of names.filter(name => name >= '20261022235900')) {
+  for (const name of names.filter(name => name >= '20261022235900' && name < '20261022235940')) {
     cpSync(path.join(source, name), path.join(migrations, name), { recursive: true });
   }
   deploy();
-  assert.equal((await database.query('SELECT count(*)::int AS count FROM app._prisma_migrations WHERE finished_at IS NOT NULL')).rows[0].count, names.length);
+  assert.equal((await database.query('SELECT count(*)::int AS count FROM app._prisma_migrations WHERE finished_at IS NOT NULL')).rows[0].count,
+    names.filter(name => name < '20261022235940').length);
   assert.equal((await database.query("SELECT count(*)::int AS count FROM pg_tables WHERE schemaname='app' AND rowsecurity=true")).rows[0].count, 22);
   for (const role of ['anon', 'authenticated']) {
     await database.query('BEGIN');
@@ -166,6 +168,17 @@ try {
     } finally { await database.query('ROLLBACK'); }
   }
   await checkReviewsMigration(runtime, { storeId, merchantId: id, participantId, profileId: secondProfile, otherStoreId });
+  const priorPoints = await database.query('SELECT to_jsonb(p) AS row FROM app."PointsEntry" p ORDER BY id');
+  const priorSubmissions = await database.query('SELECT to_jsonb(s) AS row FROM app."ActivitySubmission" s ORDER BY id');
+  for (const name of names.filter(name => name >= '20261022235940')) {
+    cpSync(path.join(source, name), path.join(migrations, name), { recursive: true });
+  }
+  deploy();
+  assert.equal((await database.query('SELECT count(*)::int AS count FROM app._prisma_migrations WHERE finished_at IS NOT NULL')).rows[0].count, names.length);
+  const nextPoints = await database.query('SELECT to_jsonb(p)-\'redemptionId\' AS row FROM app."PointsEntry" p ORDER BY id');
+  assert.deepEqual(nextPoints.rows, priorPoints.rows, 'A cadeia financeira anterior deve permanecer intacta.');
+  assert.deepEqual((await database.query('SELECT to_jsonb(s) AS row FROM app."ActivitySubmission" s ORDER BY id')).rows, priorSubmissions.rows);
+  await checkRedemptionsMigration(database, runtime, { storeId, merchantId: id, participantId, profileId: secondProfile, otherStoreId });
   process.stdout.write('Migrações: banco vazio, evolução com dados preservados, RLS e privilégios efetivos comprovados.\n');
 } finally {
   await runtime?.end();

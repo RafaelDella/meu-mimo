@@ -80,6 +80,14 @@ export async function mockApi(page: Page, handler?: Handler) {
       await json(route, result ?? { code: 'resource_not_found', message: 'Conteúdo indisponível.' }, result ? 200 : 404);
     } else if (url.pathname.endsWith('/participacoes')) {
       await json(route, { items: state.people, page: 1, pageSize: 20, total: state.people.length });
+    } else if (url.pathname.endsWith('/tickets/resumo')) {
+      await json(route, { total: 0, outstanding: 0 });
+    } else if (url.pathname.endsWith('/mimos') && method === 'GET') {
+      await json(route, { items: [], page: 1, pageSize: 20, total: 0, categories: [] });
+    } else if (url.pathname.endsWith('/pontos') && method === 'GET') {
+      const storeId = url.pathname.split('/')[3];
+      await json(route, { storeId, participantMembershipId: state.stores.find(item => item.id === storeId)?.membershipId,
+        available: '0', pending: '0', today: { localDate: '2026-10-22', timezone: 'America/Sao_Paulo', submitted: 0, approved: 0, credited: '0', adjusted: '0' } });
     } else if (url.pathname.endsWith('/convites')) {
       await json(route, { items: [], page: 1, pageSize: 20, total: 0 });
     } else if (/^\/api\/convites\/[^/]+$/.test(url.pathname)) {
