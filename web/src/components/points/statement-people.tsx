@@ -23,7 +23,7 @@ export function StatementPeople({ storeId, value, onChange, onUnavailable }: {
   if (denied) return null;
   return <fieldset><legend>Participação no extrato</legend>
     <Input label="Buscar pessoa no extrato" type="search" value={draft} maxLength={80} onChange={event => setDraft(event.target.value)} />
-    <Button variant="secondary" onClick={() => { setQ(draft.trim()); setPage(1); }}>Buscar pessoas no extrato</Button>
+    <Button variant="secondary" aria-label="Buscar pessoas no extrato" onClick={() => { setQ(draft.trim()); setPage(1); }}>Buscar pessoas</Button>
     {loading && <p role="status">Buscando pessoas…</p>}{error ? <div role="alert"><p>{storeError(error)}</p>
       <Button variant="secondary" onClick={reload}>Tentar buscar pessoas novamente</Button></div> : null}
     <label className="stores-field">Pessoa do extrato<select className="ui-input" value={value} onChange={event => {

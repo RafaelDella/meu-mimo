@@ -1,8 +1,43 @@
-.area { display: grid; gap: 1rem; min-width: 0; }
+.area { container: points-statement / inline-size; display: grid; gap: 1rem; min-width: 0; }
 .area :where(form, label, section, ol, li) { min-width: 0; }
 .area :where(h2, h3, h4, p, a, label) { overflow-wrap: anywhere; }
 .area input, .area select { width: 100%; min-height: 48px; font: inherit; }
 .area fieldset { margin: 0; padding: 1rem 12px; border: 1px solid var(--border-control); border-radius: 1rem; }
-.movements { padding-inline-start: 1.25rem; }
-.movements li { padding-block: .875rem; border-bottom: 1px solid var(--border); }
+.area > h2 { margin-block: 0; }
+.context { margin: 0; color: var(--text-muted); font-size: .875rem; }
+.layout, .main, .support { display: grid; gap: 1rem; min-width: 0; align-items: start; }
+.filters { container: statement-filters / inline-size; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr)); align-items: end; gap: .875rem; padding: .75rem; background: var(--surface-soft); border: 1px solid var(--border); border-radius: 1rem; }
+.filters > * { min-width: 0; }
+.filters :global(.ui-field-error:empty) { display: none; }
+.filters > button { justify-self: start; }
+.filters > fieldset { grid-column: 1 / -1; display: grid; gap: .875rem; align-items: end; }
+.filters legend { font-weight: 600; }
+.periodError { grid-column: 1 / -1; margin: 0; color: var(--error-text); }
+.day { padding: 1rem; }
+.day > h3 { margin-block: 0 .5rem; font: 600 1rem/1.5 var(--font-body); color: var(--text-muted); }
+.movements { list-style: none; margin: 0; padding: 0; }
+.movements li { padding-block: 1rem; border-bottom: 1px dashed var(--border); }
+.movements li:last-child { padding-bottom: 0; border-bottom: 0; }
+.movements h4 { margin: 0 0 .5rem; font: 600 1rem/1.5 var(--font-body); }
+.movements p { margin-block: .375rem; font-size: .875rem; }
+.movements time { color: var(--text-muted); }
+.credit, .debit { font-variant-numeric: tabular-nums; }
+.credit { color: var(--success-text); }
+.debit { color: var(--error-text); }
+.support > *, .support :where(section, p, div) { min-width: 0; }
+.support :global(.stores-card) { padding: 1rem; }
+.support h3 { font: 600 1rem/1.5 var(--font-body); margin-top: 0; }
+.support p { margin-block: 0 1rem; }
+.support p:last-child { margin-bottom: 0; }
+.balanceHint { color: var(--text-muted); font-size: .875rem; }
+.guide { background: var(--surface-paper); border-style: dashed; }
+@container points-statement (min-width: 50rem) { .layout { grid-template-columns: minmax(0, 1fr) 17rem; gap: 1.5rem; } }
+@container statement-filters (min-width: 32rem) {
+  .filters > fieldset { grid-template-columns: minmax(0, 1fr) auto; }
+  .filters > fieldset :global(.stores-field) { grid-column: 1 / -1; }
+}
+@container statement-filters (min-width: 38rem) {
+  .filters > fieldset { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); }
+  .filters > fieldset :global(.stores-field) { grid-column: auto; }
+}
 .srOnly { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
