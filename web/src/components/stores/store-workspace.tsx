@@ -23,6 +23,7 @@ import { StoreDashboard } from '@/components/dashboards/store-dashboard';
 import { PersonDashboard } from '@/components/dashboards/person-dashboard';
 import { FeedArea } from '@/components/feed/feed-area';
 import styles from '@/components/notifications/relationship.module.css';
+import { MimoMasthead } from '@/components/ui/mimo-page';
 
 function Workspace({ storeId, section, accountKey, activityRoute, rewardRoute, membershipId }: { storeId: string; section: StoreSection; accountKey: string; activityRoute?: ActivityRoute; rewardRoute?: RewardRoute; membershipId?: string }) {
   const frame = useRef<HTMLDivElement>(null);
@@ -60,7 +61,7 @@ function Workspace({ storeId, section, accountKey, activityRoute, rewardRoute, m
 }
 
 export function StoreWorkspace({ storeId, section, activityRoute, rewardRoute, membershipId }: { storeId: string; section: StoreSection; activityRoute?: ActivityRoute; rewardRoute?: RewardRoute; membershipId?: string }) {
-  return <main className="stores-shell"><PrivateArea>{session =>
+  return <main className="stores-shell"><MimoMasthead /><PrivateArea>{session =>
     <RewardAccess key={`${session.userId}:${session.sessionId}:${storeId}`}><RelationshipRefresh accountKey={`${session.userId}:${session.sessionId}`} storeId={storeId}><Workspace storeId={storeId} section={section}
       accountKey={`${session.userId}:${session.sessionId}`} activityRoute={activityRoute} rewardRoute={rewardRoute} membershipId={membershipId} /></RelationshipRefresh></RewardAccess>
   }</PrivateArea></main>;

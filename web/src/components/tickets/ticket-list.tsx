@@ -13,6 +13,7 @@ import { useRewardResource } from '@/components/rewards/access';
 import { apiBase, ticketPath } from '@/components/rewards/transport';
 import { TicketPeople } from './ticket-people';
 import { TicketCard, ticketStatuses } from './ticket-display';
+import { MimoEmpty } from '@/components/ui/mimo-page';
 
 export function TicketList({ store, query: initialQuery }: { store: StoreView; query: string }) {
   const router = useRouter();
@@ -45,7 +46,7 @@ export function TicketList({ store, query: initialQuery }: { store: StoreView; q
         <option value="">Todos os estados</option>{Object.entries(ticketStatuses).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
       {invalid && <p role="alert">A data final precisa ser igual ou posterior à inicial.</p>}<Button type="submit">Filtrar tickets</Button></form>
     {loading && <p role="status">Consultando tickets…</p>}{error ? <div role="alert"><p>{storeError(error)}</p><Button variant="secondary" onClick={reload}>Consultar tickets novamente</Button></div> : null}
-    {data && <>{!data.items.length && <p>Nenhum ticket encontrado com estes filtros.</p>}<div className="stores-grid">{data.items.map(ticket => <TicketCard key={ticket.id} ticket={ticket} merchant={merchant} returnTo={returnTo} />)}</div>
+    {data && <>{!data.items.length && <MimoEmpty kind="ticket"><p>Nenhum ticket encontrado com estes filtros.</p></MimoEmpty>}<div className="stores-grid">{data.items.map(ticket => <TicketCard key={ticket.id} ticket={ticket} merchant={merchant} returnTo={returnTo} />)}</div>
       <Pagination page={data.page} pageSize={data.pageSize} total={data.total} onPage={page => navigate(page, { from: applied.get('from') ?? '', to: applied.get('to') ?? '', status: applied.get('status') ?? '', membershipId: applied.get('membershipId') ?? '' })} /></>}
   </section>;
 }

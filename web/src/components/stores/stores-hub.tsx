@@ -9,6 +9,8 @@ import { Input } from '@/components/ui/input';
 import { PrivateArea } from './private-area';
 import { Pagination } from './store-controls';
 import { storeError, useResource } from './store-api';
+import { MimoEmpty, MimoIntro, MimoMasthead } from '@/components/ui/mimo-page';
+import { MimoIcon } from '@/components/ui/mimo-icon';
 
 function StoreList() {
   const [role, setRole] = useState<StoreRole>('PARTICIPANT');
@@ -37,9 +39,9 @@ function StoreList() {
       {loading && <p role="status">Buscando suas lojas…</p>}
       {error ? <div role="alert"><p>{storeError(error)}</p><Button variant="secondary" onClick={reload}>Tentar novamente</Button></div> : null}
       {data && <>
-        {!data.items.length && <div className="stores-card"><h2>Nenhuma loja por aqui ainda</h2><p>{query ? 'Tente outro nome ou altere os filtros.' : role === 'MERCHANT' ? 'Crie sua primeira lojinha para começar.' : 'Abra o link de convite que você recebeu. Você também pode criar sua lojinha.'}</p></div>}
+        {!data.items.length && <MimoEmpty kind="envelope"><h2>Nenhuma loja por aqui ainda</h2><p>{query ? 'Tente outro nome ou altere os filtros.' : role === 'MERCHANT' ? 'Crie sua primeira lojinha para começar.' : 'Abra o link de convite que você recebeu. Você também pode criar sua lojinha.'}</p></MimoEmpty>}
         <div className="stores-grid">{data.items.map(store => <article className="stores-card" key={store.id}>
-          <span className="stores-mark" aria-hidden="true">♡</span><h2>{store.name || 'Sua lojinha'}</h2>
+          <span className="stores-mark" aria-hidden="true"><MimoIcon name="bow" /></span><h2>{store.name || 'Sua lojinha'}</h2>
           <p>{store.presentation || 'Um cantinho de pequenos gestos.'}</p>
           <p className="stores-state">{store.membershipClosedAt ? 'Participação encerrada' : store.state === 'CLOSED' ? 'Loja encerrada' : store.state === 'PAUSED' ? 'Loja pausada' : role === 'MERCHANT' ? 'Gerenciando' : 'Participando'}</p>
           {store.platformPausedAt && <p className="stores-state">Novas ações pausadas pela plataforma</p>}
@@ -52,8 +54,7 @@ function StoreList() {
 }
 
 export function StoresHub() {
-  return <main className="stores-shell"><header className="stores-page-header">
-    <Link className="stores-link" href="/">meu mimo<span className="brand-dot">.</span></Link>
-    <Link className="stores-link" href="/conta">Minha conta</Link><h1>Minhas lojas</h1>
+  return <main className="stores-shell"><MimoMasthead /><header className="stores-page-header">
+    <Link className="stores-link" href="/conta">Minha conta</Link><MimoIntro kind="gift"><h1>Minhas lojas</h1><p>Um cantinho para cada carinho.</p></MimoIntro>
   </header><PrivateArea>{session => <StoreList key={session.sessionId} />}</PrivateArea></main>;
 }

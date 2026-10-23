@@ -7,12 +7,15 @@ import { useTicketSummary } from '@/components/rewards/reward-summary';
 import { Button } from '@/components/ui/button';
 import { NotificationBell } from '@/components/notifications/notification-bell';
 import { NoteHeart } from '@/components/notes/note-heart';
+import { MimoIcon } from '@/components/ui/mimo-icon';
+import type { MimoIconName } from '@/components/ui/mimo-icon';
 
 export type StoreSection = 'home' | 'activities' | 'statement' | 'rewards' | 'tickets' | 'people' | 'person' | 'feed' | 'invitations' | 'settings';
 export function StoreNavigation({ store, section }: { store: StoreView; section: StoreSection }) {
   const countId = useId();
   const summary = useTicketSummary();
   const base = `/lojas/${store.id}`;
+  const icons: Partial<Record<StoreSection, MimoIconName>> = { home: 'home', activities: 'activities', rewards: 'gift', tickets: 'gift', people: 'people' };
   const links: { section: StoreSection; href: string; label: string }[] = store.role === 'MERCHANT' ? [
     { section: 'home', href: base, label: 'Resumo' },
     { section: 'activities', href: `${base}/atividades`, label: 'Atividades' },
@@ -25,7 +28,7 @@ export function StoreNavigation({ store, section }: { store: StoreView; section:
   ];
   return <header className="store-context">
     <div className="stores-account-links"><Link href="/lojas">Minhas lojas</Link><Link href="/conta">Minha conta</Link><NotificationBell /></div>
-    <div className="store-identity"><span className="stores-mark" aria-hidden="true">♡</span>
+    <div className="store-identity"><span className="stores-mark" aria-hidden="true"><MimoIcon name="bow" /></span>
       <div><p>{store.role === 'MERCHANT' ? 'Gerenciando' : 'Participando'}</p><h1 tabIndex={-1}>{store.name || 'Sua lojinha'}</h1></div></div>
     <Link className="stores-link" href="/lojas">Trocar loja</Link>
     {store.role === 'PARTICIPANT' && <Link className="stores-link" href={`${base}/pessoas`} aria-current={section === 'people' ? 'page' : undefined}>Minha participação</Link>}
@@ -34,7 +37,7 @@ export function StoreNavigation({ store, section }: { store: StoreView; section:
         aria-describedby={link.section === 'tickets' && summary?.data ? countId : undefined}
         aria-current={section === link.section || (section === 'person' && link.section === 'people') || (store.role === 'MERCHANT' && section === 'tickets' && link.section === 'rewards') ||
           (store.role === 'PARTICIPANT' && ((section === 'statement' && link.section === 'tickets') || (section === 'rewards' && link.section === 'home'))) ? 'page' : undefined}>
-        {link.label}{link.section === 'tickets' && summary?.data && <span aria-hidden="true"> · {summary.data.outstanding}</span>}</Link>)}
+        <MimoIcon name={icons[link.section] ?? 'heart'} /><span>{link.label}{link.section === 'tickets' && summary?.data && <span aria-hidden="true"> · {summary.data.outstanding}</span>}</span></Link>)}
     </nav>
     <nav className="stores-actions" aria-label="Outros acessos da loja"><Link className="stores-link" href={`${base}/mural`} aria-current={section === 'feed' ? 'page' : undefined}>Mural</Link>
       <Link className="stores-link" href={`${base}/extrato`} aria-current={section === 'statement' ? 'page' : undefined}>Extrato</Link>

@@ -4,7 +4,14 @@ import { store } from '../stores/helpers';
 
 test('histórico filtra estado e período inclusivo e contador ignora filtros', async ({ page }) => {
   const { state } = await mockRewards(page); state.tickets = [ticket(), ticket({ id: 'other-ticket', code: 'MIMO-5678' })];
-  await page.goto(ticketsPath); await page.getByLabel('Tickets desde a data', { exact: true }).fill('2026-10-01');
+  await page.goto(ticketsPath);
+  await expect(page.getByRole('heading', { name: 'Meus mimos', exact: true })).toBeVisible();
+  await page.screenshot({ path: test.info().outputPath('meus-mimos.png'), fullPage: true });
+  const viewport = page.viewportSize()!;
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.screenshot({ path: test.info().outputPath('meus-mimos-desktop.png'), fullPage: true });
+  await page.setViewportSize(viewport);
+  await page.getByLabel('Tickets desde a data', { exact: true }).fill('2026-10-01');
   await page.getByLabel('Tickets até a data', { exact: true }).fill('2026-10-22'); await page.getByRole('combobox', { name: 'Estado do ticket', exact: true }).selectOption('FULFILLED');
   await page.getByRole('button', { name: 'Filtrar tickets', exact: true }).click();
   await expect(page).toHaveURL(/from=2026-10-01.*to=2026-10-22.*status=FULFILLED.*page=1/);

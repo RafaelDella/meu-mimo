@@ -21,6 +21,7 @@ import { TicketHistory } from './ticket-history';
 import { TicketProjection } from './ticket-projection';
 import { TicketAlbum } from '@/components/albums/ticket-album';
 import styles from '@/components/rewards/rewards.module.css';
+import { MimoIcon } from '@/components/ui/mimo-icon';
 
 export function TicketDetail({ store, accountKey, ticketId, returnTo }: { store: StoreView; accountKey: string; ticketId: string; returnTo?: string }) {
   const { data: ticket, error, loading, denied, reload } = useRewardResource<TicketView>(`${apiBase(store.id)}/tickets/${encodeURIComponent(ticketId)}`);
@@ -47,7 +48,7 @@ function TicketContent({ store, accountKey, initial, returnTo }: { store: StoreV
   }), [unavailable]);
   const reward = ticket.snapshot;
   return <><Link className="stores-link" href={returnTo ?? ticketPath(store.id)}>{returnTo?.split('?')[0].endsWith('/mural') ? 'Voltar ao mural com os filtros' : returnTo?.split('?')[0].endsWith('/extrato') ? 'Voltar ao extrato com os filtros' : 'Voltar aos tickets com os filtros'}</Link>
-    <article className={styles.ticket} aria-label="Seu vale mimo"><p>Vale mimo · {ticket.code}</p><RewardIllustration sticker={reward.sticker} />
+    <article className={styles.ticket} aria-label="Seu vale mimo"><div className={styles.ticketHeading}><p>Vale mimo · {ticket.code}</p><MimoIcon name="bow" /></div><RewardIllustration sticker={reward.sticker} />
       <h2 ref={title} tabIndex={-1}>{reward.name}</h2><p>{ticketStatuses[ticket.status]}</p><p>{points(reward.cost)} pontos · Uma unidade</p>
       {store.role === 'MERCHANT' && <p>Participante: {ticket.participant.displayName || 'Pessoa participante'}</p>}
       {reward.category && <p>{reward.category}</p>}<p className={styles.text}>{reward.description}</p>

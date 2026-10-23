@@ -13,6 +13,7 @@ import { storeError } from '@/components/stores/store-api';
 import { useRewardResource } from './access';
 import { RewardCard } from './reward-display';
 import { apiBase, rewardPath } from './transport';
+import { MimoEmpty, MimoIntro } from '@/components/ui/mimo-page';
 
 export function RewardCatalog({ store, query: initialQuery = '', compact = false }: { store: StoreView; query?: string; compact?: boolean }) {
   const router = useRouter();
@@ -36,7 +37,7 @@ export function RewardCatalog({ store, query: initialQuery = '', compact = false
     setQueryError(''); navigate(1);
   }
   if (denied) return null;
-  return <section><h2 tabIndex={-1} ref={title}>{compact ? 'Mimos na sua vitrine' : merchant ? 'Catálogo de mimos' : 'Mimos para você'}</h2>
+  return <section><MimoIntro kind="gift"><h2 tabIndex={-1} ref={title}>{compact ? 'Mimos na sua vitrine' : merchant ? 'Catálogo de mimos' : 'Mimos para você'}</h2><p>Escolhidos com cuidado, feitos para dar sorrisos.</p></MimoIntro>
     {merchant && store.state !== 'CLOSED' && !compact && <Link className="primary-link" href={`${rewardPath(store.id)}/novo`}>Novo mimo</Link>}
     {!compact && <form className="stores-filters" onSubmit={submit}><Input label="Buscar mimo" type="search" value={filters.q} hint="Até 80 caracteres." error={queryError}
       onChange={event => { setFilters(current => ({ ...current, q: event.target.value })); setQueryError(''); }} />
@@ -47,7 +48,7 @@ export function RewardCatalog({ store, query: initialQuery = '', compact = false
         <option value="ACTIVE">Não arquivados</option><option value="ARCHIVED">Arquivados</option><option value="ALL">Todos</option></select></label>}
       <Button type="submit">Filtrar mimos</Button></form>}
     {loading && <p role="status">Consultando mimos…</p>}{error ? <div role="alert"><p>{storeError(error)}</p><Button variant="secondary" onClick={reload}>Consultar catálogo novamente</Button></div> : null}
-    {data && <>{!data.items.length && <p>Nenhum mimo encontrado. {merchant ? 'Prepare um mimo para a sua loja.' : 'Os mimos preparados pela loja aparecerão aqui.'}</p>}
+    {data && <>{!data.items.length && <MimoEmpty kind="gift"><p>Nenhum mimo encontrado. {merchant ? 'Prepare um mimo para a sua loja.' : 'Os mimos preparados pela loja aparecerão aqui.'}</p></MimoEmpty>}
       <div className="stores-grid">{data.items.map(reward => <RewardCard key={reward.id} reward={reward} merchant={merchant} />)}</div>
       {!compact && <Pagination page={data.page} pageSize={data.pageSize} total={data.total} onPage={page => navigate(page, { q: query.get('q') ?? '', category: query.get('category') ?? '', state: query.get('state') ?? 'ACTIVE' })} />}</>}
     {compact && <Link className="primary-link" href={rewardPath(store.id)}>Ver todos os mimos</Link>}

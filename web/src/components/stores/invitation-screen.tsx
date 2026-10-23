@@ -10,6 +10,8 @@ import { Input } from '@/components/ui/input';
 import { Feedback } from './store-controls';
 import { StoreRequestError, storeError, storeRequest, useResource, useStoreAction } from './store-api';
 import { useCurrentSession } from './use-current-session';
+import { MimoIntro, MimoMasthead } from '@/components/ui/mimo-page';
+import { MimoIcon } from '@/components/ui/mimo-icon';
 
 const explanations: Record<InvitationPreview['status'], string> = {
   PENDING: 'Aceite para entrar nesta lojinha e celebrar suas conquistas.',
@@ -68,12 +70,12 @@ export function InvitationScreen({ token }: { token: string }) {
   const session = useCurrentSession();
   const destination = `/convites/${encodeURIComponent(token)}`;
   const guest = session.error instanceof StoreRequestError && session.error.status === 401;
-  return <main className="stores-shell stores-invitation"><Link className="stores-link" href="/">meu mimo<span className="brand-dot">.</span></Link>
-    <h1>Um convite para você</h1>
+  return <main className="stores-shell stores-invitation"><MimoMasthead />
+    <MimoIntro kind="envelope"><h1>Um convite para você</h1><p>Tem uma lojinha esperando pelo seu carinho.</p></MimoIntro>
     {preview.loading && <p role="status">Abrindo o convite…</p>}
     {preview.error ? <section className="stores-card"><h2>Convite indisponível</h2><p role="alert">{storeError(preview.error)}</p>
       <Button variant="secondary" onClick={preview.reload}>Consultar convite novamente</Button></section> : null}
-    {preview.data && <section className="stores-card"><span className="stores-mark" aria-hidden="true">♡</span><h2>{preview.data.store.name || 'Uma lojinha de mimos'}</h2>
+    {preview.data && <section className="stores-card"><span className="stores-mark" aria-hidden="true"><MimoIcon name="bow" /></span><h2>{preview.data.store.name || 'Uma lojinha de mimos'}</h2>
       <p>{preview.data.inviter.displayName || 'Uma pessoa especial'} preparou esta lojinha.</p><p>{preview.data.store.presentation}</p>
       <p className="stores-banner">{explanations[preview.data.status]}</p>
       <p>Depois do aceite, suas conquistas, saldo e mimos ficam entre você e quem gerencia esta loja. Outras pessoas participantes não acessam os seus dados.</p>

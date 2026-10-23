@@ -87,6 +87,12 @@ test('mantém conteúdo e ação utilizáveis com texto ampliado a 200%', async 
   const enlargedSize = await description.evaluate(element =>
     Number.parseFloat(getComputedStyle(element).fontSize));
   expect(enlargedSize).toBeGreaterThanOrEqual(originalSize * 1.99);
+  await page.locator('.ui-points').screenshot({ path: test.info().outputPath('potinho-text-200.png') });
+  const labelLines = await page.locator('.ui-points-available dt').evaluate(element => {
+    const range = document.createRange(); range.selectNodeContents(element);
+    return range.getClientRects().length;
+  });
+  expect(labelLines, 'O rótulo Disponíveis deve continuar legível sem partir a palavra.').toBe(1);
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
   const demonstration = page.getByRole('link', { name: 'Conhecer a demonstração' });
   await demonstration.scrollIntoViewIfNeeded();

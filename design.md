@@ -109,6 +109,30 @@ Como ponto de partida, usar uma composição de stickers por tela principal e pe
 - Manter tickets com divisórias tracejadas e recortes semicirculares, recadinhos nos mimos e celebrações curtas, respeitando movimento reduzido.
 - A moldura de telefone e a composição publicitária no desktop continuam úteis para demonstração. A aplicação final adapta o conteúdo ao espaço disponível para permitir gestão e leitura confortáveis.
 
+Em 23/10/2026, o idealizador reforçou a preferência pela composição dentro do
+celular dessa referência, pedindo a maior proximidade possível de cores,
+stickers e imagens fofas e delicadas. A aplicação conserva a paleta original,
+reutiliza o gatinho com óculos e laço no potinho compartilhado e os quatro
+desenhos de recompensas. A marca em minúsculas, o laço preenchido, os ícones de
+traço arredondado, os bilhetes com fita e as divisórias de ticket passam a unir
+a apresentação, a prévia e as telas reais. O gatinho ocupa uma coluna própria,
+sem cobrir números, incluindo saldos negativos ou extensos. Com pouco espaço
+ou texto ampliado, a imagem passa para uma linha própria acima dos valores.
+A moldura é apenas
+uma composição de apresentação e não impõe altura ou rolagem interna à aplicação.
+O plano e as evidências estão no [registro da adaptação](docs/superpowers/plans/2026-10-23-identidade-visual-referencia.md).
+
+Na continuação, o idealizador confirmou a aplicação dessa identidade em todas
+as telas, incluindo login, cadastro, atividades e Meus mimos, e destacou o
+lacinho rosa como logo. O cabeçalho compartilhado e o ícone do app usam esse
+laço. Conta e recuperação recebem colagem do gatinho e cartão de papelaria;
+atividades usam caderninho com coração; tickets usam vale com laço. Convites,
+lojas, novidades e estados vazios reutilizam envelopes e presentes locais.
+Conversas, mídia, álbuns e administração adotam as mesmas superfícies, contornos,
+tipografia e foco, com decoração discreta nas áreas operacionais. Ilustrações
+reservam espaço no layout e não carregam informação indispensável. O registro
+da extensão está no [plano de todas as telas](docs/superpowers/plans/2026-10-23-identidade-todas-telas.md).
+
 ## 4. Regras de uso e validação
 
 - Nomear as cores por função na implementação: `background`, `surface`, `brand`, `action`, `text`, `text-muted` e `border`.

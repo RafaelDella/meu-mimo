@@ -1,10 +1,10 @@
-.panel { min-width: 0; padding: clamp(16px, 4vw, 28px); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow-wrap: anywhere; }
+.panel { min-width: 0; padding: clamp(16px, 4vw, 28px); background: var(--surface-paper); border: 1px solid var(--border); border-radius: var(--radius); overflow-wrap: anywhere; box-shadow: var(--shadow-soft); }
 .panel :where(h2, h3):focus { outline: 3px solid var(--focus); outline-offset: 4px; }
 .actions { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem; margin-block: 1rem; }
 .items { list-style: none; padding: 0; display: grid; gap: 1rem; }
-.item { min-width: 0; padding: 1rem; border: 1px solid var(--border-control); border-radius: 1rem; }
+.item { min-width: 0; padding: 1rem; border: 1px solid var(--border-control); border-radius: 1rem; background: var(--surface); }
 .field { display: grid; gap: .5rem; margin-block: 1rem; }
-.field textarea { width: 100%; min-height: 7rem; resize: vertical; }
+.field textarea { width: 100%; min-height: 7rem; resize: vertical; font: inherit; padding: .75rem; border: 1px solid var(--border-control); border-radius: .75rem; background: var(--surface); color: var(--text); }
 .choice { display: flex; align-items: center; gap: .5rem; min-height: 48px; }
 .choice input { width: 24px; height: 24px; flex-shrink: 0; }
 .content :where(img, video) { display: block; width: 100%; max-width: 48rem; max-height: 65svh; height: auto; object-fit: contain; }

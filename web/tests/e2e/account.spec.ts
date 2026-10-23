@@ -41,6 +41,9 @@ test('conta oferece rótulos, teclado e alvos de toque em celular', async ({ pag
   await noOverflow(page);
   expect(errors).toEqual([]);
   await page.screenshot({ path: test.info().outputPath('account.png'), fullPage: true });
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await noOverflow(page);
+  await page.screenshot({ path: test.info().outputPath('account-desktop.png'), fullPage: true });
 });
 
 test('conta mantém orientação e erro acessíveis nos três formulários', async ({ page }) => {
@@ -48,8 +51,10 @@ test('conta mantém orientação e erro acessíveis nos três formulários', asy
   await page.getByRole('button', { name: 'Criar conta', exact: true }).first().click();
   await expect(page.getByLabel('Senha', { exact: true })).toHaveAttribute('minlength', '8');
   await expect(page.getByText('Use pelo menos oito caracteres.')).toBeVisible();
+  await page.screenshot({ path: test.info().outputPath('account-signup.png'), fullPage: true });
   await page.getByRole('button', { name: 'Recuperar senha', exact: true }).click();
   await expect(page.getByLabel('Senha', { exact: true })).toHaveCount(0);
+  await page.screenshot({ path: test.info().outputPath('account-recovery.png'), fullPage: true });
   await page.route('**/api/auth/recovery', route => route.fulfill({
     status: 429, contentType: 'application/json',
     body: JSON.stringify({ code: 'auth_rate_limited', message: 'Aguarde um pouco antes de tentar novamente.' }),

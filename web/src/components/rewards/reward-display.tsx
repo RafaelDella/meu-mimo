@@ -22,7 +22,7 @@ export function RewardAvailabilityText({ value, storeId }: { value: RewardAvaila
     {value.reason === 'INSUFFICIENT_POINTS' && <Link className="stores-link" href={`/lojas/${storeId}/atividades`}>Ver atividades para juntar pontos</Link>}</div>;
 }
 export function RewardCard({ reward, merchant, preview = false }: { reward: RewardFields & Partial<RewardView>; merchant: boolean; preview?: boolean }) {
-  return <article className={styles.card}><RewardIllustration sticker={reward.sticker} />
+  return <article className={styles.card}><div className={`${styles.art} ${reward.sticker === 'gift' || reward.sticker === 'envelope' ? styles.cream : ''}`}><RewardIllustration sticker={reward.sticker} /></div>
     <h3>{reward.name || 'Nome do mimo'}</h3>{reward.category && <p>{reward.category}</p>}<RewardRule reward={reward} />
     {reward.archivedAt && <p>Arquivado</p>}{reward.note && <p className={styles.text}>{reward.note}</p>}
     {!merchant && <RewardAvailabilityText value={reward.availability ?? null} storeId={reward.storeId ?? ''} />}

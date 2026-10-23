@@ -12,6 +12,7 @@ import type { AccountSession } from './account-api';
 import { ProfilePanel } from './profile-panel';
 import { NotificationSettingsSection } from '@/components/notifications/notification-preferences';
 import { AdminEntry } from '@/components/admin/admin-entry';
+import { MimoIcon } from '@/components/ui/mimo-icon';
 
 type Mode = 'login' | 'signup' | 'recovery';
 
@@ -119,6 +120,8 @@ export function AccountPanel() {
 
   return (
     <section className="account-card" aria-labelledby="account-title" aria-busy={loading || busy}>
+      <MimoIcon name="bow" className="account-bow" />
+      <p className="mimo-eyebrow">{session ? 'Tudo no seu cantinho' : mode === 'signup' ? 'O primeiro de muitos carinhos' : mode === 'recovery' ? 'Vamos cuidar do seu acesso' : 'Que bom ter você por aqui'}</p>
       <h2 id="account-title">{session ? 'Sua conta' : 'Vamos começar?'}</h2>
       <p className="account-feedback" role="status" aria-live="polite" aria-atomic="true">{loading || checking ? 'Conferindo sua conta…' : message}</p>
       <p className="account-error" id="account-error" role="alert" aria-atomic="true">{error}</p>

@@ -9,6 +9,7 @@
 .stores-shell :where(select, textarea):focus-visible { outline: 3px solid var(--focus); outline-offset: 4px; }
 .stores-page-header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .5rem 1rem; margin-bottom: 1.5rem; }
 .stores-page-header h1 { flex-basis: 100%; }
+.stores-page-header > .mimo-intro { flex-basis: 100%; margin-block: 0; }
 .stores-link, .stores-account-links a, .store-local-nav a { display: inline-flex; align-items: center; min-width: 44px; min-height: 48px; padding: .625rem 8px; color: var(--action); text-underline-offset: 4px; }
 .stores-intro { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; margin-block: 1rem 1.5rem; }
 .stores-intro p { flex: 1 1 20rem; margin: 0; }
@@ -22,10 +23,11 @@
 .stores-form { display: grid; gap: 1rem; max-width: 42rem; margin-block: 1.5rem; }
 .stores-form > .ui-button { justify-self: start; }
 .stores-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr)); gap: 1rem; margin-block: 1rem; }
-.stores-card { min-width: 0; padding: clamp(16px, 4vw, 28px); border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); }
+.stores-card { min-width: 0; padding: clamp(16px, 4vw, 28px); border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow-soft); }
 .stores-card h2, .stores-card h3 { overflow-wrap: anywhere; }
 .stores-card p:last-child { margin-bottom: 0; }
 .stores-mark { display: grid; place-items: center; flex: 0 0 auto; width: 3.5rem; height: 3.5rem; margin-bottom: 1rem; border-radius: 50%; background: var(--surface-soft); color: var(--action); font: 2.5rem/1 var(--font-heading); }
+.stores-mark svg { width: 32px; height: 32px; fill: var(--brand); transform: rotate(-9deg); }
 .stores-state { color: var(--info-text); font-weight: 600; }
 .stores-muted { color: var(--text-muted); }
 .stores-pagination { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: .75rem; margin-block: 1.5rem; }
@@ -34,7 +36,9 @@
 .stores-error { color: var(--error-text); }
 .stores-feedback:empty, .stores-error:empty { margin: 0; }
 .stores-banner { padding: 1rem 12px; border: 1px solid var(--border-control); border-radius: 1rem; background: var(--pending-bg); color: var(--pending-text); }
-.store-context { margin-bottom: 1.5rem; }
+.store-context { margin-bottom: 1.5rem; padding: 1rem 16px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface-paper); box-shadow: var(--shadow-soft); }
+.store-context > .mimo-brand { margin-bottom: .75rem; }
+.store-context .stores-mark svg { width: 32px; height: 32px; fill: var(--brand); transform: rotate(-9deg); }
 .stores-account-links { display: flex; justify-content: space-between; flex-wrap: wrap; gap: .5rem; }
 .store-identity { display: flex; align-items: center; gap: .875rem; min-width: 0; margin-block: 1rem 0; }
 .store-identity > div { min-width: 0; }
@@ -42,7 +46,8 @@
 .store-identity h1 { margin-block: .25rem; font-size: clamp(1.75rem, 5vw, 2.75rem); }
 .store-identity p { margin: 0; font-weight: 600; color: var(--text-muted); }
 .store-local-nav { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1rem; border-bottom: 1px solid var(--border); padding-bottom: .75rem; }
-.store-local-nav a { border-radius: .75rem; padding-inline: 12px; }
+.store-local-nav a { flex: 1 1 auto; min-width: min-content; flex-direction: column; justify-content: center; gap: .375rem; border-radius: 1rem; padding: .75rem 6px; text-align: center; text-decoration: none; font-size: .875rem; overflow-wrap: normal; }
+.store-local-nav a svg { flex-shrink: 0; }
 .store-local-nav a[aria-current="page"] { background: var(--surface-soft); color: var(--action-pressed); font-weight: 600; text-decoration-thickness: 2px; }
 .stores-details { display: grid; gap: .75rem; margin-block: 1.5rem; }
 .stores-details div { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .25rem 1rem; max-width: 40rem; border-bottom: 1px solid var(--border); padding-block: .5rem; }

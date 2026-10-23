@@ -1,0 +1,20 @@
+.mimo-masthead { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .75rem 1.5rem; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border); }
+.mimo-masthead-note { display: inline-flex; align-items: center; gap: .5rem; color: var(--text-muted); font-size: .75rem; }
+.mimo-masthead-note svg { width: 16px; height: 16px; color: var(--action); flex-shrink: 0; }
+.mimo-sticker { display: block; width: 100%; height: auto; object-fit: contain; pointer-events: none; filter: drop-shadow(0 4px 2px rgb(178 58 104 / 7%)); }
+.mimo-intro { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; min-width: 0; margin-block: 1rem 1.5rem; padding: 1.25rem 16px; border: 1px solid var(--border); border-radius: var(--radius); background: linear-gradient(125deg, var(--surface-paper), var(--surface-soft)); }
+.mimo-intro-cream { background: linear-gradient(125deg, var(--surface-paper), var(--cream)); }
+.mimo-intro-copy { min-width: 0; flex: 1 1 10rem; overflow-wrap: anywhere; }
+.mimo-intro-copy > :last-child { margin-bottom: 0; }
+.mimo-intro-copy h1, .mimo-intro-copy h2 { margin-top: 0; }
+.mimo-intro-copy > p { color: var(--text-muted); font-size: .875rem; }
+.mimo-intro-art { position: relative; width: clamp(80px, 17vw, 132px); max-width: 100%; flex: 0 0 auto; align-self: center; }
+.mimo-intro-art > svg { position: absolute; top: 3%; right: 0; width: 20px; height: 20px; color: var(--action); transform: rotate(12deg); }
+.mimo-empty { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 1rem; min-width: 0; padding: 1.25rem 16px; margin-block: 1rem; border: 1px dashed var(--border-control); border-radius: var(--radius); background: var(--surface-paper); }
+.mimo-empty > .mimo-sticker { width: 88px; max-width: 100%; flex-shrink: 0; }
+.mimo-empty > div { min-width: 0; flex: 0 1 30rem; }
+.mimo-empty p { margin-block: .25rem; color: var(--text-muted); }
+.mimo-empty h2, .mimo-empty h3 { margin-top: 0; }
+.mimo-eyebrow { display: flex; align-items: center; gap: .5rem; margin-block: 0 .75rem; color: var(--action); font-size: .75rem; letter-spacing: .06em; }
+.mimo-eyebrow svg { width: 18px; height: 18px; flex-shrink: 0; }
+.mimo-back { display: inline-flex; min-height: 48px; min-width: 44px; align-items: center; padding: .75rem 8px; color: var(--action); text-underline-offset: 4px; }

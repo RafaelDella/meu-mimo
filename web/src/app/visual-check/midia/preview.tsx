@@ -1,5 +1,7 @@
 'use client';
 
+import { MimoMasthead } from '@/components/ui/mimo-page';
+
 import Link from 'next/link';
 import { useMemo, useRef, useState } from 'react';
 import type { MediaAssetView, MediaFileInput } from '@/contracts/media';
@@ -99,6 +101,7 @@ export function MediaPreview() {
     };
   }, []);
   return <main className="stores-shell">
+    <MimoMasthead />
     <Link className="stores-link" href="/visual-check">Voltar à prévia</Link>
     <h1>Mídia de exemplo</h1>
     <p>Demonstração com arquivos fictícios em memória. Não usa API, banco, Storage ou processamento real. Recarregar descarta estes exemplos.</p>

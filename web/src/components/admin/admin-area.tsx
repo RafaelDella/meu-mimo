@@ -1,5 +1,7 @@
 'use client';
 
+import { MimoMasthead } from '@/components/ui/mimo-page';
+
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
@@ -53,5 +55,5 @@ function Gate({ session, children }: { session: AccountSession; children(identit
   </AdminAccessContext.Provider>;
 }
 export function AdminArea({ children }: { children(identityKey: string): ReactNode }) {
-  return <main className="stores-shell"><PrivateArea>{session => <Gate key={`${session.userId}:${session.sessionId}:${session.assuranceLevel}`} session={session}>{children}</Gate>}</PrivateArea></main>;
+  return <main className="stores-shell"><MimoMasthead /><PrivateArea>{session => <Gate key={`${session.userId}:${session.sessionId}:${session.assuranceLevel}`} session={session}>{children}</Gate>}</PrivateArea></main>;
 }

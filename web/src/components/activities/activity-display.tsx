@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import type { ActivityAvailability, ActivityFields, ActivityView, SubmissionView } from '@/contracts/activities';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Button } from '@/components/ui/button';
@@ -27,8 +28,9 @@ export function Availability({ value }: { value: ActivityAvailability | null }) 
   </div>;
 }
 export function ActivityCard({ activity, merchant }: { activity: ActivityView; merchant: boolean }) {
-  const stickers = { gift: '🎁', coffee: '☕', takeout: '🥡', envelope: '💌', '': '' };
-  return <article className="stores-card"><h3>{activity.sticker && <span aria-hidden="true">{stickers[activity.sticker]} </span>}{activity.name}</h3>
+  return <article className={`stores-card ${styles.activityCard}`}><div className={styles.cardHeading}>
+    {activity.sticker && <Image className={styles.cardSticker} src={`/assets/${activity.sticker}.svg`} alt="" aria-hidden="true" width={170} height={150} />}
+    <h3>{activity.name}</h3></div>
     {activity.category && <p className="stores-muted">{activity.category}</p>}<Rule activity={activity} />
     {activity.archivedAt && <StatusBadge tone="info" text="Arquivada" />}<Availability value={activity.availability} />
     <Link className="stores-link" href={activityPath(activity.storeId, activity.id)}>{merchant ? 'Gerenciar atividade' : 'Ver atividade'}<span className={styles.srOnly}>: {activity.name}</span></Link>

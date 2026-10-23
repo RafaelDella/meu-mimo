@@ -16,6 +16,7 @@ import { useRelationshipResource } from './use-relationship-resource';
 import { categoryLabels, notificationLabels } from './notification-labels';
 import styles from './relationship.module.css';
 import { StoreSelector } from './store-selector';
+import { MimoEmpty, MimoIntro, MimoMasthead } from '@/components/ui/mimo-page';
 
 function NotificationCard({ group, onRead, onOpen, busy }: { group: NotificationGroupView; onRead(): void; onOpen(trigger: HTMLButtonElement): void; busy: boolean }) {
   return <article className={styles.card}><h2>{group.storeName || 'Sua lojinha'}</h2>
@@ -59,7 +60,7 @@ function Center() {
     }, value => setDestination(value));
   }
   return <div className={styles.stack}><header className={styles.card}><div className={styles.actions}><Link href="/lojas">Minhas lojas</Link><Link href="/conta">Minha conta</Link></div>
-    <h1 ref={title} tabIndex={-1}>Novidades</h1><p>Seus bilhetes, conquistas e momentos, sempre no contexto de cada loja.</p>
+    <MimoIntro kind="envelope"><h1 ref={title} tabIndex={-1}>Novidades</h1><p>Seus bilhetes, conquistas e momentos, sempre no contexto de cada loja.</p></MimoIntro>
     {resource.data && <p role="status">{resource.data.attentionUnreadCount} {resource.data.attentionUnreadCount === 1 ? 'grupo pede' : 'grupos pedem'} sua atenção.</p>}</header>
     <div className={styles.filters}><StoreSelector label="Loja" emptyLabel="Todas as lojas" value={storeId} onChange={value => { setStoreId(value); setPage(1); }} />
       <label className={styles.field}>Categoria<select className="ui-input" value={category} onChange={event => { setCategory(event.target.value); setPage(1); }}>
@@ -67,7 +68,7 @@ function Center() {
     <p role="alert">{action.error}</p>{action.busy && <p role="status">Conferindo a novidade…</p>}
     {resource.loading && <p role="status">Buscando novidades…</p>}
     {resource.error && !resource.denied ? <div role="alert"><p>{storeError(resource.error)}</p><Button variant="secondary" onClick={resource.reload}>Consultar novidades novamente</Button></div> : null}
-    {resource.data && <>{!resource.data.items.length && <p>Nenhuma novidade neste filtro.</p>}
+    {resource.data && <>{!resource.data.items.length && <MimoEmpty kind="envelope"><p>Nenhuma novidade neste filtro.</p></MimoEmpty>}
       {resource.data.items.map(group => <NotificationCard key={group.id} group={group} onRead={() => read(group)} onOpen={button => open(group, button)} busy={action.busy} />)}
       <Pagination {...resource.data} onPage={next => { focusAfterPage.current = true; setPage(next); }} busy={action.busy} /></>}
     <Dialog open={!!destination} onOpenChange={open => { if (!open) setDestination(null); }} title="Abrir no contexto da loja" returnFocusRef={trigger}>
@@ -78,7 +79,7 @@ function Center() {
   </div>;
 }
 export function NotificationCenter() {
-  return <main className="stores-shell"><PrivateArea>{session => <RewardAccess key={`${session.userId}:${session.sessionId}`}>
+  return <main className="stores-shell"><MimoMasthead /><PrivateArea>{session => <RewardAccess key={`${session.userId}:${session.sessionId}`}>
     <RelationshipRefresh accountKey={`${session.userId}:${session.sessionId}`}><Center /></RelationshipRefresh>
   </RewardAccess>}</PrivateArea></main>;
 }
