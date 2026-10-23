@@ -257,3 +257,30 @@ A guarda posterior de limpeza development teve RED/GREEN próprio e foi
 exercitada no quinto ciclo web; o ramo de integração conserva o comportamento.
 Não se declara uma segunda execução dos736 Chromium ou de REC14 em T15:
 suas evidências e versões continuam descritas na seção T14.
+
+## Percurso solicitado pelo idealizador no navegador
+
+Em 23/10/2026, com conferência final às `17:41:40.515Z`, o percurso completo
+foi executado na web local pelo navegador, usando duas contas sintéticas novas.
+O cadastro, a confirmação pelo Mailpit, a saída e o login normal foram
+percorridos para lojista e participante. Não houve criação direta de domínio
+por API ou SQL nesse percurso.
+
+O lojista criou a loja, uma atividade diária de leitura com aprovação manual
+e crédito de 20 pontos, além de um mimo de 15 pontos com estoque inicial de 2.
+A participante aceitou o convite autenticada, começou com saldo zero e enviou
+um registro de teste sem foto. Os 20 pontos permaneceram em análise até a
+aprovação explícita do lojista.
+
+O resgate emitiu um único vale, deixou saldo de 5 pontos e estoque de 1 unidade.
+O extrato exibiu crédito de 20 e débito de 15; a interface bloqueou novo resgate
+por saldo insuficiente. O lojista registrou o combinado e marcou a realização
+de teste. A participante consultou o vale Realizado, com zero mimos pendentes
+e os mesmos 5 pontos disponíveis após recarregar a página.
+
+Os dados sintéticos foram preservados para inspeção do idealizador. O relatório
+`resultado.json` e treze capturas ficam no diretório local ignorado
+`.artifacts/fluxo-ui-20261023173124774/`. Senhas, links de confirmação e tokens
+de convite não integram este registro ou o Git. Esse percurso confirma o uso
+web local; não representa realização física de um prêmio nem substitui os
+gates móveis e de publicação descritos acima.
