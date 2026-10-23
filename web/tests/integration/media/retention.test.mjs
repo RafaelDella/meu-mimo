@@ -113,7 +113,7 @@ test('mídia D08: álbum ativo não expira, fechamento conta 12 meses UTC e hold
   const collections = [f.memory, await f.collection(), await f.collection(), await f.collection()];
   const assets = [];
   for (const collection of collections) assets.push(await ready(f, collection));
-  for (const asset of assets) await f.database.query('UPDATE app."MediaAsset" SET "publishedAt"=now()-interval \'2 years\', "lastActivityAt"=now()-interval \'2 years\' WHERE id=$1', [asset.id]);
+  for (const asset of assets) await f.database.query('UPDATE app."MediaAsset" SET "lastActivityAt"=now()-interval \'2 years\' WHERE id=$1', [asset.id]);
   const closed = new Date(); closed.setUTCFullYear(closed.getUTCFullYear() - 1); closed.setUTCDate(closed.getUTCDate() - 1);
   const deadline = new Date(closed); deadline.setUTCFullYear(deadline.getUTCFullYear() + 1);
   const recentlyClosed = new Date(); recentlyClosed.setUTCMonth(recentlyClosed.getUTCMonth() - 6);

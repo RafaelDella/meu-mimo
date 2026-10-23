@@ -9,12 +9,14 @@ import { assertMediaRead, withMediaAsset } from './access.ts';
 import { signBrokerEnvelope, signMediaAccess, verifyMediaAccess } from './tokens.ts';
 import type { BrokerEnvelope } from './tokens.ts';
 import { consumeMediaLimit } from './limits.ts';
+import { localMediaTarget } from './local-target.ts';
 
 export const MEDIA_PART_BYTES = 5 * 1024 * 1024;
 
 async function broker(envelope: Omit<BrokerEnvelope, 'expiresAt'>, body?: Uint8Array): Promise<Response> {
   const endpoint = process.env.MEDIA_GATEWAY_URL;
-  if (endpoint !== 'http://127.0.0.1:4311') throw new AppError('service_unavailable', 503, 'O serviço de mídia ainda não está configurado.');
+  try { localMediaTarget(); }
+  catch { throw new AppError('service_unavailable', 503, 'O serviço de mídia ainda não está configurado.'); }
   const signed = signBrokerEnvelope({ ...envelope, expiresAt: Date.now() + 30_000 }, body);
   const response = await fetch(`${endpoint}/${envelope.action}`, { method: 'POST', cache: 'no-store',
     headers: { 'x-media-envelope': signed.encoded, 'x-media-signature': signed.signature, 'content-type': 'application/octet-stream' },

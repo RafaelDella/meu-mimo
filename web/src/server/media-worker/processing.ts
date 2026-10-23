@@ -13,17 +13,19 @@ import { processVideo } from './video.ts';
 
 type ClaimedMedia = { asset: MediaAsset; parts: MediaPart[]; token: string };
 
-async function claim(): Promise<ClaimedMedia | null> {
+async function claim(signal?: AbortSignal): Promise<ClaimedMedia | null> {
   return getDb().$transaction(async tx => {
+    if (signal?.aborted) return null;
     const candidates = await tx.$queryRaw<{ id: string }[]>`
       SELECT id FROM app."MediaAsset"
       WHERE "removedAt" IS NULL AND "uploadedBytes" = "byteLength" AND
         ((state = 'QUEUED' AND "availableAt" <= clock_timestamp()) OR
          (state = 'PROCESSING' AND "leaseUntil" <= clock_timestamp()))
       ORDER BY "availableAt", "createdAt", id FOR UPDATE SKIP LOCKED LIMIT 1`;
-    if (!candidates.length) return null;
+    if (!candidates.length || signal?.aborted) return null;
     const token = randomUUID();
     const now = await databaseNow(tx);
+    if (signal?.aborted) return null;
     const asset = await tx.mediaAsset.update({ where: { id: candidates[0].id }, data: {
       state: 'PROCESSING', leaseToken: token, leaseUntil: new Date(now.getTime() + 300_000),
       attempts: { increment: 1 }, failureCode: null,
@@ -119,12 +121,13 @@ async function processOne(job: ClaimedMedia): Promise<boolean> {
   }
 }
 
-export async function processMediaBatch(options: { limit?: number } = {}): Promise<{ processed: number; failed: number }> {
+export async function processMediaBatch(options: { limit?: number; signal?: AbortSignal } = {}): Promise<{ processed: number; failed: number }> {
   const limit = options.limit ?? 2;
   if (!Number.isInteger(limit) || limit < 1 || limit > 10) throw new AppError('field_invalid', 400, 'O lote deve conter entre 1 e 10 arquivos.');
   const result = { processed: 0, failed: 0 };
   for (let index = 0; index < limit; index += 1) {
-    const job = await claim();
+    if (options.signal?.aborted) break;
+    const job = await claim(options.signal);
     if (!job) break;
     if (await processOne(job)) result.processed += 1; else result.failed += 1;
   }

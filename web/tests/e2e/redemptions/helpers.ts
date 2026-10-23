@@ -22,7 +22,11 @@ export function ticket(overrides: Partial<TicketView> = {}): TicketView {
     snapshot: { name: 'Café da ocasião', description: 'Um café preparado com carinho.', category: 'A dois', sticker: 'coffee', cost: 10,
       note: 'Um recadinho só nosso.', instructions: 'Converse para combinar o dia.', rewardVersion: 1 }, balanceBefore: '15', balanceAfter: '5',
     conversation: { id: conversationId, storeId: ids.first, participantMembershipId: store().membershipId, subjectType: 'TICKET', subjectId: ticketId, writable: true },
-    events: [{ id: ticketId, kind: 'ISSUED', createdAt: now, author: { displayName: 'Ana participante' } }], ...overrides };
+    version: 1, agreementText: '', agreementDate: null, fulfilledAt: null, cancelledAt: null, eventsTotal: 1,
+    pendingCancellation: null, actions: [], cancellationImpact: null, album: { publishedCount: 0, thumbnailAssetId: null },
+    events: [{ id: ticketId, kind: 'ISSUED', version: 1, fromStatus: null, toStatus: 'WAITING_AGREEMENT', text: '', agreementDate: null,
+      requestId: null, delta: '0', restocked: false, stockBefore: null, stockAfter: null, stockRevision: null, balanceBefore: null, balanceAfter: null,
+      createdAt: now, author: { displayName: 'Ana participante' } }], ...overrides };
 }
 export type RewardState = {
   merchant: boolean; balance: string; pending: string; current: RewardView; rewards: RewardView[]; tickets: TicketView[];
@@ -56,6 +60,21 @@ export async function mockRewards(page: Page, options: { merchant?: boolean; bal
     if (options.handler && await options.handler(route, url, state)) return true;
     const path = url.pathname; const method = route.request().method();
     if (!path.startsWith('/api/lojas/')) return false;
+    if (path.endsWith('/lojinha')) {
+      const currentStore = auth.stores[0];
+      await json(route, { store: currentStore, person: { displayName: auth.displayName }, merchant: { displayName: 'Rafa' },
+        points: { storeId: ids.first, participantMembershipId: currentStore.membershipId, available: state.balance, pending: state.pending,
+          today: { localDate: '2026-10-22', timezone: currentStore.timezone, submitted: 1, approved: 1, credited: '15', adjusted: '0' } },
+        activities: [], rewards: state.rewards.filter(value => !value.archivedAt).slice(0, 6).map(value => withAvailability(state, value)),
+        categories: ['A dois', 'Surpresas'], note: { current: null, writable: false, unread: false },
+        tickets: { total: state.tickets.length, outstanding: state.tickets.filter(value => ['WAITING_AGREEMENT', 'AGREED', 'CANCELLATION_REQUESTED'].includes(value.status)).length } });
+      return true;
+    }
+    if (path.endsWith('/album')) {
+      await json(route, { id: null, storeId: ids.first, ticketId: path.split('/')[5], version: 0, collectionId: null,
+        permissions: { canStart: false, canUpload: false, canPublish: false }, unavailableReason: null,
+        items: [], page: 1, pageSize: 20, total: 0 }); return true;
+    }
     if (path.endsWith('/pontos')) {
       await json(route, { storeId: ids.first, participantMembershipId: store().membershipId, available: state.balance, pending: state.pending,
         today: { localDate: '2026-10-22', timezone: 'America/Sao_Paulo', submitted: 1, approved: 1, credited: '15', adjusted: '0' } }); return true;

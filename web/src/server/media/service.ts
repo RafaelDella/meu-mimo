@@ -3,6 +3,8 @@ import type { MediaAsset, Prisma } from '../../generated/prisma/client.ts';
 import type { MediaAssetView, MediaFileInput, MediaPage } from '../../contracts/media.ts';
 import type { Identity } from '../auth/types.ts';
 import { AppError } from '../errors.ts';
+import { visibleMediaAuthor } from '../privacy/suppression.ts';
+import { recordAlbumRemoval } from '../albums/removal.ts';
 import { consumeStoreLimit } from '../stores/limits.ts';
 import { databaseNow } from '../stores/transaction.ts';
 import { operationConflict, pagination, unavailable } from '../stores/validation.ts';
@@ -22,9 +24,13 @@ export async function listMedia(identity: Identity, storeId: string, collectionI
   const page = pagination(query);
   await consumeStoreLimit(identity, 'read');
   return withMediaCollection(identity, storeId, collectionId, async scope => {
-    const where: Prisma.MediaAssetWhereInput = { collectionId: scope.collection.id, removedAt: null,
+    if (scope.memoryPolicy?.expired && !scope.memoryPolicy.hold) {
+      return { collection: mediaCollectionView(scope), items: [], total: 0, page: page.page, pageSize: page.pageSize };
+    }
+    const where: Prisma.MediaAssetWhereInput = { collectionId: scope.collection.id, removedAt: null, author: visibleMediaAuthor,
       state: { notIn: ['REMOVING', 'REMOVED'] },
-      OR: [{ authorProfileId: identity.userId }, { publishedAt: { not: null } }] };
+      OR: [{ authorProfileId: identity.userId }, { publishedAt: { not: null },
+        ...(scope.memoryPolicy ? { albumItem: { albumId: scope.memoryPolicy.albumId } } : {}) }] };
     const total = await scope.tx.mediaAsset.count({ where });
     const assets = await scope.tx.mediaAsset.findMany({ where,
       orderBy: [{ revision: scope.collection.purpose === 'EVIDENCE' ? 'desc' : 'asc' },
@@ -89,6 +95,7 @@ export async function completeMediaUpload(identity: Identity, storeId: string, a
   return withMediaAsset(identity, storeId, assetId, async scope => {
     const { asset } = scope;
     if (asset.authorProfileId !== identity.userId || asset.removedAt) unavailable();
+    if (scope.memoryPolicy) assertMediaUpload(scope, asset);
     if (['QUEUED', 'PROCESSING', 'READY'].includes(asset.state) ||
         (asset.state === 'FAILED' && asset.failureCode === 'file_invalid')) return mediaAssetView(asset);
     assertMediaUpload(scope, asset);
@@ -117,6 +124,7 @@ export async function removeMedia(identity: Identity, storeId: string, assetId: 
         'A foto deste registro já foi recebida e permanece no histórico.');
     }
     const now = await databaseNow(scope.tx);
+    await recordAlbumRemoval(scope, now);
     const result = await scope.tx.mediaAsset.update({ where: { id: scope.asset.id }, data: {
       state: 'REMOVING', removedAt: now, lastActivityAt: now, availableAt: now,
       leaseToken: null,

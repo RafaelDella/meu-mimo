@@ -57,20 +57,22 @@ export function ActivityDetail({ store, accountKey, activityId, register = false
   if (denied) return <section className="stores-card"><h2>Acesso indisponível</h2><p role="alert">Esta atividade não está disponível para sua conta.</p></section>;
   if (loading) return <p role="status">Abrindo atividade…</p>;
   if (error || !data) return <section className="stores-card"><h2>Atividade indisponível</h2><p role="alert">{storeError(error)}</p><Button variant="secondary" onClick={refresh}>Tentar carregar novamente</Button></section>;
+  const availability = store.platformPausedAt && store.state !== 'CLOSED' && !store.membershipClosedAt && !data.archivedAt && data.availability ?
+    { ...data.availability, eligible: false, reason: 'STORE_PLATFORM_PAUSED' as const } : data.availability;
   if (register) {
     if (store.role !== 'PARTICIPANT') return <section className="stores-card"><h2>Registro de participante</h2><p>Quem gerencia esta loja pode cuidar das atividades, mas não pontua na própria loja.</p></section>;
-    if (!draftId && !data.availability?.eligible) return <section className="stores-card"><h2 ref={title} tabIndex={-1}>{data.name}</h2><Availability value={data.availability} /><Link className="stores-link" href={activityPath(store.id)}>Voltar às atividades</Link></section>;
+    if (!draftId && !availability?.eligible) return <section className="stores-card"><h2 ref={title} tabIndex={-1}>{data.name}</h2><Availability value={availability} /><Link className="stores-link" href={activityPath(store.id)}>Voltar às atividades</Link></section>;
     return <SubmissionForm store={store} accountKey={accountKey} activity={data} draftId={draftId} />;
   }
   return <>
     <section className="stores-card"><Link className="stores-link" href={activityPath(store.id)}>Voltar às atividades</Link><h2 ref={title} tabIndex={-1}>{data.name}</h2>
       {data.category && <p className="stores-muted">{data.category}</p>}<p className={styles.text}>{data.description || 'Esta atividade ainda não tem uma descrição.'}</p>
-      <Rule activity={data} /><Availability value={data.availability} />
+      <Rule activity={data} /><Availability value={availability} />
       {data.archivedAt && <p className="stores-banner">Atividade arquivada. As conquistas anteriores continuam no histórico.</p>}
       {store.role === 'MERCHANT' ? <>
         {!data.archivedAt && store.state !== 'CLOSED' && <Link className="primary-link" href={`${activityPath(store.id, activityId)}/editar`}>Editar atividade</Link>}
         {!data.archivedAt && store.state !== 'CLOSED' && <ArchiveActivity key={`${data.id}:${data.version}`} storeId={store.id} activity={data} onArchived={refresh} onDenied={() => setDenied(true)} />}
-      </> : data.availability?.eligible && <Link className="primary-link" href={`${activityPath(store.id, activityId)}/registrar`}>Registrar conquista</Link>}
+      </> : data.availability?.eligible && !store.platformPausedAt && <Link className="primary-link" href={`${activityPath(store.id, activityId)}/registrar`}>Registrar conquista</Link>}
       <div className="stores-actions"><Button variant="secondary" onClick={refresh}>Atualizar atividade</Button></div>
     </section>
     <SubmissionList store={store} activityId={activityId} compact />

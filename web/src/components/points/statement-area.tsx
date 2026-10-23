@@ -21,7 +21,7 @@ import { RewardTabs } from '@/components/rewards/reward-area';
 import { RewardCounter } from '@/components/rewards/reward-summary';
 import styles from './statement.module.css';
 
-const kinds = { ACTIVITY_CREDIT: 'Ganho por atividade', ACTIVITY_REVERSAL: 'Estorno de conquista', ACTIVITY_RESTORE: 'Recomposição de pontos', REDEMPTION_DEBIT: 'Resgate de mimo' };
+const kinds = { ACTIVITY_CREDIT: 'Ganho por atividade', ACTIVITY_REVERSAL: 'Estorno de conquista', ACTIVITY_RESTORE: 'Recomposição de pontos', REDEMPTION_DEBIT: 'Resgate de mimo', REDEMPTION_REFUND: 'Devolução de resgate' };
 function originName(entry: PointsEntryView) { return entry.origin?.name ?? entry.rewardName ?? entry.activityName ?? 'Origem do movimento'; }
 function dateKey(value: string, timezone: string) {
   const parts = new Intl.DateTimeFormat('en-CA', { year: 'numeric', month: '2-digit', day: '2-digit', timeZone: timezone }).formatToParts(new Date(value));
@@ -83,7 +83,7 @@ function StatementContent({ store, query: initialQuery }: { store: StoreView; qu
       <Input label="Movimentos até a data" type="date" value={filters.to} onChange={event => setFilters(current => ({ ...current, to: event.target.value }))} />
       {invalid && <p role="alert">A data final precisa ser igual ou posterior à inicial.</p>}<Button type="submit">Filtrar extrato</Button>
     </form>
-    <p>Ganhos por atividade, estornos, recomposições e resgates são movimentos distintos. Pontos em análise ainda não integram o saldo disponível.</p>
+    <p>Ganhos por atividade, estornos, recomposições, resgates e devoluções são movimentos distintos. Devoluções não são ganhos por atividade. Pontos em análise ainda não integram o saldo disponível.</p>
     {loading && <p role="status">Consultando movimentos…</p>}
     {error ? <div role="alert"><p>{storeError(error)}</p><Button variant="secondary" onClick={reload}>Consultar extrato novamente</Button></div> : null}
     {data && <>{!data.items.length && <p>Nenhum movimento encontrado com estes filtros.</p>}
@@ -91,7 +91,7 @@ function StatementContent({ store, query: initialQuery }: { store: StoreView; qu
         <ol className={styles.movements}>{items.map(entry => <li key={entry.id}><h4>{signedPoints(entry.amount)} pontos · {originName(entry)}</h4>
           <p>{kinds[entry.kind]} · {store.role === 'MERCHANT' ? `${entry.participant.displayName || 'Pessoa participante'} · ` : ''}{entry.actor.displayName || 'Pessoa da relação'}</p>
           <p><time dateTime={entry.createdAt}>{localTime(entry.createdAt, store.timezone)}</time></p>
-          {entry.compensatesEntryId && <p>Este ajuste compensa um movimento anterior da mesma conquista.</p>}
+          {entry.compensatesEntryId && <p>{entry.kind === 'REDEMPTION_REFUND' ? 'Esta devolução compensa o débito original deste resgate.' : 'Este ajuste compensa um movimento anterior da mesma conquista.'}</p>}
           <Link className="stores-link" href={originPath(entry, returnTo)}>Abrir origem do movimento<span className={styles.srOnly}>: {originName(entry)}, {kinds[entry.kind]}</span></Link></li>)}</ol></section>)}
       <Pagination page={data.page} pageSize={data.pageSize} total={data.total} onPage={next => navigate(next, { kind: applied.get('kind') ?? '', from: applied.get('from') ?? '', to: applied.get('to') ?? '', membershipId })} />
     </>}

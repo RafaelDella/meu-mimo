@@ -1,6 +1,6 @@
 import { requireIdentity } from '@/server/auth/session';
-import { requireAdminAccess } from '@/server/authorization/admin';
-import { handleRoute } from '@/server/http';
+import { handleAdminRoute } from '@/server/admin/http';
+import { readAdminSession } from '@/server/admin/service';
 
-export const GET = () => handleRoute(async () =>
-  Response.json(await requireAdminAccess(await requireIdentity())));
+export const GET = () => handleAdminRoute('SESSION', async () =>
+  Response.json(await readAdminSession(await requireIdentity())));

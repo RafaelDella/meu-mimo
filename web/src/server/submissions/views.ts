@@ -7,36 +7,46 @@ import { conversationView } from '../conversations/views.ts';
 import type { StoreScope } from '../stores/transaction.ts';
 import { unavailable } from '../stores/validation.ts';
 import { analysisView } from './analysis.ts';
+import { suppressionFor } from '../privacy/suppression.ts';
+import type { Suppressions } from '../privacy/suppression.ts';
+import { publicAuthor, visibleAuthoredFields, visibleAuthoredText } from '../privacy/views.ts';
 
-export function submissionSnapshot(row: ActivitySubmission): ActivitySnapshot | null {
+export function submissionSnapshot(row: ActivitySubmission, creatorId: string, suppressions: Suppressions): ActivitySnapshot | null {
   if (!row.receivedAt) return null;
-  return { activityVersion: row.activityVersion!, name: row.activityName!, description: row.activityDescription!,
+  return visibleAuthoredFields({ activityVersion: row.activityVersion!, name: row.activityName!, description: row.activityDescription!,
     category: row.activityCategory!, sticker: row.activitySticker as ActivitySnapshot['sticker'], points: row.points!,
-    frequency: row.frequency!, weeklyLimit: row.weeklyLimit!, approvalMode: row.approvalMode! };
+    frequency: row.frequency!, weeklyLimit: row.weeklyLimit!, approvalMode: row.approvalMode! },
+  ['name', 'description', 'category'], creatorId, suppressions);
 }
 
-export async function submissionView(scope: StoreScope, submission: ActivitySubmission, activity: Activity, now: Date): Promise<SubmissionView> {
+export async function submissionView(scope: StoreScope, submission: ActivitySubmission, activity: Activity, now: Date,
+  suppressions?: Suppressions): Promise<SubmissionView> {
   const collection = await scope.tx.mediaCollection.findUnique({ where: {
     purpose_subjectId: { purpose: 'EVIDENCE', subjectId: submission.id },
   } });
   if (!collection || collection.storeId !== scope.store.id || collection.participantMembershipId !== submission.participantMembershipId) unavailable();
   const participant = await scope.tx.membership.findUnique({ where: { id: submission.participantMembershipId },
-    select: { profile: { select: { displayName: true } } } });
+    select: { profileId: true, profile: { select: { displayName: true } } } });
   if (!participant) unavailable();
+  const privacy = suppressions ?? await suppressionFor(scope.tx, [submission.authorProfileId, activity.createdByProfileId, participant.profileId]);
+  const hiddenEvidence = privacy.get(submission.authorProfileId)?.authoredContent || privacy.get(submission.authorProfileId)?.identity;
   const conversation = submission.receivedAt ? await scope.tx.conversation.findUnique({ where: {
     subjectType_subjectId: { subjectType: 'SUBMISSION', subjectId: submission.id },
   } }) : null;
   const currentPeriod = submission.status === 'DRAFT' ? await periodAt(scope.tx, scope.store.timezone, activity.frequency, now) : null;
-  const analysis = await analysisView(scope, submission, collection);
+  const analysis = await analysisView(scope, submission, collection, privacy);
   return { id: submission.id, storeId: submission.storeId, activityId: submission.activityId,
-    participantMembershipId: submission.participantMembershipId, participant: participant.profile, status: submission.status,
+    participantMembershipId: submission.participantMembershipId,
+    participant: publicAuthor(participant.profile, privacy.get(participant.profileId)), status: submission.status,
     pointsState: analysis.pointsState, analysis: analysis.analysis,
-    caption: submission.caption, createdAt: submission.createdAt.toISOString(), receivedAt: submission.receivedAt?.toISOString() ?? null,
+    caption: visibleAuthoredText(submission.caption, submission.authorProfileId, privacy),
+    createdAt: submission.createdAt.toISOString(), receivedAt: submission.receivedAt?.toISOString() ?? null,
     approvedAt: submission.approvedAt?.toISOString() ?? null, localDate: submission.localDate, timezone: submission.timezone,
     periodKey: submission.periodKey, periodStart: submission.periodStart?.toISOString() ?? null,
     periodEnd: submission.periodEnd?.toISOString() ?? null, occurrenceNumber: submission.occurrenceNumber,
-    activity: await activityView(scope, activity, now), snapshot: submissionSnapshot(submission), collectionId: collection.id,
-    evidenceAssetId: submission.evidenceAssetId, conversation: conversation ? conversationView(conversation) : null,
+    activity: await activityView(scope, activity, now, privacy),
+    snapshot: submissionSnapshot(submission, activity.createdByProfileId, privacy), collectionId: collection.id,
+    evidenceAssetId: hiddenEvidence ? null : submission.evidenceAssetId, conversation: conversation ? conversationView(conversation) : null,
     review: currentPeriod ? { expectedVersion: activity.version, localDate: currentPeriod.localDate,
       timezone: currentPeriod.timezone, now: now.toISOString() } : null };
 }

@@ -10,6 +10,9 @@ import { MfaPanel } from './mfa-panel';
 import { AccountRequestError, accountRequest, accountSession, friendlyError, notifySessionChanged } from './account-api';
 import type { AccountSession } from './account-api';
 import { ProfilePanel } from './profile-panel';
+import { NotificationSettingsSection } from '@/components/notifications/notification-preferences';
+import { AdminEntry } from '@/components/admin/admin-entry';
+import { MimoIcon } from '@/components/ui/mimo-icon';
 
 type Mode = 'login' | 'signup' | 'recovery';
 
@@ -117,6 +120,8 @@ export function AccountPanel() {
 
   return (
     <section className="account-card" aria-labelledby="account-title" aria-busy={loading || busy}>
+      <MimoIcon name="bow" className="account-bow" />
+      <p className="mimo-eyebrow">{session ? 'Tudo no seu cantinho' : mode === 'signup' ? 'O primeiro de muitos carinhos' : mode === 'recovery' ? 'Vamos cuidar do seu acesso' : 'Que bom ter você por aqui'}</p>
       <h2 id="account-title">{session ? 'Sua conta' : 'Vamos começar?'}</h2>
       <p className="account-feedback" role="status" aria-live="polite" aria-atomic="true">{loading || checking ? 'Conferindo sua conta…' : message}</p>
       <p className="account-error" id="account-error" role="alert" aria-atomic="true">{error}</p>
@@ -145,7 +150,9 @@ export function AccountPanel() {
         <div className="account-status" hidden={checking} inert={checking}>
           {!session.recovery && <StatusBadge tone="success" text="Você está na sua conta" />}
           {!session.recovery && <p><Link className="primary-link" href="/lojas">Minhas lojas</Link></p>}
+          {!session.recovery && <AdminEntry key={`admin:${session.userId}:${session.sessionId}:${session.assuranceLevel}`} />}
           {!session.recovery && <ProfilePanel key={`${session.userId}:${session.sessionId}`} />}
+          {!session.recovery && <NotificationSettingsSection key={`notices:${session.userId}:${session.sessionId}`} accountKey={`${session.userId}:${session.sessionId}`} />}
           <div className="account-actions">
             <Button variant="secondary" disabled={busy} onClick={() => void perform(async () => {
               await accountRequest('logout', 'POST', {});

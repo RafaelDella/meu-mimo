@@ -64,6 +64,17 @@ test('participante vê saldo exato, contagens sem percentual e busca real do cat
   await expect(page.getByRole('link', { name: 'Nova atividade', exact: true })).toHaveCount(0);
   await expect(page.getByRole('heading', { name: 'Ler algumas páginas', exact: true })).toBeVisible();
   await page.screenshot({ path: `.artifacts/t07-catalog-${page.viewportSize()!.width}.png`, fullPage: true });
+  const activitiesLabel = page.getByRole('navigation', { name: 'Sua participação', exact: true })
+    .getByRole('link', { name: 'Atividades', exact: true }).getByText('Atividades', { exact: true });
+  const lines = await activitiesLabel.evaluate(element => {
+    const range = document.createRange(); range.selectNodeContents(element);
+    return range.getClientRects().length;
+  });
+  expect(lines, 'A navegação deve mostrar Atividades sem partir a palavra.').toBe(1);
+  const viewport = page.viewportSize()!;
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.screenshot({ path: test.info().outputPath('activities-desktop.png'), fullPage: true });
+  await page.setViewportSize(viewport);
   await page.getByLabel('Buscar atividade', { exact: true }).fill('inexistente');
   await page.getByRole('button', { name: 'Buscar', exact: true }).click();
   await expect(page.getByText(/Nenhuma atividade encontrada/)).toBeVisible();

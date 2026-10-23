@@ -6,8 +6,11 @@ import { availablePoints, submissionFunding } from '../points/ledger.ts';
 import type { StoreScope } from '../stores/transaction.ts';
 import { requireMembership } from '../stores/transaction.ts';
 import { actionsFor, currentRequest } from './review-state.ts';
+import { suppressionFor } from '../privacy/suppression.ts';
+import type { Suppressions } from '../privacy/suppression.ts';
+import { publicAuthor, visibleAuthoredText } from '../privacy/views.ts';
 
-export async function analysisView(scope: StoreScope, submission: ActivitySubmission, collection: MediaCollection): Promise<{
+export async function analysisView(scope: StoreScope, submission: ActivitySubmission, collection: MediaCollection, suppressions?: Suppressions): Promise<{
   analysis: SubmissionAnalysis | null; pointsState: 'NONE' | 'PENDING' | 'CREDITED' | 'REVERSED';
 }> {
   if (!submission.receivedAt) return { analysis: null, pointsState: 'NONE' };
@@ -22,7 +25,10 @@ export async function analysisView(scope: StoreScope, submission: ActivitySubmis
     include: { actor: { select: { displayName: true } } },
   }) : null;
   const lastReason = await scope.tx.submissionReviewEvent.findFirst({ where: { submissionId: submission.id,
-    storeId: scope.store.id, reason: { not: '' } }, select: { reason: true }, orderBy: { version: 'desc' } });
+    storeId: scope.store.id, reason: { not: '' } }, select: { reason: true, actorProfileId: true }, orderBy: { version: 'desc' } });
+  const authors = [approval?.actorProfileId, automatic?.actorProfileId, lastReason?.actorProfileId].filter((id): id is string => !!id);
+  const privacy = suppressions && authors.every(id => suppressions.has(id)) ? suppressions :
+    await suppressionFor(scope.tx, authors);
   const writable = scope.store.state !== 'CLOSED' && !actor.closedAt && !participant.closedAt;
   const actions = writable && actor.role === 'MERCHANT' ? actionsFor(submission.status, Boolean(request?.response)) : [];
   const available = await availablePoints(scope, participant.id);
@@ -38,9 +44,10 @@ export async function analysisView(scope: StoreScope, submission: ActivitySubmis
     canRespond: writable && actor.id === participant.id && submission.authorProfileId === scope.identity.userId &&
       submission.status === 'CONTESTED' && Boolean(request && !request.response),
     requestId: submission.status === 'CONTESTED' ? request?.id ?? null : null,
-    evidenceRevision: collection.revision, lastReason: lastReason?.reason ?? null,
-    approval: approval ? { mode: 'MANUAL', at: approval.createdAt.toISOString(), author: approval.actor } :
-      automatic ? { mode: 'AUTOMATIC', at: automatic.createdAt.toISOString(), author: automatic.actor } : null,
+    evidenceRevision: collection.revision,
+    lastReason: lastReason ? visibleAuthoredText(lastReason.reason, lastReason.actorProfileId, privacy) : null,
+    approval: approval ? { mode: 'MANUAL', at: approval.createdAt.toISOString(), author: publicAuthor(approval.actor, privacy.get(approval.actorProfileId)) } :
+      automatic ? { mode: 'AUTOMATIC', at: automatic.createdAt.toISOString(), author: publicAuthor(automatic.actor, privacy.get(automatic.actorProfileId)) } : null,
     impacts,
   } };
 }

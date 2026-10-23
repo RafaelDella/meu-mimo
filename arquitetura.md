@@ -33,7 +33,7 @@ não justificou uma dependência adicional. Os contratos estão no
 [registro de T03](docs/superpowers/plans/2026-10-22-t03-interface.md).
 Fontes DM Sans/DM Serif são locais, com licença, `font-display: swap` e
 alternativas. `/visual-check` usa somente dados fictícios em memória, sem
-serviços ou persistência; P01/L02 com dados autorizados continuam em T12.
+serviços ou persistência; P01/L02 com dados autorizados estão integrados em T12.
 
 ### 1.1. Seleções técnicas de M0
 
@@ -105,7 +105,7 @@ As consultas revalidam destinatário, vínculos e recurso; a ordenação pela
 entrega recupera eventos antigos processados mais tarde. Destinos são tipados e
 derivados; T07/T09 integram as telas reais de registro/ticket. Realtime é
 opcional e não foi necessário ao consumidor SQL; central/preferências e demais
-interações ficam em T12. Comandos e fronteiras em [T05 local](docs/relation-local.md).
+interações foram integradas em T12. Comandos e fronteiras em [T05 local](docs/relation-local.md).
 
 ### 1.4. Mídia privada em T06
 
@@ -309,6 +309,144 @@ Histórico usa período inclusivo no fuso e audiência atual; contador é separa
 dos filtros/página. Avisos/comentários resolvem o ticket real. Contratos e
 comandos em [T09 local](docs/rewards-local.md). Transições/devolução seguem em
 T10, álbum em T11 e composição completa da Lojinha/novidades em T12.
+
+### 3.5. Andamento e devolução em T10
+
+Redemption mantém snapshots T09 e acrescenta versão, combinado/data civil,
+origem do pedido e marcos de realização/cancelamento. RedemptionEvent passa a
+ter versão única por ticket, UUID/digest, estados, texto/data, pedido resolvido
+e impacto. Alterações da projeção exigem evento correspondente no commit;
+runtime não pode atualizar snapshots, eventos ou ledger. Só uma transição da
+versão observada vence, inclusive realização × cancelamento.
+
+REDEMPTION_REFUND é positivo, único por ticket, igual ao custo congelado e ligado
+ao débito/evento de cancelamento. Não participa da cadeia de conquista ou dos
+ganhos/ajustes de atividade. Reposição limitada opt-in usa revisão exclusiva,
+com escolha auditada, sem reabrir mimo arquivado nem compartilhar uma alteração
+com auditoria administrativa. Estado, evento, refund, estoque e outbox confirmam
+juntos pelo lock de loja, inclusive durante pausa ou encerramento (D03).
+
+Eventos crescem com paginação; replay retorna evento aplicado e ticket atual,
+reautorizando a audiência antes da recuperação. Outbox REDEMPTION_UPDATED aponta
+ao evento real e à outra pessoa da relação. Contratos/comandos em
+[T10 local](docs/tickets-local.md). Álbum integra T11.
+
+### 3.6. Álbum por ticket em T11
+
+`TicketAlbum` liga ticket, participação e coleção MEMORY reais. `AlbumEvent`
+audita publicação/remoção; `AlbumItem` congela legenda e posição por asset.
+Projeção versionada, itens, `publishedAt` e outbox confirmam juntos. Eventos e
+itens são imutáveis; runtime não apaga histórico. O pipeline T06 continua
+responsável por bytes, partes, derivados e expurgo, sem IO na transação do álbum.
+
+API genérica e gateway verificam a origem real e o acesso atual, inclusive nas
+leituras Range. Retenção usa o primeiro encerramento da loja/participação e
+doze meses de calendário. Pendência protege existentes, sem estender uploads;
+resolução tardia aplica o prazo original. Encerramento e resolução sincronizam
+coleções na transação vigente. Manutenção usa Store → coleção → asset com
+SKIP LOCKED, na mesma ordem das operações do domínio.
+
+Comandos, API e limites em [T11 local](docs/albums-local.md). Bilhete, reações,
+mural e central completa de novidades estão integrados em T12.
+
+### 3.7. Relação e painéis em T12
+
+Implementação verificada localmente. `PersonalNote` aponta à versão atual;
+`NoteVersion` conserva envio, autor e digest. `NoteRead` confirma somente a
+versão e o destinatário, sem integrar DTOs do lojista. `Reaction` mantém a
+escolha por ator/conversa, com `ReactionEvent` imutável. Projeções, versões,
+eventos e outbox confirmam na transação autorizada da loja.
+
+`NotificationGroup` projeta as notificações individuais, preservando fonte e
+leitura anteriores. Comentários/reações usam janela de cinco minutos; outros
+eventos mantêm grupo próprio. A leitura recebe a versão observada do grupo.
+Preferências versionadas por vínculo mudam a atenção, sem apagar avisos ou
+decisões. Defaults são virtuais até a primeira escrita.
+
+Mural pagina registros recebidos e tickets no servidor. Previews consultam a
+publicação e retenção atuais. Painéis reutilizam o cálculo de saldo e as fontes
+do domínio, sem ledger ou conversa paralelos. Consulta visível a cada trinta
+segundos recupera atualizações, com isolamento por conta, sessão e loja; não
+constitui transporte Realtime. Contratos e comandos em
+[T12 local](docs/relationship-local.md).
+
+### 3.8. Administração em T13
+
+`Store.platformPausedAt/platformVersion` e `Profile.securityVersion` separam
+a revisão administrativa dos estados do lojista. `AdminAction` registra alvo
+tipado, autor, motivo NFC, digest, revisão e transição imutável. Projeção e ação
+confirmam juntas pela função restrita `app.apply_admin_action`, com executor
+sem login, search_path fixo e grants mínimos. O runtime não atualiza esses
+campos diretamente nem cria grants. O default de securityVersion é gerado
+pelo PostgreSQL no mapeamento Prisma para preservar INSERT por coluna.
+
+Consultas administrativas usam Repeatable Read com selects explícitos de
+metadados. Comandos usam Read Committed para conferir concessões de grant
+ocorridas durante espera pelo alvo. Cada tentativa revalida identidade Auth,
+perfil, sessão e grant sob lock; AAL2 vem do provedor. Provisionamento externo
+bloqueia Profile antes de conferir suspensão e criar/reativar AdminGrant.
+
+Pausa da plataforma bloqueia novas origens pelo mesmo lock Store usado pelos
+comandos normais; preserva obrigações e a pausa independente do lojista.
+Bloqueio de conta conserva economia/conteúdo e retira suas respostas privadas,
+incluindo URLs e Range de mídia. DTOs administrativos não incluem conteúdo
+ou endereço das relações. Diagnóstico serializa apenas cinco campos permitidos.
+Contratos, comandos e estado de verificação em [T13 local](docs/admin-local.md).
+
+### 3.9. Direitos e recuperação locais em T14
+
+`DataRightsProtocol`, `DataRightsEvent` e `DataSuppression` registram a operação
+manual identificada. Um executor sem login recebe apenas os grants necessários;
+o Next consulta as supressões sob RLS, sem credencial de direitos ou migração.
+A função estreita de exclusão retira sessões/acesso e agenda mídias próprias
+sem proteção. Projeções por autoria ocultam identidade e texto removidos,
+incluindo snapshots, busca, comentários, bilhetes e mídia/Range reautorizados.
+Valores, datas, IDs financeiros e eventos permanecem imutáveis; o resultado é
+parcial enquanto houver originais, obrigações ou cópias retidas.
+
+Exportação usa projeções explícitas JSON/CSV e derivados privados cifrados,
+com revalidação de audiência/retenção na entrega e validade de sete dias.
+O journal externo cifrado e seu checkpoint autenticam todas as intenções de
+supressão e sua geração; perda ou divergência impede abrir a recuperação.
+
+A captura fria inclui todo o cluster PostgreSQL, volumes de Storage e
+configuração/chaves necessárias ao mesmo corte. Componentes por stream e
+manifesto autenticado usam AES-256-GCM; chaves ficam fora do conjunto e a
+custódia Windows restringe a ACL antes de gravar plaintext. A cópia restaura
+em projeto/rede/volumes próprios, gira credenciais, revoga contextos antigos,
+reaplica journal/D08 e verifica migrações, permissões e hashes antes de abrir
+as APIs. A bridge dedicada permite saída; publicações no host usam loopback.
+O `BUILD_ID`, SHA de base, hashes de migrações e imagens identificam a captura.
+Contratos e provas em [direitos](docs/pilot/data-rights.md),
+[recuperação](docs/pilot/recovery.md) e [aceite](docs/pilot/acceptance.md).
+
+### 3.10. Supervisão local em T15
+
+O manager em primeiro plano possui UUID e identidade nativa de processo
+(PID, instante de criação com precisão do SO e executável). Os filhos Next,
+mídia e outbox usam IPC com BOOT, heartbeat independente da rodada e STOP.
+Snapshot, lock e pedido de parada ficam sob a custódia privada existente;
+ambientes e conteúdo de relações não são serializados. Instância concorrente,
+porta ocupada ou identidade ambígua não autoriza matar/adotar um processo.
+
+O Next customizado fecha admissão HTTP e acompanha `finish`/`close`/`error`.
+A operação de cada API é registrada separadamente por `handleRoute`, inclusive
+Auth e administração. Um registro opcional no global do processo compartilha
+host e bundle; ao parar, recusa novas operações com 503 e aguarda as admitidas
+antes de fechar Next e Prisma. Assim, a promise de transporte que o framework
+pode conservar após aborto do cliente não representa uma transação em curso.
+O registro permanece fechado até a saída; o runtime standalone conserva seu
+comportamento. Mídia drena HTTP e termina a unidade atual; consumidores não
+iniciam outro claim após STOP.
+
+Saúde usa clientes PostgreSQL curtos, Auth/Storage reais e identidade/heartbeat
+dos filhos; uma página 200 não basta. Drenagem e manutenção não abrem novos
+probes de dados. O backup de desenvolvimento é autenticado antes dos
+escritores e vence para a agenda após doze horas do corte. Na janela, os filhos
+são drenados e o manager vivo apresenta recibo de quiescência válido somente
+para admitir aquela captura fria. Não há lock de manutenção aninhado.
+Retomada falha ou backup devido sem conjunto utilizável impede `ready`.
+Limites, comandos e provas estão em [operação local](docs/pilot/local.md).
 
 ## 4. Modelo conceitual de dados
 

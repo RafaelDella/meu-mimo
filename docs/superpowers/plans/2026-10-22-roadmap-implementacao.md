@@ -10,7 +10,7 @@
 
 **Especificação:** [requisitos](../../../requisitos.md), [arquitetura](../../../arquitetura.md), [design](../../../design.md) e [README](../../../README.md). Operação e qualidade: [onboarding](../../onboarding.md), [setup](../../setup.md) e [quality](../../quality.md).
 
-**Data:** 22/10/2026. **Estado atual:** M0 e T01–T09 entregues localmente; T03 conserva a conferência com leitor de tela real. T09 integra catálogo, resgate atômico, estoque e histórico de tickets; evidências no [plano T09](2026-10-22-t09-catalogo-resgates.md). D06 e limites do catálogo estão confirmados. A próxima entrega é T10: combinado, realização e cancelamento/devolução. Decisões confirmadas e propostas restantes constam em requisitos §6.1. A seção 1 preserva o ponto de partida do planejamento.
+**Data:** 22/10/2026, atualizado em 23/10. **Estado atual:** M0 e T01–T15 entregues no recorte web local; direitos, laboratório, recuperação e operação persistente foram verificados. O [plano local T14–T15](2026-10-22-t14-t15-local.md), a [operação T15](2026-10-23-t15-operacao-local.md) e o [aceite](../../pilot/acceptance.md) registram execução e limites. O idealizador priorizou web/PostgreSQL locais e adiou provedores, publicação e aparelhos físicos; esses gates continuam abertos, inclusive leitor de tela real. Decisões constam em requisitos §6.1; a seção 1 preserva o ponto de partida do planejamento.
 
 ## 1. Ponto de partida e restrições
 
@@ -231,40 +231,62 @@ continuam nas etapas seguintes; aparelhos físicos e leitor de tela não observa
 **Responsável:** domínio de tickets. **Depende de:** T09 e D06.
 **Arquivos:** `web/src/server/{redemptions,points}/**`, `web/src/app/lojas/[storeId]/tickets/**`, `web/src/components/tickets/**`, `web/tests/{integration,e2e}/tickets/**`, `web/prisma/**`. **Recursos:** padrão T10.
 
-- [ ] Entregar L08/P09 com conversa e linha do tempo: aguardando combinar, combinado, realizado, cancelamento solicitado e cancelado/estornado.
-- [ ] Pedido em análise impede realização; recusa com motivo restaura estado anterior. Lojista pode iniciar cancelamento; estorno e eventual reposição de estoque obedecem ao contrato aprovado.
-- [ ] Verificar realizar duas vezes, cancelar duas vezes, realizar concorrendo com cancelamento, tickets em loja pausada/relação encerrada e devolução que não conta como conquista. Tickets não expiram no MVP e realização não debita de novo.
+- [x] Entregar L08/P09 com conversa e linha do tempo: aguardando combinar, combinado, realizado, cancelamento solicitado e cancelado/estornado.
+- [x] Pedido em análise impede realização; recusa com motivo restaura estado anterior. Lojista pode iniciar cancelamento; estorno e eventual reposição de estoque obedecem ao contrato aprovado.
+- [x] Verificar realizar duas vezes, cancelar duas vezes, realizar concorrendo com cancelamento, tickets em loja pausada/relação encerrada e devolução que não conta como conquista. Tickets não expiram no MVP e realização não debita de novo.
+
+T10: `check`, doze migrações e 249 HTTP reais aprovados. Chromium executou os
+454 cenários: 453 passaram na repetição final e um convite antigo falhou ao
+carregar um chunk com `ERR_NO_BUFFER_SPACE`; passou isoladamente em 320/390.
+Os 72 cenários novos passaram, com foco/200% e privacidade. Revisões independentes
+encerradas após provas de regressão; contratos em [tickets locais](../../tickets-local.md).
 
 ### T11 · Álbum privado por ticket
 
 **Responsável:** fluxo de momentos. **Depende de:** T10, T06 e D07–D08.
 **Arquivos:** `web/src/server/albums/**`, `web/src/components/albums/**`, `web/src/app/lojas/[storeId]/tickets/**`, `web/tests/{integration,e2e}/albums/**`, `web/prisma/**`. **Recursos:** padrão T11 e pipeline de mídia de teste.
 
-- [ ] Lojista seleciona/revisa/envia/publica várias fotos e vídeos; legenda/ordem, progresso, falha/tentativa por arquivo, publicação explícita dos prontos e novos lotes posteriores.
-- [ ] Participante vê somente mídias publicadas no próprio ticket, com ampliação de fotos e player com controles, sem som automático. Remoção própria exige confirmação e respeita retenção.
-- [ ] Verificar três fotos e dois vídeos, falha em um vídeo, retomada e nova tentativa sem duplicação; uma novidade agrupada por publicação. Outro ticket do mesmo mimo tem álbum independente.
-- [ ] Confirmar que publicar/remover mídia ou adicionar depois da realização não muda pontos, estoque ou estado do ticket; acesso a arquivo/miniatura de outra participação é negado.
+- [x] Lojista seleciona/revisa/envia/publica várias fotos e vídeos; legenda/ordem, progresso, falha/tentativa por arquivo, publicação explícita dos prontos e novos lotes posteriores.
+- [x] Participante vê somente mídias publicadas no próprio ticket, com ampliação de fotos e player com controles, sem som automático. Remoção própria exige confirmação e respeita retenção.
+- [x] Verificar três fotos e dois vídeos, falha em um vídeo, retomada e nova tentativa sem duplicação; uma novidade agrupada por publicação. Outro ticket do mesmo mimo tem álbum independente.
+- [x] Confirmar que publicar/remover mídia ou adicionar depois da realização não muda pontos, estoque ou estado do ticket; acesso a arquivo/miniatura de outra participação é negado.
+
+T11: treze migrações, `check` e 276 HTTP reais passaram. Foram executados 562
+Chromium em grupos: 561 passaram e um histórico antigo sofreu suspensão de rede
+no ambiente; repetição focal passou em 320/390. Os 108 novos passaram, assim como
+a regressão StrictMode no Next dev. Revisões encerradas após reprodução/correção;
+capturas a 200% examinadas. Contratos em [álbum local](../../albums-local.md).
 
 ### T12 · Relação, novidades e telas iniciais completas
 
 **Responsável:** fluxo de relação. **Depende de:** T11 e T05.
 **Arquivos:** `web/src/server/{notes,reactions,notifications,dashboards}/**`, `web/src/components/{notes,reactions,feed,notifications,dashboards}/**`, `web/src/app/{notificacoes,lojas/[storeId]/pessoas,lojas/[storeId]/mural,lojas/[storeId]/resumo}/**`, `web/src/app/lojas/[storeId]/page.tsx`, `web/tests/{integration,e2e}/relationship/**`, `web/prisma/**`. **Recursos:** padrão T12.
 
-- [ ] Entregar bilhete individual editável com versões/leitura entre dispositivos, coração e cartão; sem confirmação de leitura ao lojista. Recadinho do catálogo permanece distinto do bilhete privado.
-- [ ] Completar reações/comentários e mural privado sobre registros/tickets, conforme design §15; reações não aprovam atividade nem realizam ticket.
-- [ ] Entregar C04 e preferências: loja/autor/evento/leitura/destino, agrupamento de interações e autorização atual ao abrir outra loja. Uso não depende de push.
-- [ ] Integrar L02 com checklist inicial, registros pendentes, mimos a realizar, participantes, acontecimentos recentes e atalhos, usando consultas autorizadas. Montar P01 completa com saudação, saldo/pendências, atividades, vitrine e bilhete da participação; substituir as composições fictícias de T03 por dados reais.
-- [ ] Verificar loja vazia e em uso, contadores após aprovação/resgate/realização e troca de loja/papel. O resumo agrega somente a loja gerenciada; a Lojinha não revela saldos, bilhetes ou acontecimentos de outros participantes.
-- [ ] Verificar abrir versão antiga durante envio de nova, troca de conta, item de outra loja, acesso revogado e perda de Realtime seguida de nova consulta. Nenhum participante acessa bilhete/mural alheio.
+- [x] Entregar bilhete individual editável com versões/leitura entre dispositivos, coração e cartão; sem confirmação de leitura ao lojista. Recadinho do catálogo permanece distinto do bilhete privado.
+- [x] Completar reações/comentários e mural privado sobre registros/tickets, conforme design §15; reações não aprovam atividade nem realizam ticket.
+- [x] Entregar C04 e preferências: loja/autor/evento/leitura/destino, agrupamento de interações e autorização atual ao abrir outra loja. Uso não depende de push.
+- [x] Integrar L02 com checklist inicial, registros pendentes, mimos a realizar, participantes, acontecimentos recentes e atalhos, usando consultas autorizadas. Montar P01 completa com saudação, saldo/pendências, atividades, vitrine e bilhete da participação; substituir as composições fictícias de T03 por dados reais.
+- [x] Verificar loja vazia e em uso, contadores após aprovação/resgate/realização e troca de loja/papel. O resumo agrega somente a loja gerenciada; a Lojinha não revela saldos, bilhetes ou acontecimentos de outros participantes.
+- [x] Verificar abrir versão antiga durante envio de nova, troca de conta, item de outra loja, acesso revogado e interrupção das consultas seguida de recuperação autorizada. Nenhum participante acessa bilhete/mural alheio.
+
+T12: quatorze migrações, checks e revisão independente verificados. Foram
+cobertos 319 casos HTTP reais e 672 cenários Chromium, com correções e repetições
+focais registradas no [plano T12](2026-10-22-t12-relacao-paineis.md).
+Consulta visível de trinta segundos; sem alegação de Realtime ou prova física.
 
 ### T13 · Administração mínima e diagnóstico
 
 **Responsável:** operação da plataforma. **Depende de:** T12 e D02/D09 aplicáveis.
 **Arquivos:** `web/src/server/admin/**`, `web/src/app/admin/**`, `web/tests/{integration,e2e}/admin/**`, `web/src/server/audit/**`, `web/prisma/**`. **Recursos:** padrão T13; conta administrativa fictícia provisionada pelo procedimento aprovado.
 
-- [ ] Entregar A01–A04: contagens, busca/listas de contas e lojas, detalhe de metadados e pausa/reativação com motivo, alcance e auditoria.
-- [ ] Verificar ausência de promoção por autocadastro, tentativa de administrar como usuário comum e ações auditadas; administrador não ganha acesso cotidiano a fotos, pontos, análises ou tickets privados.
-- [ ] Conferir logs úteis para falhas/decisões, sem tokens, arquivos ou conteúdo de conversas; distinguir suspensão operacional de bloqueio de segurança conforme contrato.
+- [x] Entregar A01–A04: contagens, busca/listas de contas e lojas, detalhe de metadados e pausa/reativação com motivo, alcance e auditoria.
+- [x] Verificar ausência de promoção por autocadastro, tentativa de administrar como usuário comum e ações auditadas; administrador não ganha acesso cotidiano a fotos, pontos, análises ou tickets privados.
+- [x] Conferir logs úteis para falhas/decisões, sem tokens, arquivos ou conteúdo de conversas; distinguir suspensão operacional de bloqueio de segurança conforme contrato.
+
+T13: quinze migrações, checks, revisão independente e 356 casos HTTP distintos
+cobertos por execução completa e repetição focal. A regressão Chromium passou
+com 736 cenários, sem skips. Ocorrências e limites no
+[plano T13](2026-10-22-t13-administracao.md). Publicação permanece adiada.
 
 ### T14 · Aceite integrado e recuperação antes do piloto
 
@@ -279,6 +301,12 @@ continuam nas etapas seguintes; aparelhos físicos e leitor de tela não observa
 - [ ] Executar os checks documentados, resolver achados confirmados e registrar evidências/limitações. Aprovar o marco somente com os P0 cobertos; ausência de dispositivo ou serviço de teste fica como pendência explícita.
 
 ### T15 · Publicação e piloto controlado
+
+Recorte posterior confirmado: primeiro entregar a operação web persistente local,
+com supervisor, saúde, manutenção e comandos em [T14–T15 local](2026-10-22-t14-t15-local.md).
+Os itens publicados abaixo conservam suas dependências e permanecem adiados.
+
+- [x] Entregar o recorte web local: supervisor em primeiro plano, PostgreSQL persistente, saúde real, parada própria, backup programado e retomada com os mesmos dados; provas no [aceite T15](../../pilot/acceptance.md).
 
 **Responsável:** orquestrador/operação. **Depende de:** T14 e autorização de publicação, serviços/custo e migrações reais.
 **Arquivos:** configuração do provedor escolhido, `docs/pilot/**`, `docs/{setup,onboarding,quality}.md`. **Recursos:** ambientes nomeados e autorizados, secrets no serviço apropriado; ações serializadas.
@@ -375,7 +403,9 @@ Planos/cobrança, colaboradores, transferência, múltiplas fotos por registro d
 - Na elaboração inicial do roadmap, versões e provedores ainda não estavam escolhidos. M0 confirmou D01, selecionou versões e executou consultas reais ao Context7 e às fontes oficiais, registradas no plano da fundação. Isso atualiza a descoberta inicial sem alegar instalação ou integração já concluída.
 
 O estado atual está no início deste documento e nos planos de execução de cada
-entrega. A próxima etapa é T09, catálogo/resgate/tickets; D06 exige confirmação
-antes da respectiva regra. T08 e D05 estão registradas no plano de execução. Os demais limites pendentes mantêm suas dependências em
+entrega. T14 e a operação web local de T15 foram verificadas. O próximo passo do
+idealizador é testar essa web; o piloto publicado mantém suas condições próprias.
+D06 e os desenhos locais até T15 foram confirmados. Os limites
+e gates restantes mantêm suas dependências em
 requisitos §6.1. A aprovação do roadmap não autoriza publicação, cobrança ou
 migração em ambiente real.

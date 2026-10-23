@@ -4,6 +4,8 @@ import type { Prisma } from '../../generated/prisma/client.ts';
 import type { PageResult, StoreView } from '../../contracts/stores.ts';
 import type { Identity } from '../auth/types.ts';
 import { AppError } from '../errors.ts';
+import { suppressionFor } from '../privacy/suppression.ts';
+import { syncAlbumRetention } from '../albums/retention.ts';
 import { assertLifecycleDependencies } from './lifecycle.ts';
 import { consumeStoreLimit } from './limits.ts';
 import {
@@ -24,7 +26,8 @@ export async function listStores(identity: Identity, query = new URLSearchParams
   return withIdentityTransaction(identity, async tx => {
     const where: Prisma.MembershipWhereInput = {
       profileId: identity.userId, accessRevokedAt: null, ...(role ? { role } : {}),
-      ...(page.q ? { store: { name: { contains: page.q, mode: 'insensitive' } } } : {}),
+      ...(page.q ? { store: { name: { contains: page.q, mode: 'insensitive' },
+        createdBy: { dataSuppressions: { none: { scope: 'AUTHORED_CONTENT' } } } } } : {}),
     };
     if (state === 'CLOSED') where.OR = [{ closedAt: { not: null } }, { store: { state: 'CLOSED' } }];
     else if (state !== 'ALL') {
@@ -36,7 +39,8 @@ export async function listStores(identity: Identity, query = new URLSearchParams
       where, include: { store: true }, orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
       skip: page.skip, take: page.pageSize,
     });
-    return { items: rows.map(row => storeView(row.store, row)), page: page.page, pageSize: page.pageSize, total };
+    const suppressions = await suppressionFor(tx, rows.map(row => row.store.createdByProfileId));
+    return { items: rows.map(row => storeView(row.store, row, suppressions)), page: page.page, pageSize: page.pageSize, total };
   });
 }
 
@@ -60,20 +64,21 @@ export async function createStore(identity: Identity, body: Record<string, unkno
         where: { storeId_profileId: { storeId: existing.id, profileId: identity.userId } },
       });
       if (!current || !membership || membership.role !== 'MERCHANT' || membership.accessRevokedAt) unavailable();
-      return storeView(current, membership);
+      return storeView(current, membership, await suppressionFor(tx, [current.createdByProfileId]));
     }
     const store = await tx.store.create({ data: {
       operationId: operation, creationDigest, name, presentation, timezone, createdByProfileId: identity.userId,
     } });
     const membership = await tx.membership.create({ data: { storeId: store.id, profileId: identity.userId, role: 'MERCHANT' } });
     await storeAudit({ tx, identity, store }, 'store.created', store.id);
-    return storeView(store, membership);
+    return storeView(store, membership, await suppressionFor(tx, [store.createdByProfileId]));
   });
 }
 
 export async function readStore(identity: Identity, storeId: string): Promise<StoreView> {
   await consumeStoreLimit(identity, 'read');
-  return withStoreTransaction(identity, storeId, async scope => storeView(scope.store, requireMembership(scope)));
+  return withStoreTransaction(identity, storeId, async scope => storeView(scope.store, requireMembership(scope),
+    await suppressionFor(scope.tx, [scope.store.createdByProfileId])));
 }
 
 export async function updateStore(identity: Identity, storeId: string, body: Record<string, unknown>): Promise<StoreView> {
@@ -93,7 +98,7 @@ export async function updateStore(identity: Identity, storeId: string, body: Rec
     }
     const store = await scope.tx.store.update({ where: { id: scope.store.id }, data: changes });
     await storeAudit(scope, 'store.updated', store.id);
-    return storeView(store, membership);
+    return storeView(store, membership, await suppressionFor(scope.tx, [store.createdByProfileId]));
   });
 }
 
@@ -105,14 +110,15 @@ export async function changeStoreState(identity: Identity, storeId: string, body
   return withStoreTransaction(identity, storeId, async scope => {
     const membership = requireMerchant(scope);
     const target = action === 'pause' ? 'PAUSED' : action === 'resume' ? 'ACTIVE' : 'CLOSED';
-    if (scope.store.state === target) return storeView(scope.store, membership);
+    if (scope.store.state === target) return storeView(scope.store, membership, await suppressionFor(scope.tx, [scope.store.createdByProfileId]));
     assertStoreWritable(scope, true);
     if (action === 'close') await assertLifecycleDependencies(scope.tx, { storeId: scope.store.id });
     const now = await databaseNow(scope.tx);
     const store = await scope.tx.store.update({ where: { id: scope.store.id }, data: {
       state: target, pausedAt: target === 'PAUSED' ? now : null, closedAt: target === 'CLOSED' ? now : null,
     } });
+    if (action === 'close') await syncAlbumRetention({ ...scope, store });
     await storeAudit(scope, action === 'pause' ? 'store.paused' : action === 'resume' ? 'store.resumed' : 'store.closed', store.id);
-    return storeView(store, membership);
+    return storeView(store, membership, await suppressionFor(scope.tx, [store.createdByProfileId]));
   });
 }

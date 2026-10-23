@@ -9,8 +9,19 @@
 .preview-brand { display: inline-flex; align-items: center; gap: .5rem; min-height: 48px; padding-block: 4px; color: var(--text); text-decoration: none; font: 400 2rem/1.4 var(--font-heading); }
 .preview-brand svg { color: var(--action); flex-shrink: 0; }
 .preview-label { font-size: .875rem; color: var(--text-muted); }
-.preview-intro { max-width: 42rem; padding-block: 2.5rem; }
-.preview-intro h1 { font-size: clamp(2.25rem, 5vw, 3.75rem); max-width: 13em; }
+.preview-hero { display: grid; align-items: start; gap: 2rem; margin-block: 2.5rem 3.5rem; }
+.preview-intro { min-width: 0; max-width: 42rem; padding-block: 1rem; }
+.preview-intro h1 { font-size: clamp(2.5rem, 5.5vw, 4.75rem); max-width: 10ch; letter-spacing: -.045em; }
+.preview-intro .eyebrow, .section-heading .eyebrow { display: flex; align-items: center; gap: .5rem; }
+.eyebrow svg { width: 17px; height: 20px; flex-shrink: 0; }
+.scrapbook-note { display: flex; align-items: center; gap: 1rem; width: fit-content; max-width: calc(100% - 8px); margin: 2rem 4px; padding: 1.125rem 20px; position: relative; border: 1px solid var(--border); background: var(--surface); box-shadow: 3px 5px 0 var(--surface-soft); transform: rotate(-3deg); }
+.scrapbook-note::before { content: ''; position: absolute; top: -9px; left: 38%; width: 64px; height: 19px; background: rgb(242 167 196 / 35%); transform: rotate(7deg); }
+.scrapbook-note svg { flex-shrink: 0; color: var(--action); }
+.scrapbook-note svg:last-child { color: var(--brand); }
+.scrapbook-note p { margin: 0; font-size: .875rem; line-height: 1.7; }
+.preview-shop { width: min(100%, 31rem); justify-self: center; padding: 1.25rem clamp(12px, 3vw, 24px) 1.5rem; border: 6px solid var(--surface); border-radius: 2.5rem; background: var(--background); box-shadow: 0 0 0 1px var(--border), 0 24px 65px -24px rgb(154 91 121 / 30%); }
+.preview-phone-top { display: flex; align-items: center; justify-content: space-between; gap: .5rem; margin-bottom: 1.75rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border); color: var(--text-muted); font-size: .75rem; }
+.preview-phone-top svg { color: var(--action); flex-shrink: 0; }
 .preview-intro > p:not(.eyebrow) { color: var(--text-muted); margin-block: 1rem; }
 .preview-nav { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1.5rem; }
 .preview-nav a { display: inline-block; min-height: 48px; padding: .75rem 12px; border: 1px solid var(--border-control); border-radius: 2rem; color: var(--action); background: var(--surface); font-size: .875rem; font-weight: 600; text-underline-offset: 4px; }
@@ -18,26 +29,23 @@
 .preview-grid section { min-width: 0; scroll-margin-top: 1.5rem; }
 .section-heading { margin-bottom: 1.25rem; }
 .section-heading > p:last-child { margin: .75rem 0 0; color: var(--text-muted); }
-.points-collage { position: relative; padding-top: 20px; }
-.points-collage .ui-points { padding-top: 1.5rem; }
-.points-collage .ui-points-store { max-width: calc(100% - 110px); min-height: 3rem; }
-.kitten-sticker { position: absolute; top: -16px; right: 6px; width: 114px; height: auto; transform: rotate(6deg); pointer-events: none; }
 .catalog-heading { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-block: 1.5rem 1rem; }
 .catalog-heading h3 { margin: 0; }
-.catalog-heading > span { color: var(--action); font-size: 1.75rem; }
-.reward-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr)); gap: 1rem; }
+.catalog-heading > svg { color: var(--action); flex-shrink: 0; }
+.reward-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 8.5rem), 1fr)); gap: .875rem; }
 .reward-card { display: flex; flex-direction: column; min-width: 0; overflow: clip; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); }
 .reward-art, .detail-art { display: grid; place-items: center; padding: .5rem; background: var(--surface-soft); }
 .reward-art img { width: min(100%, 170px); height: auto; }
 .reward-cream .reward-art { background: var(--cream); }
-.reward-copy { display: flex; flex-direction: column; align-items: start; flex-grow: 1; gap: .75rem; padding: 1.25rem 16px; }
+.reward-copy { display: flex; flex-direction: column; align-items: start; flex-grow: 1; gap: .75rem; padding: 1rem 12px; border-top: 1px dashed var(--border-control); }
 .reward-copy h4 { margin: 0; font: 400 1.375rem/1.25 var(--font-heading); }
 .reward-copy > p { margin: 0; color: var(--text-muted); font-size: .875rem; }
 .reward-copy .point-price { margin-top: auto; color: var(--text); }
 .reward-copy .ui-button { width: 100%; }
 .point-price { font-size: 1.75rem !important; font-weight: 600; font-variant-numeric: tabular-nums; line-height: 1.3; }
 .point-price span { font-size: .875rem; font-weight: 400; }
-.love-note { margin-top: 1.5rem; padding: 1.5rem 16px; border: 1px solid var(--border); background: var(--surface); border-radius: .375rem; box-shadow: 3px 4px 0 var(--surface-soft); }
+.love-note { position: relative; margin-top: 2rem; padding: 1.5rem 16px; border: 1px dashed var(--border-control); background: var(--surface-paper); border-radius: 1rem; box-shadow: 3px 4px 0 var(--surface-soft); }
+.note-bow { display: block; margin: -2.25rem auto .75rem; width: 42px; height: 36px; fill: var(--brand); color: var(--action); transform: rotate(-8deg); }
 .love-note > p:not(.eyebrow) { font: 400 1.375rem/1.5 var(--font-heading); margin: .75rem 0; }
 .love-note > span { font-size: .875rem; color: var(--text-muted); }
 .detail-card { border-radius: var(--radius); border: 1px solid var(--border); overflow: clip; background: var(--surface); }
@@ -79,7 +87,7 @@
 .ticket-preview::after { right: -9px; clip-path: inset(0 50% 0 0); }
 .ticket-name { font: 400 1.75rem/1.25 var(--font-heading); }
 @media (min-width: 56rem) {
-  .preview-grid { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 3rem 2rem; }
-  .preview-merchant { grid-column: 1 / -1; }
-  .merchant-grid { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); }
+  .preview-hero { grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 3rem; }
+  .preview-intro { padding-block: 4rem; }
+  .preview-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 3rem; }
 }

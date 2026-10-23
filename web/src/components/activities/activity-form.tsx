@@ -2,7 +2,8 @@
 
 import { useId, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
-import type { ActivityFields, ActivityFrequency, ActivitySticker, ApprovalMode } from '@/contracts/activities';
+import type { ActivityFields, ActivityFrequency, ApprovalMode } from '@/contracts/activities';
+import { IllustrationSelect } from '@/components/ui/illustration-select';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import styles from './activities.module.css';
@@ -17,7 +18,12 @@ export function ActivityForm({ initial, busy, locked, onSave, submitLabel, canSu
   const categoryField = useRef<HTMLInputElement>(null);
   const pointsField = useRef<HTMLInputElement>(null);
   const weeklyLimitField = useRef<HTMLInputElement>(null);
-  const [fields, setFields] = useState(initial ?? initialFields);
+  const source = initial ?? initialFields;
+  const [fields, setFields] = useState<ActivityFields>(() => ({
+    name: source.name, description: source.description, category: source.category,
+    sticker: source.sticker, points: source.points, frequency: source.frequency,
+    weeklyLimit: source.weeklyLimit, approvalMode: source.approvalMode,
+  }));
   const [errors, setErrors] = useState<Partial<Record<keyof ActivityFields, string>>>({});
   function set<K extends keyof ActivityFields>(key: K, value: ActivityFields[K]) {
     setFields(previous => ({ ...previous, [key]: value })); setErrors(previous => ({ ...previous, [key]: undefined }));
@@ -48,8 +54,7 @@ export function ActivityForm({ initial, busy, locked, onSave, submitLabel, canSu
     <p id={`${id}-description-hint`}>{[...fields.description].length} de 1.000 caracteres.</p>
     <p id={`${id}-description-error`} role="alert" className="stores-error">{errors.description}</p>
     <Input ref={categoryField} label="Categoria (opcional)" value={fields.category} readOnly={locked} disabled={busy} hint="Até 80 caracteres." error={errors.category} onChange={event => set('category', event.target.value)} />
-    <label className="stores-field">Ilustração (opcional)<select className="ui-input" value={fields.sticker} disabled={busy || locked} onChange={event => set('sticker', event.target.value as ActivitySticker)}>
-      <option value="">Sem ilustração</option><option value="gift">Presente</option><option value="coffee">Café</option><option value="takeout">Comidinha</option><option value="envelope">Cartinha</option></select></label>
+    <IllustrationSelect optional value={fields.sticker} disabled={busy || locked} onChange={value => set('sticker', value)} />
     <Input ref={pointsField} label="Pontos por conquista aprovada" type="number" inputMode="numeric" min={1} max={1_000_000} step={1} required value={Number.isNaN(fields.points) ? '' : fields.points} error={errors.points}
       readOnly={locked} disabled={busy} onChange={event => set('points', event.target.valueAsNumber)} hint="Número inteiro entre 1 e 1.000.000 pontos." />
     <label className="stores-field">Frequência<select className="ui-input" value={fields.frequency} disabled={busy || locked} onChange={event => set('frequency', event.target.value as ActivityFrequency)}>

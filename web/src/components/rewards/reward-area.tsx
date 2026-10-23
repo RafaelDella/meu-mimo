@@ -12,6 +12,7 @@ import { RewardBalance, RewardCounter } from './reward-summary';
 import { rewardPath, ticketPath } from './transport';
 import type { RewardRoute } from './transport';
 import styles from './rewards.module.css';
+import { MimoIntro } from '@/components/ui/mimo-page';
 
 export function RewardTabs({ store, active }: { store: StoreView; active: 'catalog' | 'tickets' | 'statement' }) {
   return <nav className={styles.tabs} aria-label={store.role === 'MERCHANT' ? 'Mimos da loja' : 'Meus mimos'}>
@@ -23,7 +24,7 @@ export function RewardTabs({ store, active }: { store: StoreView; active: 'catal
 export function RewardArea({ store, accountKey, route }: { store: StoreView; accountKey: string; route: RewardRoute }) {
   const list = route.view === 'catalog' || route.view === 'tickets';
   return <RewardAccess><div className={styles.area}>
-    {list && <>{store.role === 'PARTICIPANT' && route.view === 'tickets' && <h2>Meus mimos</h2>}
+    {list && <>{store.role === 'PARTICIPANT' && route.view === 'tickets' && <MimoIntro kind="ticket"><p className="mimo-eyebrow">Carinhos que viram momentos</p><h2>Meus mimos</h2><p>Guarde seus vales e combine os próximos momentos de vocês.</p></MimoIntro>}
       {(store.role === 'MERCHANT' || route.view === 'tickets') && <RewardTabs store={store} active={route.view === 'catalog' ? 'catalog' : 'tickets'} />}
       {store.role === 'PARTICIPANT' && <RewardBalance store={store} />}<RewardCounter store={store} showTotal={route.view === 'tickets'} /></>}
     {route.view === 'catalog' ? <RewardCatalog store={store} query={route.query} /> : route.view === 'new' ? <RewardEditor store={store} /> :

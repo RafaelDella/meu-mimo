@@ -1,9 +1,10 @@
 import type { ConversationView } from './conversations';
 import type { PageResult } from './stores';
+import type { Illustration } from './illustrations';
 
 export type ActivityFrequency = 'ONCE' | 'DAILY' | 'WEEKLY';
 export type ApprovalMode = 'MANUAL' | 'AUTOMATIC';
-export type ActivitySticker = '' | 'gift' | 'coffee' | 'takeout' | 'envelope';
+export type ActivitySticker = '' | Illustration;
 export type ActivityFields = {
   name: string; description: string; category: string; sticker: ActivitySticker;
   points: number; frequency: ActivityFrequency; weeklyLimit: number; approvalMode: ApprovalMode;
@@ -11,7 +12,7 @@ export type ActivityFields = {
 export type ActivityAvailability = {
   eligible: boolean; used: number; limit: number; remaining: number;
   localDate: string; timezone: string; startsAt: string | null; endsAt: string | null; now: string;
-  reason: 'AVAILABLE' | 'LIMIT' | 'STORE_CLOSED' | 'MEMBERSHIP_CLOSED' | 'ARCHIVED';
+  reason: 'AVAILABLE' | 'LIMIT' | 'STORE_CLOSED' | 'STORE_PLATFORM_PAUSED' | 'MEMBERSHIP_CLOSED' | 'ARCHIVED';
 };
 export type ActivityView = ActivityFields & {
   id: string; storeId: string; version: number; createdAt: string; archivedAt: string | null;
@@ -47,7 +48,7 @@ export type PointsEntryView = {
   reviewEventId: string | null; compensatesEntryId: string | null;
 };
 export type ReviewAction = 'APPROVE' | 'CONTEST' | 'VOID' | 'REOPEN';
-export type PointsKind = 'ACTIVITY_CREDIT' | 'ACTIVITY_REVERSAL' | 'ACTIVITY_RESTORE' | 'REDEMPTION_DEBIT';
+export type PointsKind = 'ACTIVITY_CREDIT' | 'ACTIVITY_REVERSAL' | 'ACTIVITY_RESTORE' | 'REDEMPTION_DEBIT' | 'REDEMPTION_REFUND';
 export type ReviewImpact = { available: string; delta: string; resulting: string };
 export type ReviewEventView = {
   id: string; submissionId: string; kind: ReviewAction | 'RESPOND' | 'RECEIVED' | 'AUTO_APPROVED';

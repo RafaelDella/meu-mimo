@@ -8,20 +8,22 @@ import { fileError, fromAsset, uploadItem } from './upload';
 import type { ItemPatch, UploadItem } from './upload';
 import { loadMediaPages } from './load-media-pages';
 
-export function useMediaUpload(context: MediaContext, transport: MediaTransport) {
+export function useMediaUpload(context: MediaContext, transport: MediaTransport, onPrivacyFailure?: (cause: unknown) => void,
+  onRemoved?: (assetId: string) => void, refreshKey = 0) {
   const [items, setItems] = useState<UploadItem[]>([]);
   const rows = useRef<UploadItem[]>([]);
   const active = useRef<{ id: string; controller: AbortController } | null>(null);
   const alive = useRef(true);
   const [revision, setRevision] = useState(0);
   const [pages, setPages] = useState(1);
-  const [result, setResult] = useState<{ key: number; page?: MediaPage; error?: string }>();
+  const [result, setResult] = useState<{ key: string; page?: MediaPage; error?: string }>();
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [busyId, setBusyId] = useState('');
   const [denied, setDenied] = useState(false);
   const [closedByServer, setClosedByServer] = useState(false);
-  const current = result?.key === revision ? result : undefined;
+  const requestKey = `${revision}:${refreshKey}`;
+  const current = result?.key === requestKey ? result : undefined;
   const page = current?.page;
   const { storeId, collectionId } = context;
 
@@ -31,7 +33,9 @@ export function useMediaUpload(context: MediaContext, transport: MediaTransport)
   }
   function privacyFailure(cause: unknown) {
     if (!(cause instanceof StoreRequestError) || ![401, 403, 404].includes(cause.status)) return false;
+    active.current?.controller.abort();
     replace([]); setDenied(true); setError('O acesso a estes arquivos não está disponível. Reabra o item autorizado para continuar.');
+    onPrivacyFailure?.(cause);
     return true;
   }
   useEffect(() => {
@@ -45,16 +49,16 @@ export function useMediaUpload(context: MediaContext, transport: MediaTransport)
       const ids = new Set(value.items.map(asset => asset.id));
       replace([...merged, ...rows.current.filter(item => !item.asset && !ids.has(item.id))]);
       setClosedByServer(false);
-      setResult({ key: revision, page: value });
+      setResult({ key: requestKey, page: value });
     }).catch(cause => {
       if (controller.signal.aborted) return;
       privacyFailure(cause);
-      setResult({ key: revision, error: storeError(cause) });
+      setResult({ key: requestKey, error: storeError(cause) });
     });
     return () => controller.abort();
     // context is keyed by the parent; callers pass a stable transport.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [storeId, collectionId, transport, revision, pages]);
+  }, [storeId, collectionId, transport, requestKey, pages]);
   useEffect(() => {
     alive.current = true;
     return () => { alive.current = false; active.current?.controller.abort(); };
@@ -123,7 +127,7 @@ export function useMediaUpload(context: MediaContext, transport: MediaTransport)
     active.current = { id, controller }; setBusyId(id);
     try {
       await transport.remove(context, id, controller.signal);
-      if (!controller.signal.aborted) { replace(rows.current.filter(value => value.id !== id)); setMessage('Arquivo removido.'); }
+      if (!controller.signal.aborted) { replace(rows.current.filter(value => value.id !== id)); setMessage('Arquivo removido.'); onRemoved?.(id); }
     } catch (cause) {
       if (controller.signal.aborted) return;
       if (!item.asset && cause instanceof StoreRequestError && cause.status === 404) {
@@ -155,5 +159,5 @@ export function useMediaUpload(context: MediaContext, transport: MediaTransport)
     choose, send, remove, resume, privacyFailure, refresh: () => { setRevision(value => value + 1); },
     hasMore: !!page && page.items.length < page.total,
     loadMore: () => { setPages(value => value + 1); setRevision(value => value + 1); },
-    pause: () => active.current?.controller.abort(), revision };
+    pause: () => active.current?.controller.abort(), revision: requestKey };
 }

@@ -37,7 +37,7 @@ Decisões adicionais confirmadas: adotar **Prisma para acesso e migrações de e
 | RF-17 | P0 | **Resumo das atividades:** diferenciar atividades disponíveis, registros em análise e aprovações. Progresso diário só tem percentual quando existir rotina diária definida; atividades semanais usam sua própria unidade. |
 | RF-18 | P0 | **Privacidade entre participantes:** cada pessoa vê seus registros, saldo, fotos, bilhete, tickets e interações. O lojista vê as relações de sua loja; outros participantes não veem esses dados. |
 | RF-19 | P0 | **Pausa e encerramento:** interromper novas ações conforme estado da loja/participação, preservando consulta ao histórico e tratamento dos tickets existentes segundo a política definida em `design.md`. |
-| RF-20 | P0 | **Administração mínima:** listar contas e lojas e executar ações administrativas autorizadas com motivo e auditoria, sem se tornar lojista de todas as lojas. |
+| RF-20 | P0 | **Administração mínima:** listar contas e lojas por metadados e executar pausa da plataforma por loja ou bloqueio de segurança por conta, com motivo e auditoria. Pausa da plataforma é independente da pausa do lojista; bloqueio retira leitura privada da própria conta. Administração não concede vínculo nem leitura do conteúdo das relações. |
 | RF-21 | P1 | **Push:** oferecer permissão de maneira contextual, respeitar preferências por loja, agrupar interações e abrir o destino autorizado. O uso pelo navegador funciona sem ativar push. |
 | RF-22 | P1 | **Meta de mimo:** marcar uma recompensa como objetivo para mostrar progresso em destaque, preservando a possibilidade de escolher outros mimos. |
 | RF-23 | P0 | **Histórico de mimos:** consultar todos os resgates da participação, com nome e custo da ocasião, data, ticket, situação e linha do tempo de realização/cancelamento. Filtrar por período e situação; arquivar ou editar o mimo não altera tickets anteriores. |
@@ -73,6 +73,18 @@ O recadinho do mimo é conteúdo do catálogo compartilhado com os participantes
 
 O estado não lido pertence à versão da mensagem e deve acompanhar a conta entre dispositivos. Abrir a versão 1 não pode marcar uma versão 2 recém-enviada como lida. Não incluir confirmação de leitura para o lojista no MVP.
 
+Desenho T12 confirmado: texto simples obrigatório de até 2.000 caracteres
+Unicode, com uma versão atual por relação e versões anteriores preservadas.
+Pausa permite envio; encerramento mantém consulta e leitura exata. A leitura
+de uma novidade não confirma a leitura do bilhete. Rascunhos e texto não ficam
+em URLs ou armazenamento do navegador.
+
+Reações permitidas: ❤️, 👏, 🥹, 🔥, 😂 e 🌷. Cada pessoa mantém uma escolha por
+item; trocar/remover é uma intenção versionada, sem efeitos financeiros.
+Comentários e reações da mesma pessoa, destinatário, loja e item são agrupados
+em janelas de cinco minutos. Silenciar interações ou avisos automáticos afeta
+somente o contador; preserva histórico, leitura e decisões financeiras.
+
 ### 3.5. Templates e personalização
 
 “Mexer o corpinho”, “Ler algumas páginas”, “A dois”, “Pra você” e “Surpresas” são bons pontos de partida para conteúdo e categorias. Nomes de pessoas, atividades, valores, recados e identidade da loja devem vir de dados editáveis, sem depender de Rafael/Júlia ou de uma única loja fixa.
@@ -94,8 +106,48 @@ O estado não lido pertence à versão da mensagem e deve acompanhar a conta ent
 - O lojista publica os momentos; o participante daquele ticket pode visualizá-los e reagir/comentar. Outros participantes da loja não têm acesso.
 - Publicação de mídia é opcional e independente da realização do mimo. Falha de upload não impede tratar o ticket e não altera saldo ou estoque.
 - Mídias ficam privadas durante seleção, envio e validação; só itens prontos explicitamente publicados aparecem ao participante.
-- Limites técnicos de quantidade, tamanho, duração e formatos serão definidos antes da implementação; “várias mídias” não exige uploads ilimitados.
+- Limites D07: vinte itens ativos, dez por lote; fotos até 10 MB e vídeos até 100 MB/60 s, nos formatos e derivados confirmados na seção 6.1.
+- T11 confirmado: legenda opcional de até 500 caracteres Unicode; legenda e ordem ficam imutáveis após publicar. Cancelado permite consulta/remoção própria, sem novos envios ou publicação.
+- O primeiro encerramento de loja/participação inicia os doze meses de calendário do álbum. Pausa não inicia prazo. Pendência protege momentos existentes após o prazo, mas não permite novos; realizar/cancelar libera proteção e aplica o prazo original, sem renová-lo.
 - A retrospectiva futura pode oferecer a seleção desses momentos. Compartilhamento externo requer ação explícita e prévia revisável; nada é publicado automaticamente.
+
+### 3.8. Administração e restrições independentes
+
+T13 usa consultas administrativas com busca de até 80 caracteres Unicode e
+paginação 20/50. Motivo obrigatório de até 500 caracteres Unicode é normalizado
+em NFC; leitura 120/minuto e mutação 10/minuto por conta são independentes.
+A interface e o servidor impedem bloquear o próprio administrador ou conta
+com grant ativo. Grants e recuperação de MFA permanecem no procedimento
+separado. Contratos e estado de verificação em [T13 local](docs/admin-local.md).
+
+Pausa da plataforma conserva análise, complemento e obrigações de tickets e
+álbuns existentes. Retomar uma causa não remove a pausa do lojista nem reabre
+encerramentos. Bloqueio de segurança retira o acesso privado da própria conta,
+preservando dados e o acesso legítimo da outra pessoa. Nenhuma dessas ações
+altera pontos, estoque, tickets ou vínculos.
+
+### 3.9. Direitos e operação local
+
+O recorte T14–T15 confirmado prioriza a web com PostgreSQL persistente local.
+O uso diário mantém supervisão em primeiro plano, saúde real, parada própria
+e backup a cada doze horas enquanto a máquina e o processo estiverem ligados.
+Ao reiniciar, um backup devido é tratado antes de novas escritas. A parada
+conserva os volumes e aguarda as operações admitidas; não encerra um processo
+alheio nem inicia nova operação de domínio durante a drenagem.
+Exportação/exclusão exige identificação manual da pessoa e protocolo próprio;
+o CLI de prova aceita somente contas sintéticas rastreadas. Remover autoria
+oculta texto e identidade daquela pessoa, retira acesso à mídia e preserva o
+conteúdo legítimo da outra autora. Não altera saldo, estoque ou tickets.
+O resultado de exclusão é parcial quando originais imutáveis, pendências ou
+backups permanecem; não anunciar eliminação física completa.
+
+Exportações têm validade de sete dias. Backups têm retenção máxima de trinta
+dias, intervalo operacional de doze horas, RPO de 24h e RTO de 8h como metas
+do ensaio local. A restauração reaplica supressões posteriores ao corte antes
+de abrir a cópia. Metas e execução observada são registradas separadamente em
+[aceite](docs/pilot/acceptance.md) e [recuperação](docs/pilot/recovery.md).
+Publicação, custos, canal público de suporte e homologação em aparelhos reais
+permanecem adiados pelo idealizador.
 
 ## 4. Requisitos não funcionais
 
@@ -180,7 +232,7 @@ Não é necessário transformar todas essas decisões em telas novas. Muitas def
 
 Em 22/10/2026, o idealizador confirmou D01: Next.js/React/TypeScript em `web/`, PostgreSQL com Prisma e Supabase para Auth/Storage, desenvolvimento e testes locais, sem contratação ou publicação. As seleções de versões e os limites da verificação estão em `arquitetura.md`, seção 1.1.
 
-As recomendações abaixo foram preparadas pelo orquestrador com análise independente de produto. **D02, D03 e os limites D04 de autenticação, T04 e T07 foram confirmados pelo idealizador em 22/10/2026.** D07 e D08 foram confirmadas em T06. D05 e os limites de análise/complemento de T08 foram confirmados em 22/10/2026. D06, custo/estoque e textos do catálogo foram confirmados em T09. Os limites D04 dos demais recursos futuros e D09 continuam propostas. Registrar uma pendência com sua dependência atende M0; não autoriza implementar a política por suposição. O runtime local foi preparado após autorização do idealizador.
+As recomendações abaixo foram preparadas pelo orquestrador com análise independente de produto. **D02, D03 e os limites D04 de autenticação, T04 e T07 foram confirmados pelo idealizador em 22/10/2026.** D07 e D08 foram confirmadas em T06. D05 e os limites de análise/complemento de T08 foram confirmados em 22/10/2026. D06, custo/estoque e textos do catálogo foram confirmados em T09. Os limites do bilhete e da administração e o desenho de operação local T14–T15 também foram confirmados; a publicação e sua infraestrutura continuam adiadas. Registrar uma pendência com sua dependência atende M0; não autoriza implementar a política por suposição. O runtime local foi preparado após autorização do idealizador.
 
 | Decisão | Proposta concreta para revisão | Responsável pela decisão e tarefa dependente |
 |---|---|---|
@@ -189,15 +241,15 @@ As recomendações abaixo foram preparadas pelo orquestrador com análise indepe
 | D03 · encerramento | Confirmado: resolver registros em análise/contestação antes de encerrar loja ou participação. Tickets emitidos não impedem encerramento e continuam acessíveis para realização/cancelamento. Loja/participação encerrada não reabre por convite em T04. | Idealizador; T04 e T07–T10 |
 | D04 · períodos | Confirmado em T07: semana de segunda-feira 00h até a segunda seguinte no fuso da loja; sem retroatividade no MVP. Única = uma ocorrência por atividade/participação; diária = uma por data local; semanal = até N no período, com N inteiro entre 1 e 100 e possibilidade de vários registros no mesmo dia. | Idealizador; T07–T08 |
 | D04 · ocorrência/fuso | Confirmado: alterar fuso somente antes do primeiro registro/ticket; depois, bloquear no MVP. Envio recebido ocupa ocorrência, inclusive contestado/anulado; complemento/reabertura usam o mesmo registro. Editar frequência considera todos os recebidos no período da nova regra, sem zerar consumo. | Idealizador; configuração T04 e recorrência T07 |
-| D04 · limites | Confirmados: nomes até 80 caracteres, apresentação 280, descrições 1.000, paginação padrão 20/máximo 50 e ordenação estável. Comentários T05 e legenda simples/imutável T07 até 500 caracteres Unicode. Pontos por atividade inteiros de 1 a 1.000.000. Confirmados em T08: motivos e texto de complemento até 500 caracteres Unicode; uma resposta por solicitação, texto ou foto opcional com ao menos um. Confirmados em T09: custo inteiro de 1 a 1.000.000; estoque inteiro de 0 a 1.000.000 ou ilimitado, uma unidade por ticket; categoria até 80, recadinho até 500 e instruções até 1.000 caracteres Unicode; ilustrações locais selecionáveis. Proposto para recurso futuro: bilhete 2.000. | Idealizador; T04–T12 conforme recurso |
+| D04 · limites | Confirmados: nomes até 80 caracteres, apresentação 280, descrições 1.000, paginação padrão 20/máximo 50 e ordenação estável. Comentários T05 e legenda simples/imutável T07 até 500 caracteres Unicode. Pontos por atividade inteiros de 1 a 1.000.000. Confirmados em T08: motivos e texto de complemento até 500 caracteres Unicode; uma resposta por solicitação, texto ou foto opcional com ao menos um. Confirmados em T09: custo inteiro de 1 a 1.000.000; estoque inteiro de 0 a 1.000.000 ou ilimitado, uma unidade por ticket; categoria até 80, recadinho até 500 e instruções até 1.000 caracteres Unicode; ilustrações locais selecionáveis. Confirmados em T10: combinado e motivos até 500 caracteres Unicode; data civil opcional, revisões auditadas e realização direta nos estados abertos. Confirmado em T11: legenda opcional do álbum até 500 caracteres Unicode, imutável após publicação. Confirmado em T12: bilhete obrigatório de até 2.000 caracteres Unicode, versões e leitura exata; implementação verificada localmente em T12. | Idealizador; T04–T12 conforme recurso |
 | D04 · requisições | Confirmados: recuperação 3 pedidos/hora/destinatário e login 5 tentativas/minuto/conta+origem; T04 leitura 120/minuto e mutação 30/minuto por conta, com espera explícita. T06: 20 autorizações de arquivo/minuto/conta; partes usam limite de transporte separado. | Idealizador; T02/T04/T06 |
 | D05 · correções | Confirmada em T08: contestação mantém crédito existente; anulação estorna uma vez o crédito vigente e admite saldo negativo. Reabrir volta à análise sem movimentar; só nova aprovação recompõe. Motivos CONTEST/VOID/REOPEN obrigatórios. Análise/complemento permitidos durante pausa; encerramento mantém consulta/replay autorizado. Snapshot e ocorrência preservados. Tickets preservados e novos resgates sem saldo suficiente bloqueados serão integrados em T09. | Idealizador; T08/T09 |
-| D06 · tickets/estoque | Confirmada em T09: decrementar estoque na emissão. Cancelamento antes da realização devolve pontos uma vez; reposição de item limitado exige escolha explícita do lojista, desligada por padrão. Pedido em análise impede realizar; recusa motivada restaura estado anterior. Emissão pertence a T09; transições/devolução a T10. Disputa após realização usa procedimento operacional a definir em T14. | Idealizador; T09–T10 e procedimento em T14 |
+| D06 · tickets/estoque | Confirmada em T09: decrementar estoque na emissão. Cancelamento antes da realização devolve pontos uma vez; reposição de item limitado exige escolha explícita do lojista, desligada por padrão. Pedido em análise impede realizar; recusa motivada restaura estado anterior. Emissão pertence a T09; transições/devolução a T10. Disputa após realização segue o [procedimento manual](docs/pilot/data-rights.md), preservando estado terminal e financeiro; canal público adiado. | Idealizador; T09–T10 e procedimento T14 |
 | D07 · mídia | Confirmada em T06: uma foto opcional por envio/versão de evidência; complemento preserva anteriores no histórico do mesmo registro. Álbum até 20 itens, até 10 por lote. Foto até 10 MB (10.000.000 bytes), JPEG/PNG/WebP; HEIC/HEIF rejeitados enquanto não comprovados. Entrega JPEG até 2.048 px e miniatura de 480 px, com orientação aplicada e sem EXIF/GPS. | Idealizador; implementação/prova local T06, integração T07/T08/T11 |
 | D07 · vídeo | Confirmado em T06: até 100 MB (100.000.000 bytes)/60 s; entrada MP4/MOV e saída MP4/H.264/AAC quando houver áudio, até 1080p. Objetos/miniaturas privados; URL da aplicação de cinco minutos vinculada à sessão, com reautorização em cada leitura/retomada. Processo local separado aprovado; publicação parcial é integrada em T11. Prova sintética local não comprova Android/iPhone reais. | Idealizador; T06/T11; aparelhos/infraestrutura publicada ainda pendentes |
 | D08 · retenção | Confirmada em T06: órfãos após 24h sem atividade; originais removidos até 24h após processamento; evidência por 180 dias desde a publicação, sem expurgo durante análise/contestação; álbum durante relação ativa e até 12 meses de calendário após encerramento. A origem informa proteção/encerramento na mesma transação; sem domínio integrado, proteção conservadora. Histórico estruturado até 24 meses após encerramento e resolução de pendências; backups até 30 dias; operação completa em T14. | Idealizador; T06/T11/T14 |
 | D08 · direitos e pendências | Confirmada em T06: procedimento manual identificável de exportação/exclusão antes do piloto, em T14; não apagar pendências automaticamente. Ocultar mídia removida imediatamente e expurgar conforme política; exclusão não muda pontos/ticket. T14 define anonimização e reaplicação de exclusões ao restaurar. Prazos são decisões de produto, sem apresentação como exigência legal. | Idealizador; T14 e integração da proteção pela origem |
-| D09 · operação | Duas versões estáveis mais recentes no piloto de Chrome Android/Safari iPhone, com versões exatas registradas e Android intermediário real. Proposta: RPO de 24h e RTO de 8h para banco/arquivos, a comprovar por restauração. Orçamento, disponibilidade, provedor de publicação e canal de suporte ainda sem decisão; nenhum custo autorizado. | Idealizador; T14/T15 |
+| D09 · operação | Confirmadas metas locais de RPO de 24h e RTO de 8h para banco/arquivos; [ensaio sintético](docs/pilot/recovery.md) registrou 77,838s/96,593s nesta máquina. Homologação nas duas versões estáveis mais recentes de Chrome Android/Safari iPhone e Android intermediário real permanece adiada. Orçamento, disponibilidade remota, provedor e canal público de suporte continuam sem decisão; nenhum custo autorizado. | Idealizador; T14/T15 |
 | D10 · retrospectiva | Periodicidade, elegibilidade, corte, regeneração e compartilhamento continuam para evolução. Capturar os dados históricos necessários desde o MVP. | Idealizador; E04, sem bloqueio de T01 |
 
 Os limites devem ser validados nos testes do pacote responsável e podem ser ajustados antes da decisão. Nenhum valor desta tabela altera os dados ou as regras da demonstração.

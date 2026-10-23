@@ -72,20 +72,37 @@ async function handle(request: IncomingMessage, response: ServerResponse): Promi
   }
 }
 
-export async function startMediaServer(): Promise<{ close: () => Promise<void> }> {
-  mediaWorkerConfig();
-  const server = createServer((request, response) => { void handle(request, response); });
+export async function startMediaServer({ signal }: { signal?: AbortSignal } = {}): Promise<{ port: number; close: () => Promise<void> }> {
+  const config = mediaWorkerConfig();
+  const pending = new Set<Promise<void>>();
+  let closing = false; let closed: Promise<void> | undefined;
+  const server = createServer((request, response) => {
+    if (closing || signal?.aborted) {
+      response.writeHead(503, { 'Cache-Control': 'private, no-store, max-age=0', 'X-Content-Type-Options': 'nosniff',
+        'Content-Type': 'application/json', Connection: 'close' });
+      response.end(JSON.stringify({ code: 'service_unavailable', message: 'O processo de mídia está encerrando.' }));
+      return;
+    }
+    const unit = handle(request, response).catch(() => { response.destroy(); });
+    pending.add(unit); void unit.then(() => { pending.delete(unit); }, () => { pending.delete(unit); });
+  });
   server.requestTimeout = 30_000;
   server.headersTimeout = 10_000;
   server.maxHeadersCount = 30;
   server.keepAliveTimeout = 1_000;
   await new Promise<void>((resolve, reject) => {
     server.once('error', reject);
-    server.listen(4311, '127.0.0.1', () => { server.off('error', reject); resolve(); });
+    server.listen(config.port, '127.0.0.1', () => { server.off('error', reject); resolve(); });
   });
-  return { close: () => new Promise<void>((resolve, reject) => {
-    server.close(error => { if (error) reject(error); else resolve(); });
-    server.closeIdleConnections();
-    server.closeAllConnections();
-  }) };
+  return { port: config.port, close: () => {
+    closed ??= (async () => {
+      closing = true;
+      await new Promise<void>((resolve, reject) => {
+        server.close(error => { if (error) reject(error); else resolve(); });
+        server.closeIdleConnections();
+      });
+      await Promise.all(pending);
+    })();
+    return closed;
+  } };
 }

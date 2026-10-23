@@ -1,10 +1,8 @@
 import '../only.ts';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { AppError } from '../errors.ts';
-
-const webRoot = fileURLToPath(new URL('../../../', import.meta.url));
+import { localMediaTarget } from '../media/local-target.ts';
 
 export function mediaWorkerConfig() {
   const bucket = process.env.MEDIA_BUCKET;
@@ -15,17 +13,14 @@ export function mediaWorkerConfig() {
   const ffmpeg = process.env.FFMPEG_PATH;
   const ffprobe = process.env.FFPROBE_PATH;
   try {
-    const task = /^t0[789]-/.test(prefix ?? '') ? prefix!.slice(0, 3) : 't06';
-    const target = task !== 't06' ? prefix?.slice(4) : prefix;
-    const tempRoot = path.resolve(webRoot, `../.artifacts/${task}-runtime/temp`);
-    if (bucket !== 'meumimo-t06-private' || !['integration', 'development'].includes(target ?? '') ||
-        url !== 'http://127.0.0.1:54321' || !key || !temp || !path.isAbsolute(temp) ||
-        path.resolve(temp) !== path.join(tempRoot, target!) ||
+    const target = localMediaTarget();
+    if (bucket !== 'meumimo-t06-private' || prefix !== target.prefix || !url || !key ||
+        !temp || !path.isAbsolute(temp) || path.resolve(temp) !== target.temp ||
         !ffmpeg || !ffprobe || !path.isAbsolute(ffmpeg) || !path.isAbsolute(ffprobe) ||
         !existsSync(ffmpeg) || !existsSync(ffprobe)) throw new Error();
     const claims = JSON.parse(Buffer.from(key.split('.')[1] ?? '', 'base64url').toString('utf8'));
     if (claims.role !== 'service_role') throw new Error();
-    return { bucket, prefix: prefix!, temp, url, key, ffmpeg, ffprobe };
+    return { bucket, prefix, temp, url, key, ffmpeg, ffprobe, port: target.port };
   } catch {
     throw new AppError('media_configuration_invalid', 503, 'A configuração local de mídia precisa ser conferida.');
   }

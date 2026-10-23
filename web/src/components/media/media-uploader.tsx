@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useId, useRef, useState } from 'react';
+import type { MediaAssetView } from '@/contracts/media';
 import { Button } from '@/components/ui/button';
 import type { MediaContext, MediaTransport } from './transport';
 import { mediaTransport } from './transport';
@@ -9,21 +10,31 @@ import { useMediaUpload } from './use-media-upload';
 import styles from './media.module.css';
 
 export type MediaSelectionState = {
-  ready: boolean; busy: boolean; selectedCount: number; assetIds: string[]; unavailable: boolean;
+  ready: boolean; busy: boolean; selectedCount: number; assetIds: string[]; assets?: MediaAssetView[]; unavailable: boolean;
 };
 type Props = MediaContext & {
   accountKey: string; transport?: MediaTransport; onSelectionChange?: (state: MediaSelectionState) => void;
+  onPrivacyFailure?: (cause: unknown) => void; canRemoveOwn?: boolean;
+  onRemoved?: (assetId: string) => void;
+  localPreviews?: boolean;
+  refreshKey?: number;
+  readOnly?: boolean;
 };
 
 // Sessão e origem são responsabilidade do chamador. A chave descarta arquivos,
 // requisições e URLs imediatamente ao trocar conta, loja ou coleção.
-export function MediaUploader({ accountKey, storeId, collectionId, transport = mediaTransport, onSelectionChange }: Props) {
+export function MediaUploader({ accountKey, storeId, collectionId, transport = mediaTransport, onSelectionChange, onPrivacyFailure, canRemoveOwn, onRemoved, localPreviews = false, refreshKey = 0, readOnly = false }: Props) {
   return <MediaUploadContent key={`${accountKey}:${storeId}:${collectionId}`} context={{ storeId, collectionId }}
-    transport={transport} onSelectionChange={onSelectionChange} />;
+    transport={transport} onSelectionChange={onSelectionChange} onPrivacyFailure={onPrivacyFailure} canRemoveOwn={canRemoveOwn} onRemoved={onRemoved} localPreviews={localPreviews} refreshKey={refreshKey} readOnly={readOnly} />;
 }
 
-function MediaUploadContent({ context, transport, onSelectionChange }: {
+function MediaUploadContent({ context, transport, onSelectionChange, onPrivacyFailure, canRemoveOwn, onRemoved, localPreviews, refreshKey, readOnly }: {
   context: MediaContext; transport: MediaTransport; onSelectionChange?: Props['onSelectionChange'];
+  onPrivacyFailure?: Props['onPrivacyFailure']; canRemoveOwn?: boolean;
+  onRemoved?: Props['onRemoved'];
+  localPreviews: boolean;
+  refreshKey: number;
+  readOnly: boolean;
 }) {
   const id = useId();
   const title = useRef<HTMLHeadingElement>(null);
@@ -31,16 +42,17 @@ function MediaUploadContent({ context, transport, onSelectionChange }: {
   const gallery = useRef<HTMLInputElement>(null);
   const [cameraHelp, setCameraHelp] = useState(false);
   const focusAfterLoad = useRef(false);
-  const upload = useMediaUpload(context, transport);
+  const upload = useMediaUpload(context, transport, onPrivacyFailure, onRemoved, refreshKey);
   const evidence = upload.page?.collection.purpose === 'EVIDENCE';
-  const writable = !!upload.page?.collection.writable && !upload.denied && !upload.closedByServer;
+  const writable = !readOnly && !!upload.page?.collection.writable && !upload.denied && !upload.closedByServer;
   const selection = upload.items.filter(item => item.file && !item.invalid && ['selected', 'error'].includes(item.phase)).map(item => item.id);
   useEffect(() => {
     const unavailable = !upload.page || upload.loading || !!upload.loadError || upload.denied;
     const current = upload.items.filter(item => upload.page?.collection.purpose !== 'EVIDENCE' ||
       !item.asset || item.asset.revision === upload.page.collection.revision);
     onSelectionChange?.({ ready: !unavailable && current.every(item => !item.invalid && item.asset?.state === 'READY'),
-      busy: !!upload.busyId, selectedCount: current.length, assetIds: current.map(item => item.id), unavailable });
+      busy: !!upload.busyId, selectedCount: current.length, assetIds: current.map(item => item.id),
+      assets: current.flatMap(item => item.asset ? [item.asset] : []), unavailable });
   }, [upload.items, upload.page, upload.loading, upload.loadError, upload.denied, upload.busyId, onSelectionChange]);
   useEffect(() => {
     if (!upload.loading && focusAfterLoad.current) { focusAfterLoad.current = false; title.current?.focus(); }
@@ -81,6 +93,8 @@ function MediaUploadContent({ context, transport, onSelectionChange }: {
       <ol className={styles.items} aria-label="Arquivos selecionados e enviados">{upload.items.map(item =>
         <MediaItem key={`${item.id}:${upload.revision}`} item={item} context={context} transport={transport}
           busy={!!upload.busyId} current={upload.busyId === item.id} writable={writable && (!item.asset || item.asset.revision === upload.page!.collection.revision)}
+          removable={canRemoveOwn === undefined ? undefined : canRemoveOwn && !upload.denied}
+          localPreview={localPreviews && !evidence}
           retry={() => { void send([item.id]); }} remove={() => { void remove(item.id); }} pause={upload.pause}
           resume={file => upload.resume(item.id, file)} denied={upload.privacyFailure} />)}</ol>
       <Button variant="secondary" disabled={!!upload.busyId} onClick={refresh}>Atualizar arquivos</Button>

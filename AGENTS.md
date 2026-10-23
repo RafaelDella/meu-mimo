@@ -26,6 +26,21 @@ T07 entrega atividades, conquistas e crédito automático; comandos e limites em
 `docs/activities-local.md`. T08 entrega análise, complementos, compensações e
 extrato; comandos e limites em `docs/points-local.md`.
 T09 entrega catálogo, resgates e tickets; contratos e comandos em `docs/rewards-local.md`.
+T10 acrescenta combinado, realização, cancelamento/devolução e reposição explícita;
+contratos e comandos em `docs/tickets-local.md`.
+T11 integra álbum privado por ticket e retenção da origem; contratos e comandos
+em `docs/albums-local.md`. Os testes de mídia usam tickets reais na cadeia atual.
+T12 integra relação, novidades e painéis; a validação local e os comandos estão
+em `docs/relationship-local.md`. Bancos T12 dev/shadow/integração são separados,
+com namespaces próprios; Next 4301/4310 e mídia 4311 continuam em série.
+T13 acrescenta administração por metadados, pausa independente da plataforma e
+bloqueio de segurança; contratos e comandos em `docs/admin-local.md`.
+T14 entrega validação integrada, direitos por autoria, exportação cifrada,
+backup do cluster/Storage e cópia de recuperação isolada. Consulte
+`docs/pilot/{local,acceptance,data-rights,recovery}.md` e o plano T14–T15.
+T15 acrescenta supervisor local, saúde e backup programado. Comandos
+`local:web`, `local:health` e `local:stop` em `web/`; detalhes em
+`docs/pilot/local.md`. Pare a web antes dos checks e ensaios compartilhados.
 O plano da fundação e as dependências estão em
 [M0](docs/superpowers/plans/2026-10-22-m0-fundacao.md).
 
@@ -56,6 +71,22 @@ T08 usa `test:integration:t08`, domínio `meumimo_t08`, Next 4310/mídia 4311,
 Storage com prefixo próprio e bancos dev/shadow separados.
 T09 usa `test:integration:t09`, domínio `meumimo_t09`, as mesmas portas em série
 e namespaces `t09-development`/`t09-integration`, com dev/shadow separados.
+T10 usa `test:integration:t10`, domínio `meumimo_t10`/dev/shadow, namespaces próprios
+e Next4310/mídia4311, em série com os modos anteriores.
+T11 usa `test:integration:t11`, bancos `meumimo_t11`/dev/shadow, namespaces próprios
+e as mesmas portas em série. Não alterar as treze migrações já aplicadas.
+T12 usa `test:integration:t12` e bancos `meumimo_t12`/dev/shadow.
+T13 usa `test:integration:t13`, bancos `meumimo_t13`/dev/shadow e namespaces
+próprios. A cadeia atual tem quinze migrações aplicadas e 38 tabelas com RLS;
+correções são aditivas. A revisão de segurança tem default gerado pelo banco
+no Prisma para preservar o INSERT restrito de Profile.
+T14 usa `test:integration:t14`, bancos `meumimo_t14`/dev/shadow e prefixos
+`t14-integration`/`t14-development`. A cadeia tem dezesseis migrações; não
+reescreva SQL aplicado. QA real usa `test:web:real`, Next4310/mídia4311.
+Restore reserva projeto `meumimo-t14-restore`, API55321/PG55322/Mailpit55324,
+Next4320/mídia4321, rede e volumes novos. `local:restore:check` executa o ensaio;
+`local:restore UUID` só valida a stack. Nunca apagar journal/chaves para
+contornar uma divergência. Limpeza da cópia exige seu UUID de posse.
 T05 usa `test:integration:t05`, domínio `meumimo_t05` e a mesma porta em série;
 o consumidor local tem comando próprio e credencial restrita.
 T06 usa `test:integration:t06`, bancos `meumimo_t06`/dev/shadow e gateway local

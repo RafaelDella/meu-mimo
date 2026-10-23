@@ -100,6 +100,9 @@ export async function acceptInvitation(identity: Identity, token: string): Promi
       return { storeId: scope.store.id, membershipId: existing.id, role: existing.role };
     }
     if (scope.store.state === 'CLOSED') throw new AppError('store_closed', 409, 'Esta lojinha foi encerrada e não recebe novas participações.');
+    if (scope.store.platformPausedAt) {
+      throw new AppError('store_platform_paused', 409, 'Novas ações desta lojinha estão pausadas pela plataforma.');
+    }
     if (scope.store.state === 'PAUSED') throw new AppError('store_paused', 409, 'Esta lojinha está pausada. Aguarde a retomada para aceitar.');
     const now = await databaseNow(scope.tx);
     assertPending(invitation, now);

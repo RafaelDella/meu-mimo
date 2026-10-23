@@ -3,6 +3,7 @@ import type { Activity, ActivityEvent, Prisma } from '../../generated/prisma/cli
 import type { ActivityMutation, ActivityPage, ActivityView } from '../../contracts/activities.ts';
 import type { Identity } from '../auth/types.ts';
 import { AppError } from '../errors.ts';
+import { suppressionFor } from '../privacy/suppression.ts';
 import { consumeStoreLimit } from '../stores/limits.ts';
 import type { StoreScope } from '../stores/transaction.ts';
 import { assertStoreWritable, databaseNow, requireMembership, requireMerchant, withStoreTransaction } from '../stores/transaction.ts';
@@ -40,12 +41,13 @@ export async function listActivities(identity: Identity, storeId: string, query 
     requireMembership(scope);
     const where: Prisma.ActivityWhereInput = { storeId: scope.store.id,
       ...(state === 'ACTIVE' ? { archivedAt: null } : state === 'ARCHIVED' ? { archivedAt: { not: null } } : {}),
-      ...(page.q ? { name: { contains: page.q, mode: 'insensitive' } } : {}) };
+      ...(page.q ? { name: { contains: page.q, mode: 'insensitive' }, creator: { dataSuppressions: { none: { scope: 'AUTHORED_CONTENT' } } } } : {}) };
     const total = await scope.tx.activity.count({ where });
     const rows = await scope.tx.activity.findMany({ where, orderBy: [{ createdAt: 'desc' }, { id: 'desc' }], skip: page.skip, take: page.pageSize });
     const now = await databaseNow(scope.tx);
     const items: ActivityView[] = [];
-    for (const row of rows) items.push(await activityView(scope, row, now));
+    const suppressions = await suppressionFor(scope.tx, rows.map(row => row.createdByProfileId));
+    for (const row of rows) items.push(await activityView(scope, row, now, suppressions));
     return { items, total, page: page.page, pageSize: page.pageSize };
   });
 }

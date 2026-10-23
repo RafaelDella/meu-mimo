@@ -3,6 +3,7 @@ import type { Membership, Prisma, Store } from '../../generated/prisma/client.ts
 import type { Identity } from '../auth/types.ts';
 import { getDb } from '../db/client.ts';
 import { AppError } from '../errors.ts';
+import { suppressionFor } from '../privacy/suppression.ts';
 import { resourceId, unavailable } from './validation.ts';
 
 export type StoreTransaction = Prisma.TransactionClient;
@@ -24,6 +25,9 @@ export async function assertIdentityInTransaction(tx: StoreTransaction, identity
     : await tx.$queryRaw<{ suspendedAt: Date | null }[]>`
       SELECT "suspendedAt" FROM app."Profile" WHERE id = ${identity.userId}::uuid FOR SHARE`;
   if (!profiles.length) throw new AppError('session_invalid', 401, 'Entre novamente na sua conta.');
+  if ((await suppressionFor(tx, [identity.userId])).get(identity.userId)?.identity) {
+    throw new AppError('session_invalid', 401, 'Sua sessão não está disponível. Entre novamente.');
+  }
   if (profiles[0].suspendedAt) throw new AppError('account_suspended', 403, 'O acesso desta conta está suspenso.');
   await tx.$queryRaw`
     SELECT id FROM app."AuthSession"
@@ -95,6 +99,9 @@ export function assertStoreWritable(scope: StoreScope, allowPaused = false): voi
   const membership = requireMembership(scope);
   if (membership.closedAt) throw new AppError('membership_closed', 409, 'Esta participação foi encerrada. O histórico continua disponível.');
   if (scope.store.state === 'CLOSED') throw new AppError('store_closed', 409, 'Esta lojinha foi encerrada. O histórico continua disponível.');
+  if (!allowPaused && scope.store.platformPausedAt) {
+    throw new AppError('store_platform_paused', 409, 'Novas ações desta lojinha estão pausadas pela plataforma.');
+  }
   if (!allowPaused && scope.store.state === 'PAUSED') throw new AppError('store_paused', 409, 'Esta lojinha está pausada. Aguarde a retomada.');
 }
 

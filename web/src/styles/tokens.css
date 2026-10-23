@@ -18,6 +18,7 @@
   --background: #fff8fb;
   --surface: #fff;
   --surface-soft: #fce8f0;
+  --surface-paper: #fffcfd;
   --brand: #f2a7c4;
   --accent: #e76e9a;
   --action: #b23a68;
@@ -39,4 +40,5 @@
   --font-body: "DM Sans", Arial, sans-serif;
   --font-heading: "DM Serif Display", Georgia, serif;
   --radius: 1.5rem;
+  --shadow-soft: 0 8px 28px -16px rgb(178 58 104 / 24%);
 }

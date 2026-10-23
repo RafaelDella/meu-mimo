@@ -81,7 +81,8 @@ export function StoreInvitations({ store }: { store: StoreView }) {
   }
   return <section aria-labelledby="invitations-title"><h2 id="invitations-title" ref={title} tabIndex={-1}>Convites</h2>
     <div className="stores-card"><p>Cada link vale por sete dias e pode ser aceito uma vez. Compartilhe com a pessoa que você quer convidar.</p>
-      <Feedback {...action} />{store.state === 'ACTIVE' ? <Button disabled={action.busy} onClick={generate}>{uncertain ? 'Recuperar convite' : 'Gerar convite'}</Button> : <p>Retome a loja para gerar convites. Lojas encerradas permanecem somente para consulta.</p>}
+      <Feedback {...action} />{(store.state === 'ACTIVE' && !store.platformPausedAt) || uncertain ? <Button disabled={action.busy} onClick={generate}>{uncertain ? 'Recuperar convite' : 'Gerar convite'}</Button> :
+        <p>{store.platformPausedAt ? 'A pausa da plataforma impede novos convites. Os convites anteriores continuam no histórico.' : 'Retome a loja para gerar convites. Lojas encerradas permanecem somente para consulta.'}</p>}
       {uncertain && <p>Use “Recuperar convite” para consultar a mesma solicitação e recuperar o link.</p>}
       {generated && <div className="stores-invitation-link"><Input label="Link do convite" value={generated.url} readOnly onFocus={event => event.target.select()} />
         <div className="stores-actions"><Button variant="secondary" disabled={action.busy} onClick={copy}>Copiar link</Button>

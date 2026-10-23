@@ -29,16 +29,19 @@ test('navegação e contador da página compartilham uma consulta de resumo', as
   expect(state.calls.filter(call => call.endsWith('/tickets/resumo'))).toHaveLength(1);
 });
 
-for (const source of ['balance', 'summary', 'catalog'] as const) test(`403 ao reler ${source} elimina apresentação privada e navegação da Lojinha`, async ({ page }) => {
-  let deny = false;
+for (const source of ['lojinha', 'summary'] as const) test(`403 ao reler ${source} elimina apresentação privada e navegação da Lojinha`, async ({ page }) => {
+  let status = 200;
   const { auth } = await mockRewards(page, { handler: async (route, url) => {
-    const selected = source === 'balance' ? url.pathname.endsWith('/pontos') : source === 'summary' ? url.pathname.endsWith('/tickets/resumo') : url.pathname.endsWith('/mimos');
-    if (!selected) return false;
-    await json(route, { code: deny ? 'resource_not_found' : 'temporarily_unavailable', message: deny ? 'Conteúdo indisponível.' : 'Consulte novamente em instantes.' }, deny ? 403 : 503); return true;
+    const selected = url.pathname.endsWith(source === 'lojinha' ? '/lojinha' : '/tickets/resumo');
+    if (!selected || status === 200) return false;
+    await json(route, { code: status === 403 ? 'resource_not_found' : 'temporarily_unavailable', message: status === 403 ? 'Conteúdo indisponível.' : 'Consulte novamente em instantes.' }, status); return true;
   } }); auth.stores[0].presentation = 'Apresentação secreta somente desta loja';
   await page.goto(`/lojas/${ids.first}`); await expect(page.getByText('Apresentação secreta somente desta loja', { exact: true })).toBeVisible();
-  deny = true;
-  await page.getByRole('button', { name: source === 'balance' ? 'Consultar saldo novamente' : source === 'summary' ? 'Atualizar contador da navegação' : 'Consultar catálogo novamente', exact: true }).click();
+  status = 503; await page.evaluate(() => window.dispatchEvent(new Event('meumimo:relationship-changed')));
+  const retry = page.getByRole('button', { name: source === 'lojinha' ? 'Consultar lojinha novamente' : 'Atualizar contador da navegação', exact: true });
+  await expect(retry).toBeVisible();
+  await expect(page.getByText('Apresentação secreta somente desta loja', { exact: true })).toBeVisible();
+  status = 403; await retry.click();
   await expect(page.getByRole('heading', { name: 'Mimos indisponíveis', exact: true })).toBeVisible();
   await expect(page.getByText('Apresentação secreta somente desta loja', { exact: true })).toHaveCount(0);
   await expect(page.getByRole('heading', { name: 'Loja da Ana', exact: true })).toHaveCount(0);

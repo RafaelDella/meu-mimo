@@ -14,6 +14,7 @@ import { signedPoints } from '@/components/submissions/review-display';
 import { SubmissionList } from './submission-list';
 import { activityPath, base, privacyError } from './transport';
 import styles from './activities.module.css';
+import { MimoEmpty, MimoIntro } from '@/components/ui/mimo-page';
 
 function ActivityCatalog({ store }: { store: StoreView }) {
   const merchant = store.role === 'MERCHANT';
@@ -36,7 +37,7 @@ function ActivityCatalog({ store }: { store: StoreView }) {
         <option value="ACTIVE">Ativas</option><option value="ARCHIVED">Arquivadas</option><option value="ALL">Todas</option></select></label><Button type="submit">Buscar</Button></form>
     {loading && <p role="status">Buscando atividades…</p>}
     {error ? <div role="alert"><p>{storeError(error)}</p><Button variant="secondary" onClick={reload}>Tentar carregar novamente</Button></div> : null}
-    {data && <>{!data.items.length && <p>{merchant ? 'Nenhuma atividade encontrada. Você pode preparar a primeira conquista desta loja.' : 'Nenhuma atividade encontrada. Quando a loja preparar uma atividade, ela aparecerá aqui.'}</p>}
+    {data && <>{!data.items.length && <MimoEmpty kind="journal"><p>{merchant ? 'Nenhuma atividade encontrada. Você pode preparar a primeira conquista desta loja.' : 'Nenhuma atividade encontrada. Quando a loja preparar uma atividade, ela aparecerá aqui.'}</p></MimoEmpty>}
       <div className="stores-grid">{data.items.map(activity => <ActivityCard key={activity.id} activity={activity} merchant={merchant} />)}</div>
       <Pagination page={data.page} pageSize={data.pageSize} total={data.total} onPage={next => { focusAfterLoad.current = true; setPage(next); }} /></>}
   </section>;
@@ -48,22 +49,24 @@ export function ParticipantPoints({ store }: { store: StoreView }) {
   return <section className={styles.summary} aria-label="Pontos e conquistas nesta loja">
     {balance.loading && <p role="status">Consultando seus pontos…</p>}
     {balance.error ? <div role="alert"><p>{storeError(balance.error)}</p><Button variant="secondary" onClick={balance.reload}>Consultar pontos novamente</Button></div> : null}
-    {balance.data && <><PointsSummary storeName={store.name || 'Sua lojinha'} available={balance.data.available} pending={balance.data.pending} />
+    {balance.data && <><PointsSummary compact storeName={store.name || 'Sua lojinha'} available={balance.data.available} pending={balance.data.pending} />
       {BigInt(balance.data.available) < 0n && <p role="status">Seu saldo está negativo por ajustes registrados no extrato. Os tickets já emitidos continuam válidos; novos resgates dependerão de saldo suficiente.</p>}
       <div className="stores-card"><h3>Hoje nesta loja</h3><p>{balance.data.today.localDate.split('-').reverse().join('/')} · {balance.data.today.timezone}</p>
         <dl><div><dt>Registros enviados</dt><dd>{balance.data.today.submitted}</dd></div><div><dt>Registros aprovados</dt><dd>{balance.data.today.approved}</dd></div>
           <div><dt>Pontos creditados</dt><dd>{points(balance.data.today.credited)}</dd></div><div><dt>Ajustes líquidos</dt><dd>{signedPoints(balance.data.today.adjusted ?? '0')}</dd></div></dl></div></>}
-    <Link className="primary-link" href={`/lojas/${store.id}/extrato`}>Ver extrato de pontos</Link>
+    <Link className="stores-link" href={`/lojas/${store.id}/extrato`}>Ver extrato de pontos</Link>
   </section>;
 }
 
 export function ActivityList({ store }: { store: StoreView }) {
   const [tab, setTab] = useState<'activities' | 'submissions'>('activities');
   const merchant = store.role === 'MERCHANT';
-  return <><h2>Atividades</h2>{!merchant && <ParticipantPoints store={store} />}
-    <div className={styles.tabs} role="group" aria-label="Mostrar atividades ou registros">
+  return <div className={styles.listPage}><MimoIntro kind="journal" compact><p className="mimo-eyebrow">Um passinho de cada vez</p><h2>Atividades</h2><p>{merchant ? 'Prepare pequenos incentivos para quem você quer bem.' : 'Cada pequena conquista pode virar um carinho.'}</p></MimoIntro>
+    <div className={merchant ? styles.catalogLayout : styles.participantLayout}><div className={styles.catalogContent}>
+      <div className={styles.tabs} role="group" aria-label="Mostrar atividades ou registros">
       <Button variant="secondary" aria-pressed={tab === 'activities'} onClick={() => setTab('activities')}>{merchant ? 'Cadastros' : 'A fazer'}</Button>
       <Button variant="secondary" aria-pressed={tab === 'submissions'} onClick={() => setTab('submissions')}>{merchant ? 'Registros' : 'Meus registros'}</Button></div>
-    {tab === 'activities' ? <ActivityCatalog store={store} /> : <SubmissionList store={store} />}
-  </>;
+      {tab === 'activities' ? <ActivityCatalog store={store} /> : <SubmissionList store={store} />}</div>
+      {!merchant && <ParticipantPoints store={store} />}</div>
+  </div>;
 }

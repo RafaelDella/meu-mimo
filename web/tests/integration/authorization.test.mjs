@@ -20,7 +20,7 @@ test('participante só lê sua relação; lojista lê as relações de sua próp
   expectStatus(storeResponse, 200);
   assert.deepEqual(await storeResponse.json(), {
     id: store.id, name: store.name, role: 'PARTICIPANT', presentation: '', timezone: 'America/Sao_Paulo',
-    state: 'ACTIVE', membershipId: anaMembership.id, membershipClosedAt: null,
+    state: 'ACTIVE', membershipId: anaMembership.id, membershipClosedAt: null, platformPausedAt: null,
   });
   const own = await ana.client.get(`/api/lojas/${store.id}/participacoes/${anaMembership.id}`);
   expectStatus(own, 200);

@@ -1,6 +1,7 @@
 import '../only.ts';
 import { createHash } from 'node:crypto';
 import type { ActivityFields } from '../../contracts/activities.ts';
+import { isIllustration } from '../../contracts/illustrations.ts';
 import { invalidField } from '../stores/validation.ts';
 
 export const activityFields = ['name', 'description', 'category', 'sticker', 'points', 'frequency', 'weeklyLimit', 'approvalMode'] as const;
@@ -25,7 +26,7 @@ export function configuration(body: Record<string, unknown>): ActivityFields {
   const sticker = body.sticker === undefined ? '' : body.sticker;
   if (typeof frequency !== 'string' || !['ONCE', 'DAILY', 'WEEKLY'].includes(frequency) ||
       typeof approvalMode !== 'string' || !['MANUAL', 'AUTOMATIC'].includes(approvalMode) ||
-      typeof sticker !== 'string' || !['', 'gift', 'coffee', 'takeout', 'envelope'].includes(sticker)) invalidField();
+      (sticker !== '' && !isIllustration(sticker))) invalidField();
   const weeklyLimit = positiveInteger(body.weeklyLimit === undefined ? 1 : body.weeklyLimit, 100);
   if (frequency !== 'WEEKLY' && weeklyLimit !== 1) invalidField();
   return {

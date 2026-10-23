@@ -3,7 +3,7 @@ export type StoreRole = 'MERCHANT' | 'PARTICIPANT';
 export type PageResult<T> = { items: T[]; page: number; pageSize: number; total: number };
 export type StoreView = {
   id: string; name: string | null; presentation: string; timezone: string;
-  state: StoreState; role: StoreRole; membershipId: string; membershipClosedAt: string | null;
+  state: StoreState; platformPausedAt: string | null; role: StoreRole; membershipId: string; membershipClosedAt: string | null;
 };
 export type PersonView = {
   id: string; storeId: string; profileId: string; role: StoreRole;

@@ -55,6 +55,42 @@ test('lojista vê autoria da participação sem inventar saldo agregado', async 
   await expect(page.getByText('Ganho por atividade · Ana · Rafa', { exact: true })).toBeVisible();
   await expect(page.locator('.ui-points')).toHaveCount(0);
 });
+
+test('sticker não cobre saldo extenso positivo ou negativo com texto ampliado', async ({ page }, testInfo) => {
+  const { state } = await mockReview(page, { merchant: false, balance: '9007199254740993' });
+  for (const balance of ['9007199254740993', '-9007199254740993']) {
+    state.balance = balance;
+    await page.goto(statementPath);
+    await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });
+    const summary = page.getByRole('region', { name: 'Seu potinho de pontos', exact: true });
+    await expect(summary.getByText(new Intl.NumberFormat('pt-BR').format(BigInt(balance)), { exact: true })).toBeVisible();
+    const sticker = summary.locator('img');
+    await expect.poll(() => sticker.evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth > 0)).toBe(true);
+    const imageBox = (await sticker.boundingBox())!;
+    const definitions = await summary.getByRole('definition').all();
+    for (const definition of definitions) {
+      const textBox = (await definition.boundingBox())!;
+      const separated = textBox.x + textBox.width <= imageBox.x || imageBox.x + imageBox.width <= textBox.x ||
+        textBox.y + textBox.height <= imageBox.y || imageBox.y + imageBox.height <= textBox.y;
+      expect(separated, 'O sticker deve ficar fora da área de leitura dos valores.').toBe(true);
+    }
+    await noOverflow(page);
+    await summary.screenshot({ path: testInfo.outputPath(`potinho-${balance.startsWith('-') ? 'negativo' : 'positivo'}-200.png`) });
+    const brokenWords = await summary.evaluate(element => {
+      const broken: string[] = []; const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+      let node = walker.nextNode();
+      while (node) {
+        for (const word of (node.textContent ?? '').matchAll(/[\p{L}\p{M}]+/gu)) {
+          const range = document.createRange(); range.setStart(node, word.index); range.setEnd(node, word.index + word[0].length);
+          if (range.getClientRects().length > 1) broken.push(word[0]);
+        }
+        node = walker.nextNode();
+      }
+      return broken;
+    });
+    expect(brokenWords, 'Os rótulos devem continuar legíveis sem palavras partidas.').toEqual([]);
+  }
+});
 test('lojista seleciona participação para obter saldo individual autorizado', async ({ page }) => {
   const membershipId = store().membershipId; let balanceMembership = '';
   await mockReview(page, { status: 'APPROVED', handler: async (route, url) => {

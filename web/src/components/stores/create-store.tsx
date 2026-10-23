@@ -9,6 +9,7 @@ import { Feedback } from './store-controls';
 import { StoreForm } from './store-form';
 import type { StoreFields } from './store-form';
 import { StoreRequestError, storeRequest, useStoreAction } from './store-api';
+import { MimoIntro, MimoMasthead } from '@/components/ui/mimo-page';
 
 function CreateForm() {
   const router = useRouter();
@@ -34,7 +35,7 @@ function CreateForm() {
 }
 
 export function CreateStore() {
-  return <main className="stores-shell"><Link className="stores-link" href="/lojas">Minhas lojas</Link><h1>Criar lojinha</h1>
-    <p>Prepare um cantinho de carinho para quem você quer convidar.</p>
+  return <main className="stores-shell"><MimoMasthead /><Link className="stores-link" href="/lojas">Minhas lojas</Link><MimoIntro kind="gift"><h1>Criar lojinha</h1>
+    <p>Prepare um cantinho de carinho para quem você quer convidar.</p></MimoIntro>
     <PrivateArea>{session => <CreateForm key={session.sessionId} />}</PrivateArea></main>;
 }

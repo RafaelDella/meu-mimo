@@ -29,6 +29,11 @@ export default defineConfig([
     },
   },
   {
+    // Este é o adaptador de diagnóstico: valida e serializa somente os cinco campos do contrato.
+    files: ['src/server/audit/diagnostics.ts'],
+    rules: { 'quality/no-direct-console': ['error', { allow: ['info'] }] },
+  },
+  {
     files: ['src/components/**/*.{ts,tsx}'],
     rules: {
       'no-restricted-imports': ['error', {

@@ -13,10 +13,26 @@
 .availability { margin-block: 1rem; padding: .75rem 12px; background: var(--surface-soft); border-radius: .75rem; }
 .availability p { margin-block: .25rem; }
 .text { white-space: pre-wrap; }
+.activityCard { border-top: 3px solid var(--brand); }
+.cardHeading { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem; margin-bottom: 1rem; }
+.cardHeading :is(h2, h3) { flex: 1 1 8rem; min-width: 0; margin: 0; }
+.cardSticker { display: block; flex: 0 0 auto; width: 64px; height: 57px; padding: .25rem; border-radius: 1rem; background: var(--surface-soft); transform: rotate(-5deg); }
 .summary { display: grid; gap: .75rem; }
+.listPage, .catalogLayout, .participantLayout, .catalogContent { display: grid; gap: 1.25rem; min-width: 0; align-items: start; }
+.listPage { container-type: inline-size; container-name: activity-page; }
+.listPage > :global(.mimo-intro) { margin-block: 0; }
+.catalogContent :global(.stores-filters) { margin-top: 1rem; }
 .summary > :global(.stores-card) dl { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 9rem), 1fr)); gap: .75rem; margin: 0; }
 .summary > :global(.stores-card) dd { margin: 0; font-weight: 600; }
 .review { border: 2px solid var(--border-control); background: var(--surface-soft); border-radius: 1rem; padding: 1rem 12px; }
 .movements { padding-left: 1.25rem; }
 .movements li { padding-block: .75rem; border-bottom: 1px solid var(--border); }
 .srOnly { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+@media (min-width: 70rem) {
+  .summary :global(.stores-card) { padding: 1rem 16px; box-shadow: none; }
+  .summary :global(.stores-card) h3 { font-size: 1.125rem; }
+  .summary :global(.stores-card) p { font-size: .75rem; }
+}
+@container activity-page (min-width: 50rem) {
+  .participantLayout { grid-template-columns: minmax(0, 1fr) 17rem; gap: 1.5rem; }
+}

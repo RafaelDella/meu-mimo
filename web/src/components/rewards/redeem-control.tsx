@@ -62,11 +62,11 @@ export function RedeemControl({ store, reward, operationId: initialId, recovered
     finally { if (!controller.signal.aborted) { active.current = null; setBusy(false); } }
   }
   function begin() {
-    if (active.current || !reward.availability?.eligible) return;
+    if (active.current || !reward.availability?.eligible || store.platformPausedAt) return;
     persistIntention(); setError(''); setOpen(true);
   }
   async function confirm() {
-    if (active.current || reviewRequired || uncertain || !reward.availability?.eligible) return;
+    if (active.current || reviewRequired || uncertain || !reward.availability?.eligible || store.platformPausedAt) return;
     persistIntention();
     pending.current ??= { operationId: operationId.current!, expectedVersion: reward.version, expectedBalance: reward.availability.available };
     const controller = new AbortController(); active.current = controller; setBusy(true); setError('');
@@ -90,7 +90,7 @@ export function RedeemControl({ store, reward, operationId: initialId, recovered
       <Button variant="secondary" disabled={busy} onClick={() => { void inspect(); }}>Consultar resultado do resgate</Button></> : reviewRequired ?
       <><p role="status">Revise o custo, o saldo e a disponibilidade atuais antes de confirmar a mesma intenção.</p>
         <Button variant="secondary" disabled={busy} onClick={() => { void review(); }}>Carregar nova prévia</Button></> :
-      <Button ref={trigger} disabled={busy || !value?.eligible} onClick={begin}>Resgatar mimo</Button>}
+      <Button ref={trigger} disabled={busy || !value?.eligible || !!store.platformPausedAt} onClick={begin}>Resgatar mimo</Button>}
     <Dialog open={open} onOpenChange={next => { if (!busy) setOpen(next); }} title="Confirmar resgate" description="Confira o mimo e os pontos antes de confirmar." returnFocusRef={trigger}>
       <p>Loja: {store.name || 'Sua lojinha'}</p><h3>{reward.name}</h3><p>Quantidade: 1 unidade</p>
       <dl className="stores-details"><div><dt>Custo</dt><dd>{points(reward.cost)} pontos</dd></div>
@@ -98,7 +98,7 @@ export function RedeemControl({ store, reward, operationId: initialId, recovered
         <div><dt>Saldo após o resgate</dt><dd>{points(value?.resulting ?? '0')} pontos</dd></div></dl>
       <p>O ticket ficará aguardando combinar. Uma unidade será reservada ao confirmar o resgate.</p><p role="alert">{error}</p>
       {uncertain ? <Button disabled={busy} onClick={() => { void inspect(); }}>Consultar resultado do resgate</Button> :
-        <Button disabled={busy || !value?.eligible || reviewRequired} onClick={() => { void confirm(); }}>{busy ? 'Confirmando resgate…' : 'Confirmar e resgatar'}</Button>}
+        <Button disabled={busy || !value?.eligible || reviewRequired || !!store.platformPausedAt} onClick={() => { void confirm(); }}>{busy ? 'Confirmando resgate…' : 'Confirmar e resgatar'}</Button>}
     </Dialog>
   </div>;
 }

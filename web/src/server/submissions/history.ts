@@ -2,6 +2,7 @@ import '../only.ts';
 import type { ReviewEventView, ReviewMutation, SubmissionHistory } from '../../contracts/activities.ts';
 import type { Identity } from '../auth/types.ts';
 import { consumeStoreLimit } from '../stores/limits.ts';
+import { suppressionFor } from '../privacy/suppression.ts';
 import { databaseNow, withStoreTransaction } from '../stores/transaction.ts';
 import { pagination, resourceId, unavailable } from '../stores/validation.ts';
 import { requireSubmission } from './access.ts';
@@ -17,7 +18,7 @@ export async function readReviewOperation(identity: Identity, storeId: string, s
     const event = await scope.tx.submissionReviewEvent.findFirst({ where: { id, submissionId: submission.id,
       storeId: scope.store.id }, include: reviewInclude });
     if (!event) unavailable();
-    return { event: reviewEventView(event), appliedVersion: event.version,
+    return { event: reviewEventView(event, await suppressionFor(scope.tx, [event.actorProfileId])), appliedVersion: event.version,
       submission: await submissionView(scope, submission, activity, await databaseNow(scope.tx)) };
   });
 }
@@ -45,8 +46,9 @@ export async function listSubmissionHistory(identity: Identity, storeId: string,
       id: { in: addresses.filter(row => row.source === 'review').map(row => row.id) } }, include: reviewInclude });
     const credit = await scope.tx.pointsEntry.findUnique({ where: { sourceKey: `submission.credit:${submission.id}` },
       select: { id: true, amount: true } });
-    const items = new Map<string, ReviewEventView>([...legacy.map(row => [`legacy:${row.id}`, legacyEventView(row, submission, credit)] as const),
-      ...reviews.map(row => [`review:${row.id}`, reviewEventView(row)] as const)]);
+    const suppressions = await suppressionFor(scope.tx, [submission.authorProfileId, ...legacy.map(row => row.actorProfileId), ...reviews.map(row => row.actorProfileId)]);
+    const items = new Map<string, ReviewEventView>([...legacy.map(row => [`legacy:${row.id}`, legacyEventView(row, submission, credit, suppressions)] as const),
+      ...reviews.map(row => [`review:${row.id}`, reviewEventView(row, suppressions)] as const)]);
     return { items: addresses.map(row => items.get(`${row.source}:${row.id}`)!), total: legacyCount + reviewCount,
       page: page.page, pageSize: page.pageSize };
   });

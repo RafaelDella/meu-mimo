@@ -1,0 +1,17 @@
+.home { display: grid; gap: 1.5rem; min-width: 0; }
+.welcome { min-width: 0; }
+.welcome h2 { margin-bottom: .75rem; }
+.welcome p { margin-block: .375rem; }
+.sectionHeading { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: .5rem 1rem; margin-bottom: .75rem; }
+.sectionHeading h2 { margin-bottom: 0; }
+.sectionHeading a { margin-left: auto; }
+.support { display: grid; gap: 1.25rem; min-width: 0; align-items: start; }
+.support > * { min-width: 0; }
+@media (min-width: 70rem) {
+  .home { gap: 1rem; }
+  .welcome h2 { font-size: 1.75rem; }
+  .welcome p { font-size: .875rem; }
+  .catalog { grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr)); }
+  .catalog img { width: 7rem; height: 6rem; }
+  .support { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

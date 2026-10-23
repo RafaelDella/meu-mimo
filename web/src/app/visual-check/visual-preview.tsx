@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Dialog } from '@/components/ui/dialog';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { PointsSummary } from '@/components/ui/points-summary';
+import { MimoBrand, MimoIcon } from '@/components/ui/mimo-icon';
 
 export function VisualPreview() {
   const [mimo, setMimo] = useState<'coffee' | 'ticket' | null>(null);
@@ -31,19 +32,18 @@ export function VisualPreview() {
       <a className="skip-link" href="#conteudo">Pular para o conteúdo</a>
       <header className="preview-header">
         <Link className="preview-brand" href="/" prefetch={false} aria-label="Meu Mimo — início">
-          <svg viewBox="0 0 44 32" width="40" height="32" fill="none" aria-hidden="true">
-            <path d="M22 16C5-9-6 21 22 16Zm0 0C39-9 50 21 22 16Zm0 0-8 14m8-14 8 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-          <span>meu mimo<span className="brand-dot">.</span></span>
+          <MimoBrand />
         </Link>
         <span className="preview-label">Prévia visual · Dados fictícios</span>
       </header>
 
       <main id="conteudo" tabIndex={-1}>
+        <div className="preview-hero">
         <div className="preview-intro">
-          <p className="eyebrow">Pequenos gestos, grandes sorrisos</p>
+          <p className="eyebrow"><MimoIcon name="heart" />Pequenos gestos, grandes sorrisos</p>
           <h1>Um carinho em cada conquista</h1>
           <p>Uma espiadinha no que estamos preparando para vocês.</p>
+          <div className="scrapbook-note"><MimoIcon name="bow" /><p>Um pouquinho de incentivo.<br />Um montão de afeto.</p><MimoIcon name="sparkle" /></div>
           <nav className="preview-nav" aria-label="Composições da prévia">
             <a href="#lojinha">Lojinha</a>
             <a href="#mimo">Detalhe do mimo</a>
@@ -51,21 +51,18 @@ export function VisualPreview() {
           </nav>
         </div>
 
-        <div className="preview-grid">
           <section className="preview-shop" id="lojinha" aria-labelledby="shop-title">
+            <div className="preview-phone-top" aria-hidden="true"><MimoIcon name="bow" /><span>feito pensando em você</span><MimoIcon name="heart" /></div>
             <div className="section-heading">
-              <p className="eyebrow">01 · Para quem recebe</p>
+              <p className="eyebrow"><MimoIcon name="heart" />01 · Para quem recebe</p>
               <h2 id="shop-title">Sua lojinha</h2>
               <p>Oi, Ana! Que bom ter você por aqui <span aria-hidden="true">♡</span></p>
             </div>
-            <div className="points-collage">
-              <PointsSummary storeName="Mimos do Rafa" available={90} pending={15} />
-              <Image className="kitten-sticker" src="/assets/mimo-kitten.png" alt="" width={1312} height={1199} sizes="114px" />
-            </div>
+            <PointsSummary storeName="Mimos do Rafa" available={90} pending={15} />
 
             <div className="catalog-heading">
               <h3>Carinhos à sua espera</h3>
-              <span aria-hidden="true">✦</span>
+              <MimoIcon name="sparkle" />
             </div>
             <div className="reward-grid">
               <article className="reward-card">
@@ -89,12 +86,15 @@ export function VisualPreview() {
             </div>
 
             <aside className="love-note" aria-label="Bilhete do Rafa">
+              <MimoIcon name="bow" className="note-bow" />
               <p className="eyebrow">Um bilhetinho para você</p>
               <p>“Cada passinho seu merece um carinho. Estou torcendo por você!”</p>
               <span>Com amor, Rafa <span aria-hidden="true">♡</span></span>
             </aside>
           </section>
+        </div>
 
+        <div className="preview-grid">
           <section className="preview-detail" id="mimo" aria-labelledby="detail-title">
             <div className="section-heading">
               <p className="eyebrow">02 · Feito para alguém especial</p>

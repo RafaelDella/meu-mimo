@@ -1,6 +1,7 @@
 import { expect, test as base } from '@playwright/test';
 import type { Page, Route } from '@playwright/test';
 import type { InvitationPreview, PersonView, StoreView } from '../../../src/contracts/stores';
+import { mockRelationshipDefaults } from './relationship-defaults';
 
 export const test = base.extend<{ storeHealth: void }>({
   storeHealth: [async ({ page }, use) => {
@@ -29,7 +30,7 @@ export const ids = {
 export function store(overrides: Partial<StoreView> = {}): StoreView {
   return {
     id: ids.first, name: 'Loja da Ana', presentation: 'Apresentação privada da Ana',
-    timezone: 'America/Sao_Paulo', state: 'ACTIVE', role: 'PARTICIPANT',
+    timezone: 'America/Sao_Paulo', state: 'ACTIVE', platformPausedAt: null, role: 'PARTICIPANT',
     membershipId: '55555555-5555-4555-8555-555555555555', membershipClosedAt: null, ...overrides,
   };
 }
@@ -55,6 +56,7 @@ export async function mockApi(page: Page, handler?: Handler) {
   await page.route('**/api/**', async route => {
     const url = new URL(route.request().url());
     if (handler && await handler(route, url, state)) return;
+    if (await mockRelationshipDefaults(route, url, state.stores, state.displayName)) return;
     const method = route.request().method();
     if (url.pathname === '/api/auth/session') {
       await json(route, state.loggedIn ? {
@@ -65,6 +67,8 @@ export async function mockApi(page: Page, handler?: Handler) {
       await json(route, { id: state.userId, displayName: state.displayName, email: `${state.userId}@example.test` });
     } else if (url.pathname === '/api/auth/mfa') {
       await json(route, { factors: [] });
+    } else if (url.pathname === '/api/admin/session') {
+      await json(route, { code: 'admin_forbidden', message: 'Acesso administrativo não permitido.' }, 403);
     } else if (url.pathname === '/api/auth/logout') {
       state.loggedIn = false;
       await json(route, { message: 'Você saiu da sua conta.' });

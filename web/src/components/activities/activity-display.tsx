@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { MimoIllustration } from '@/components/ui/mimo-illustration';
 import type { ActivityAvailability, ActivityFields, ActivityView, SubmissionView } from '@/contracts/activities';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Button } from '@/components/ui/button';
@@ -21,14 +22,15 @@ export function Availability({ value }: { value: ActivityAvailability | null }) 
   return <div className={styles.availability}>
     <p>{value.reason === 'AVAILABLE' ? `${value.remaining} ${value.remaining === 1 ? 'registro disponível' : 'registros disponíveis'} neste período.` :
       value.reason === 'LIMIT' ? 'Você já usou os registros disponíveis neste período.' : value.reason === 'ARCHIVED' ? 'Esta atividade foi arquivada. Os registros anteriores continuam acessíveis.' :
-        value.reason === 'MEMBERSHIP_CLOSED' ? 'Sua participação foi encerrada. Você pode consultar seu histórico.' : 'Novos registros estão suspensos nesta loja.'}</p>
+        value.reason === 'MEMBERSHIP_CLOSED' ? 'Sua participação foi encerrada. Você pode consultar seu histórico.' : value.reason === 'STORE_PLATFORM_PAUSED' ? 'Novos registros e evidências de novas conquistas estão pausados pela plataforma. Seu histórico e as pendências existentes continuam acessíveis.' : 'Novos registros estão suspensos nesta loja.'}</p>
     {value.reason === 'LIMIT' && value.endsAt && <p>Nova disponibilidade em {localTime(value.endsAt, value.timezone)}.</p>}
     <p>Data da loja: {value.localDate.split('-').reverse().join('/')} · Fuso: {value.timezone}.</p>
   </div>;
 }
 export function ActivityCard({ activity, merchant }: { activity: ActivityView; merchant: boolean }) {
-  const stickers = { gift: '🎁', coffee: '☕', takeout: '🥡', envelope: '💌', '': '' };
-  return <article className="stores-card"><h3>{activity.sticker && <span aria-hidden="true">{stickers[activity.sticker]} </span>}{activity.name}</h3>
+  return <article className={`stores-card ${styles.activityCard}`}><div className={styles.cardHeading}>
+    {activity.sticker && <MimoIllustration name={activity.sticker} className={styles.cardSticker} />}
+    <h3>{activity.name}</h3></div>
     {activity.category && <p className="stores-muted">{activity.category}</p>}<Rule activity={activity} />
     {activity.archivedAt && <StatusBadge tone="info" text="Arquivada" />}<Availability value={activity.availability} />
     <Link className="stores-link" href={activityPath(activity.storeId, activity.id)}>{merchant ? 'Gerenciar atividade' : 'Ver atividade'}<span className={styles.srOnly}>: {activity.name}</span></Link>
@@ -36,7 +38,9 @@ export function ActivityCard({ activity, merchant }: { activity: ActivityView; m
 }
 export function SubmissionCard({ submission, merchant }: { submission: SubmissionView; merchant: boolean }) {
   const activity = submission.snapshot ?? submission.activity;
-  return <article className="stores-card"><h3>{activity.name}</h3>{merchant && <p>{submission.participant.displayName || 'Participante'}</p>}
+  return <article className="stores-card"><div className={styles.cardHeading}>
+    {activity.sticker && <MimoIllustration name={activity.sticker} className={styles.cardSticker} />}<h3>{activity.name}</h3></div>
+    {merchant && <p>{submission.participant.displayName || 'Participante'}</p>}
     <SubmissionBadges submission={submission} />
     <p>{points(activity.points)} pontos da ocasião</p>
     {submission.receivedAt && <p><time dateTime={submission.receivedAt}>{localTime(submission.receivedAt, submission.timezone || 'UTC')}</time> · {submission.timezone}</p>}

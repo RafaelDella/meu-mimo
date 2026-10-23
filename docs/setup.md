@@ -571,3 +571,203 @@ A migração T09 tem fins de linha mistos já aplicados. Uma regra `-text` em
 `.gitattributes`, restrita a esse arquivo, preserva seus bytes no Git. Os hashes
 do índice e dos dois bancos foram comparados, sem alterar migrações anteriores
 ou checksums aplicados. A exceção cosmética de whitespace está no plano T09.
+
+## Execução de T10
+
+Desenho e limites confirmados antes da implementação. A orquestração do Toolkit
+usou escritores exclusivos de dados, domínio e interface, com root responsável
+por contratos, HTTP, runtime, documentos e execução serial dos recursos mutáveis.
+Revisões independentes de SQL/segurança e interface foram somente leitura.
+
+Context7 confirmou a transação interativa Prisma v7 e a History API do Next.
+O índice não oferece a versão exata Next 16.4.2; a integração foi conferida
+também contra tipos e build instalados. Nenhum dado privado foi consultado.
+
+Os bancos `meumimo_t10_dev`, `meumimo_t10_shadow` e `meumimo_t10` usam PostgreSQL
+local na stack Docker existente. Duas migrações aditivas foram aplicadas aos
+bancos T10, sem reset dos anteriores. Auth/Storage continuam na stack meumimo-t02,
+com namespaces T10 e credenciais separadas de runtime, worker e migração.
+
+A revisão levou a duas reproduções: foco perdido ao paginar o histórico e
+SQL aceitando motivo formado só por espaços Unicode. Os testes falharam antes
+e passaram após as correções; a guarda de texto foi adicionada por nova migração,
+preservando os bytes de todas as migrações aplicadas.
+
+`check` passou com lint, tipos, build e 7+9 testes. A prova de migração passou
+com doze migrações; a repetição HTTP final passou 249/249, sem skips. Resultados
+do navegador e revisão final estão no [plano T10](superpowers/plans/2026-10-22-t10-realizacao-cancelamento.md).
+Comandos e contratos em [tickets locais](tickets-local.md).
+
+O idealizador autorizou a sequência até T15 e pediu primeiro a versão web local
+com PostgreSQL configurado. Provedores, custos, publicação e aparelhos físicos
+foram adiados; nenhuma dessas conferências será atribuída aos testes locais.
+
+## Execução de T11
+
+Desenho confirmado e T10 commitada antes da implementação. O Toolkit organizou
+contratos do root, dados/SQL, domínio/API e interface com escritores exclusivos;
+root adaptou runtime e fixtures, escreveu HTTP e serializou recursos mutáveis.
+Revisões independentes de SQL/segurança e React/qualidade foram somente leitura.
+
+Prisma validou/gerou os modelos; a prova real passou com treze migrações,
+preservação das coleções/históricos e privilégios efetivos. A migração aditiva
+T11 foi aplicada aos bancos persistentes T11 dev/integração. PostgreSQL permanece na
+stack Docker existente, com namespaces Storage e conexões separados. Nenhuma
+migração aplicada anterior mudou; T11 também ficou imutável após a aplicação.
+
+A suíte HTTP passou 276/276, sem skips: 27 casos de álbum e 249 regressões.
+As provas incluem três fotos/dois vídeos reais sintéticos, publicação parcial,
+replay após remoção, capacidade, dez legendas de 500 caracteres, corridas,
+rollback de cinco efeitos e prazo original com hold. Regressões T06 agora usam
+crédito/resgate/álbum pelas APIs; não existe autorização especial para fixtures.
+
+Revisão reproduziu e corrigiu leitura de metadados vencidos com UUID nil válida,
+ocultação da galeria após remoção mesmo com GET503, prévia dos prontos e metadados
+publicados. O ciclo StrictMode foi reproduzido no Next dev e passou após corrigir
+o cancelamento de leitura. Rótulos de legenda ficaram associados a campos
+separados; testes usam modalidade de teclado e esperam a imagem renovada carregar.
+
+Os 108 Chromium novos passaram em 320/390, incluindo regressões RED/GREEN.
+As regressões anteriores foram distribuídas em grupos sequenciais para reiniciar
+o navegador, sem retries automáticos ou reaproveitar servidores. Resultado final,
+capturas, revisão e limites estão no [plano T11](superpowers/plans/2026-10-22-t11-album.md).
+Comandos em [álbum local](albums-local.md). T12 continua a composição dos painéis,
+bilhete e interações; leitor de tela real, aparelhos, CI remoto e publicação não
+foram observados nesta entrega.
+
+Fechamento de navegador T11: 562 cenários cobertos;108 novos e453 regressões passaram
+na execução em grupos. Um histórico antigo teve rede suspensa no ambiente e
+passou na repetição focal em 320/390, sem mudança de código. Sem alegação de suíte
+integral sem falhas em uma única execução.
+
+## Execução de T12
+
+Em 23/10/2026, a preparação reutilizou PostgreSQL/Auth/Storage da stack local
+existente. T12 usa bancos de desenvolvimento, shadow e integração próprios,
+com namespaces de mídia separados. Prisma 7.10.1 foi gerado e validado; a
+prova descartável passou pelas quatorze migrações, preservação, 37 tabelas com
+RLS e privilégios efetivos, antes da aplicação a desenvolvimento e integração.
+As migrações anteriores e seus bytes permaneceram intactos.
+
+A orquestração usou o Vibe Coding Toolkit descoberto no cliente, com escritores
+exclusivos de dados, domínio e interface, integração serial e revisão somente
+leitura de SQL/privacidade e UI. As APIs Next foram conferidas nos guias da
+versão instalada em `web/node_modules/next/dist/docs/`; documentação oficial
+disponível via Context7 foi usada sem enviar código privado ou segredos.
+Nenhuma dependência, serviço pago, configuração global ou hook foi acrescentado.
+
+T12 e as correções da revisão foram verificadas: quatorze migrações, checks,
+319 casos HTTP distintos e 672 cenários Chromium cobertos em grupos e repetições
+focais, sem skips. As ocorrências não são apresentadas como uma execução única
+integral sem falhas. Evidências e limites estão no
+[plano T12](superpowers/plans/2026-10-22-t12-relacao-paineis.md); comandos e
+contratos ficam em [relação local](relationship-local.md). Publicação, provedores
+e aparelhos físicos continuam adiados pelo idealizador.
+
+## Execução de T13
+
+Em 23/10/2026, T13 reutilizou PostgreSQL 17/Auth/Storage persistentes locais,
+com bancos dev/shadow/integração e namespaces próprios. Prisma 7.10.1 foi
+gerado; as quinze migrações passaram por preservação e 38 tabelas RLS/grants
+antes da aplicação a desenvolvimento/integração. As 14 migrações anteriores
+conservam seus bytes; correções posteriores são aditivas.
+
+A orquestração Toolkit manteve escritores exclusivos e revisão somente leitura
+de SQL, API/segurança, guardas operacionais, UI e runtime. O root serializou
+Git, serviços, banco, build e testes. Next 16.4.2 foi consultado nos guias locais;
+Context7 não confirmou Prisma 7.10.1 e a referência oficial v7 complementou a
+verificação do default gerado pelo banco, comprovado com conexão restrita real.
+
+Checks e correções foram verificados. A execução HTTP completa passou 355/356;
+a única expectativa antiga omitia platformPausedAt. Após atualizar somente
+o teste, os quatro casos do arquivo passaram. São 356 casos distintos cobertos
+sem skips por execução completa e repetição focal, sem alegar uma execução
+única 356/356 sem falhas. Chromium completo passou 736/736 sem falhas ou skips.
+Comandos em [administração local](admin-local.md), com ocorrências e limites
+no [plano T13](superpowers/plans/2026-10-22-t13-administracao.md). T14–T15
+seguem locais; provedores, publicação e aparelhos físicos permanecem adiados.
+
+## T14 verificada localmente
+
+Vibe Coding Toolkit foi descoberto no cliente e seus prompts de ondas/revisão
+foram aplicados com os agentes existentes. Arquivos tiveram um escritor por
+onda; revisões independentes foram somente leitura. Root integra e executa
+Docker, banco, builds e testes em série. Não houve alteração global de cliente,
+modelo, permissões, hooks ou serviços pagos.
+
+O preparo T14 reutiliza PostgreSQL 17.11/Auth/Storage da stack persistente
+`meumimo-t02` e cria bancos dev/integração/shadow e namespaces próprios. O
+inventário reprodutível confere sete contêineres, imagens, volumes, labels,
+saúde e loopback antes de substituir o snapshot privado. Nesta máquina foram
+observados Docker29.9.2/API1.56/Linux. A ACL privada Windows é aplicada antes
+de gravar dados de custódia; `chmod` sozinho não comprova essa proteção.
+
+Context7 foi consultado para Node24/AES-GCM, DockerAPI e PKCE; parte das fontes
+retornou main, exigindo prova nas versões locais. Kong2.8.1 da imagem local
+exige habilitar o plugin key-auth também no ambiente da cópia. O processo
+temporário Storage trata SIGTERM explicitamente. Uma bridge dedicada com
+publicações em loopback substitui Internal:true no ensaio; saída de rede é
+permitida. Essas adaptações não alteram a configuração da origem.
+
+Direitos, custódia e recuperação estão descritos em [direitos](pilot/data-rights.md)
+e [recuperação](pilot/recovery.md). A [matriz de aceite](pilot/acceptance.md)
+separa baseline, novos testes reais e gates ainda pendentes. Capturas, chaves,
+inventários e relatórios permanecem ignorados pelo Git. T15 local só começa
+após o fechamento e commit de T14.
+
+Conferência final: 362/362 HTTP, 736/736 Chromium na primeira regressão e
+cinquenta amostras de laboratório aprovadas. A ampliação do ciclo encontrou
+metadados de leitura enviados ao editar mimos; a revisão confirmou a mesma
+causa em atividades. Regressões estritas falharam antes da correção. Os dois
+formulários passaram a enumerar os campos editáveis; `npm run check` final
+aprovou 7 testes da base e 37 unitários web, lint/tipos/build, e 144 casos das áreas
+afetadas passaram no novo build. O ciclo real ampliado passou em 5,4 minutos,
+com desktop, duas edições, reposição explícita e publicação parcial/substituição.
+
+O quarto ensaio completo de recuperação passou com o fator TOTP original, desafios e
+sessões antigos negados, novo AAL2, supressão posterior, seis objetos por hash e
+novo ciclo web na cópia. RPO de 77,838 s e RTO de 96,593 s. A investigação consultou também
+o Auth v2.197.0 oficial: segredo TOTP usa Security.DBEncryption, preservada na
+cópia; rotação JWT não exige novo cadastro do fator. Expectativas de status do
+teste foram ajustadas às respostas 403/bad_jwt e 422/mfa_factor_not_found reais, sem aceitar
+identidade ou tokens nesses retornos. Instantes e limites estão na recuperação.
+
+## Operação web local de T15
+
+T14 foi commitada em `206e0ce68b91765328b13a27ac8028e61fa37307`; T15 foi
+implementada depois, na branch `codex/t15-web-local`, com as mesmas versões
+e serviços. O Vibe Coding Toolkit orientou três escritores com arquivos
+separados e revisão independente somente leitura; recursos/checks/Git foram
+executados em série pelo responsável pela integração.
+
+Não há pacote, provedor ou instalação global nova. A hospedagem Next usa a API
+customizada instalada, conferida nos guias shipped e no código da versão.
+Context7 corroborou contratos, mas retornou main/canary em parte das consultas;
+a versão local permaneceu a fonte para `close` e o comportamento efetivo.
+O diagnóstico do aborto HTTP consultou também a documentação oficial do Node
+24.12.0; o inspector temporário de QA foi restrito a loopback, ao processo
+próprio confirmado, e encerrado. Ele não faz parte do produto ou do startup.
+
+`local:web`, `local:health` e `local:stop` ligam supervisor, três filhos,
+saúde e manutenção aos recursos nominais T14 de desenvolvimento. Startup
+valida o inventário por IDs exatos e exige migrações/build prontos. Backups
+autenticam manifesto/componentes; o cache confere nomes, arquivos regulares e
+metadados de mudança. Arquivo extra ou componente ausente invalida o conjunto
+sem autorizar remover a entrada desconhecida. Filhos recebem somente seus
+ambientes filtrados; Next/outbox não recebem service role de mídia/migração.
+
+O ensaio de parada após UI revelou promise de transporte Next retida após
+abortar leituras. O host passou a acompanhar término HTTP por eventos, enquanto
+`handleRoute` registra operações admitidas em um estado global opcional do
+processo. O STOP fecha essa admissão, aguarda operações, fecha Next/Prisma e só
+então confirma saída. A correção foi exercitada com leituras e cancelamento
+bloqueados no PostgreSQL, preservando uma devolução mesmo com cliente abortado.
+Execução e sequência de QA em [qualidade](quality.md); uso diário e limites da
+máquina desligada em [operação local](pilot/local.md).
+
+O upload negativo de T15 confirmou outro limite operacional: arquivo inválido
+tratado recebe erro recuperável no álbum, sem tornar o supervisor indisponível.
+Workers conservam as contagens de itens falhos/retries numa rodada concluída;
+somente exceção propagada da rodada sinaliza falha operacional. A quarta parada
+CLI mostrou ainda uma corrida entre a leitura de DRAINING e a saída do manager;
+a confirmação passou a reler o estado final e a identidade dos filhos.

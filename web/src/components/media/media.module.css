@@ -1,4 +1,4 @@
-.panel { min-width: 0; padding: clamp(16px, 4vw, 28px); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow-wrap: anywhere; }
+.panel { min-width: 0; padding: clamp(16px, 4vw, 28px); background: var(--surface-paper); border: 1px solid var(--border); border-radius: var(--radius); overflow-wrap: anywhere; box-shadow: var(--shadow-soft); }
 .panel h2 { font: 400 1.75rem/1.25 var(--font-heading); margin-top: 0; }
 .panel :where(h2, input):focus-visible { outline: 3px solid var(--focus); outline-offset: 4px; }
 .panel p { max-width: 65ch; }
@@ -7,7 +7,7 @@
 .selection { border-block: 1px solid var(--border); padding-block: .5rem 1rem; margin-block: 1rem; }
 .hidden { position: absolute; width: 1px; height: 1px; padding: 0; border: 0; clip-path: inset(50%); overflow: hidden; white-space: nowrap; }
 .items { list-style: none; margin-block: 1rem; padding: 0; display: grid; gap: 1.25rem; }
-.item { min-width: 0; border: 1px solid var(--border-control); border-radius: 1rem; padding: 1rem 12px; }
+.item { min-width: 0; border: 1px solid var(--border-control); border-radius: 1rem; padding: 1rem 12px; background: var(--surface); }
 .item h3 { font-size: 1.25rem; margin-block: 0 .5rem; }
 .item progress { width: min(100%, 24rem); height: 1rem; accent-color: var(--action); }
 .detail { color: var(--text-muted); font-size: .875rem; }

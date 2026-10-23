@@ -1,5 +1,7 @@
 'use client';
 
+import { MimoMasthead } from '@/components/ui/mimo-page';
+
 import Link from 'next/link';
 import { useMemo, useRef, useState } from 'react';
 import type { CommentView } from '@/contracts/conversations';
@@ -53,6 +55,7 @@ export function ConversationPreview() {
     },
   }), []);
   return <main className="stores-shell">
+    <MimoMasthead />
     <Link className="stores-link" href="/visual-check">Voltar à prévia</Link>
     <h1>Conversa de exemplo</h1>
     <p>Demonstração com dados fictícios em memória. Não cria registro, ticket ou conversa real. Recarregar descarta os exemplos.</p>
@@ -75,6 +78,6 @@ export function ConversationPreview() {
         setConfirmed(comments.current.size);
       }}>Semear 39 comentários fictícios</Button>
     </div>
-    <ConversationPanel accountKey={context} storeId={context} conversationId={context} transport={transport} />
+    <ConversationPanel accountKey={context} storeId={context} conversationId={context} transport={transport} includeReactions={false} />
   </main>;
 }

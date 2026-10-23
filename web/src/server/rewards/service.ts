@@ -3,6 +3,7 @@ import type { Prisma, Reward, RewardEvent } from '../../generated/prisma/client.
 import type { RewardMutation, RewardPage, RewardView } from '../../contracts/rewards.ts';
 import type { Identity } from '../auth/types.ts';
 import { AppError } from '../errors.ts';
+import { suppressionFor } from '../privacy/suppression.ts';
 import { consumeStoreLimit } from '../stores/limits.ts';
 import type { StoreScope } from '../stores/transaction.ts';
 import { assertStoreWritable, databaseNow, requireMembership, withStoreTransaction } from '../stores/transaction.ts';
@@ -49,14 +50,18 @@ export async function listRewards(identity: Identity, storeId: string, query = n
     const base: Prisma.RewardWhereInput = { storeId: scope.store.id,
       ...(state === 'ACTIVE' ? { archivedAt: null } : state === 'ARCHIVED' ? { archivedAt: { not: null } } : {}) };
     const where: Prisma.RewardWhereInput = { ...base, ...(category !== null ? { category } : {}),
+      ...(category !== null || page.q ? { creator: { dataSuppressions: { none: { scope: 'AUTHORED_CONTENT' } } } } : {}),
       ...(page.q ? { name: { contains: page.q, mode: 'insensitive' } } : {}) };
     const total = await scope.tx.reward.count({ where });
     const rows = await scope.tx.reward.findMany({ where, orderBy: [{ createdAt: 'desc' }, { id: 'desc' }], skip: page.skip, take: page.pageSize });
-    const categories = await scope.tx.reward.findMany({ where: base, distinct: ['category'], select: { category: true }, orderBy: { category: 'asc' } });
+    const categories = await scope.tx.reward.findMany({ where: { ...base, creator: { dataSuppressions: { none: { scope: 'AUTHORED_CONTENT' } } } },
+      distinct: ['category'], select: { category: true }, orderBy: { category: 'asc' } });
     const balance = await rewardBalance(scope);
     const items: RewardView[] = [];
-    for (const row of rows) items.push(await rewardView(scope, row, balance));
-    return { items, total, page: page.page, pageSize: page.pageSize, categories: categories.map(row => row.category).filter(Boolean) };
+    const suppressions = await suppressionFor(scope.tx, rows.map(row => row.createdByProfileId));
+    for (const row of rows) items.push(await rewardView(scope, row, balance, suppressions));
+    return { items, total, page: page.page, pageSize: page.pageSize,
+      categories: categories.map(row => row.category).filter(Boolean) };
   });
 }
 

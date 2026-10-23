@@ -9,6 +9,7 @@ import { assertActivityOpen, assertOccurrenceAvailable, receivedCount } from '..
 import { requireConversationAudience } from '../conversations/access.ts';
 import { registerConversation } from '../conversations/service.ts';
 import { AppError } from '../errors.ts';
+import { suppressionFor } from '../privacy/suppression.ts';
 import { registerMediaCollection, publishMedia } from '../media/registration.ts';
 import { setMediaRetention } from '../media/retention.ts';
 import { enqueueSubmissionReceived } from '../outbox/events.ts';
@@ -75,11 +76,15 @@ export async function listSubmissions(identity: Identity, storeId: string, query
       ...(actor.role === 'PARTICIPANT' ? { participantMembershipId: actor.id } : membershipId ? { participantMembershipId: membershipId } : {}),
       ...(from || to ? { localDate: { ...(from ? { gte: from } : {}), ...(to ? { lte: to } : {}) } } : {}) };
     const total = await scope.tx.activitySubmission.count({ where });
-    const rows = await scope.tx.activitySubmission.findMany({ where, include: { activity: true },
+    const rows = await scope.tx.activitySubmission.findMany({ where, include: { activity: true, participant: { select: { profileId: true } },
+      reviewEvents: { distinct: ['actorProfileId'], select: { actorProfileId: true } },
+      events: { distinct: ['actorProfileId'], select: { actorProfileId: true } } },
       orderBy: [{ receivedAt: 'desc' }, { id: 'desc' }], skip: page.skip, take: page.pageSize });
     const now = await databaseNow(scope.tx);
     const items: SubmissionView[] = [];
-    for (const row of rows) items.push(await submissionView(scope, row, row.activity, now));
+    const suppressions = await suppressionFor(scope.tx, rows.flatMap(row => [row.authorProfileId, row.activity.createdByProfileId, row.participant.profileId,
+      ...row.reviewEvents.map(event => event.actorProfileId), ...row.events.map(event => event.actorProfileId)]));
+    for (const row of rows) items.push(await submissionView(scope, row, row.activity, now, suppressions));
     return { items, total, page: page.page, pageSize: page.pageSize };
   });
 }

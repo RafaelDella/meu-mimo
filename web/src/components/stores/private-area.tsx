@@ -6,6 +6,7 @@ import type { AccountSession } from '@/app/conta/account-api';
 import { Button } from '@/components/ui/button';
 import { StoreRequestError, storeError } from './store-api';
 import { useCurrentSession } from './use-current-session';
+import { MimoIcon } from '@/components/ui/mimo-icon';
 
 export function PrivateArea({ children }: { children: (session: AccountSession) => ReactNode }) {
   // Só a sessão retém a árvore durante a conferência; uma identidade diferente
@@ -16,6 +17,7 @@ export function PrivateArea({ children }: { children: (session: AccountSession) 
     const needsLogin = error instanceof StoreRequestError && [401, 403].includes(error.status);
     const destination = typeof window === 'undefined' ? '/lojas' : window.location.pathname + window.location.search;
     return <section className="stores-card">
+      <span className="stores-mark" aria-hidden="true"><MimoIcon name="bow" /></span>
       <h2>{session?.recovery ? 'Conclua a recuperação' : 'Acesse sua conta'}</h2>
       <p role="alert">{session?.recovery ? 'Salve sua nova senha para continuar.' : needsLogin ? 'Entre na sua conta para abrir suas lojas.' : storeError(error)}</p>
       <div className="stores-actions"><Link className="primary-link" href={`/conta?returnTo=${encodeURIComponent(destination)}`}>Entrar na conta</Link>

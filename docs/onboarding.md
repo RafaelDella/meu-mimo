@@ -138,3 +138,42 @@ Para catálogo, emissão e histórico de tickets, siga [T09 local](rewards-local
 O preparo seleciona desenvolvimento T09; integração usa `meumimo_t09`, prefixos
 próprios e Next4310/mídia4311. Execute os comandos/migrações T09 antes de abrir
 o catálogo. Não reutilize o estado da demonstração como saldo ou dados reais.
+
+Para combinado, realização e cancelamento/devolução, siga [T10 local](tickets-local.md).
+O preparo seleciona desenvolvimento T10; integração usa `meumimo_t10`, namespaces
+Storage próprios e Next4310/mídia4311. Encerramento preserva o tratamento dos tickets;
+revogação continua retirando acesso. Execute migrações/checks/modos em série.
+
+Para o álbum privado, publicação explícita e retenção por ticket, siga
+[T11 local](albums-local.md). O preparo seleciona `meumimo_t11_dev`; integração
+usa `meumimo_t11`, com namespace Storage separado e as mesmas portas em série.
+PostgreSQL permanece na stack Docker existente, com consumidores próprios de
+mídia/outbox.
+
+Para bilhetes, reações, mural, novidades e painéis, siga
+[T12 local](relationship-local.md), implementada e verificada localmente. O preparo
+seleciona `meumimo_t12_dev` em `.env.local`; integração usa `meumimo_t12`, shadow
+e Storage separados. PostgreSQL continua na stack persistente existente.
+Next recebe credencial restrita; workers de mídia/outbox têm comandos próprios.
+
+Para administrar metadados e aplicar restrições independentes, siga
+[T13 local](admin-local.md). O preparo seleciona `meumimo_t13_dev`; integração
+usa `meumimo_t13`, shadow e Storage próprios, nas mesmas portas em série.
+Provisionamento do grant continua separado e exige bloqueio do perfil antes
+da concessão; a conta administrativa também confirma TOTP/AAL2 no Auth local.
+
+O recorte atual é [T14–T15 local](pilot/local.md). Seu preparo usa a
+mesma stack persistente e seleciona `meumimo_t14_dev` em `.env.local`; integração
+usa `meumimo_t14` e shadow separado. Next continua recebendo somente runtime
+restrito. Direitos, exportação, captura e recuperação têm comandos operacionais
+próprios, descritos em [direitos](pilot/data-rights.md) e
+[recuperação](pilot/recovery.md). Feche servidores/consumidores próprios antes
+da manutenção; não execute checks que usam o lock de custódia em paralelo.
+O aceite e as pendências de dispositivos/publicação estão em
+[aceite da web](pilot/acceptance.md). Para o uso diário, execute na raiz
+`npm --prefix web run local:web` e aguarde `LOCAL_READY`; a conta fica em
+`http://127.0.0.1:4301/conta` e a confirmação chega ao correio local em
+`http://127.0.0.1:54324`. Confira com `npm --prefix web run local:health` e pare
+com `npm --prefix web run local:stop` ou Ctrl+C no terminal do supervisor.
+O startup conserva os dados e exige preparo, migrações e build explícitos.
+O agendamento de backup depende de manter o processo e a máquina ligados.

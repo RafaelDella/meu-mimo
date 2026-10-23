@@ -83,18 +83,30 @@ provisionar o UUID do perfil por uma conexão administrativa ao banco de
 desenvolvimento. Confira o UUID e o banco antes de executar o SQL:
 
 ```sql
+BEGIN ISOLATION LEVEL READ COMMITTED;
+SELECT id, "suspendedAt" FROM app."Profile"
+WHERE id = 'UUID-DO-PERFIL'::uuid FOR UPDATE;
+
 INSERT INTO app."AdminGrant" ("profileId")
 SELECT id FROM app."Profile"
 WHERE id = 'UUID-DO-PERFIL'::uuid AND "suspendedAt" IS NULL
 ON CONFLICT ("profileId") DO UPDATE
 SET "grantedAt" = now(), "revokedAt" = NULL;
+COMMIT;
 ```
+
+O SELECT e o INSERT são comandos separados na mesma transação: o primeiro
+bloqueia e relê o perfil; o segundo só cria/reativa o grant se ele continuar
+livre. Confira que uma linha foi afetada. Zero linhas significa perfil ausente
+ou suspenso e não autoriza continuar. Isso também serializa o provisionamento
+com o bloqueio de segurança de T13; não remover o lock nem agrupar tudo num
+SELECT com snapshot anterior à espera. Use apenas a conexão administrativa.
 
 O grant não evita MFA: configure TOTP em `/conta` e confirme o código para
 obter AAL2. `/api/admin/session` exige os dois requisitos e não concede acesso
 a lojas. Para revogar, atualize `revokedAt` do grant com `now()` pela mesma
 conexão administrativa. A próxima requisição verifica novamente o grant.
-Não há interface administrativa completa nesta etapa.
+T13 acrescenta a interface por metadados, mantendo este provisionamento separado.
 
 ## Verificação e limites
 

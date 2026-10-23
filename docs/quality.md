@@ -137,6 +137,15 @@ foco/teclado, 320/390 e texto 200%. A evolução preserva dados T07/T08 e nega
 emissão gratuita, reserva sem ticket e auditoria administrativa tardia.
 Evidências, revisão e limites no [plano T09](superpowers/plans/2026-10-22-t09-catalogo-resgates.md).
 
+T10 acrescenta 38 casos HTTP reais (249 com regressões), com realização versus
+cancelamento, devolução única do custo congelado, reposição explícita e rollback
+de cada efeito. A prova de evolução verifica doze migrações, privilégios
+restritos e preservação da cadeia financeira. A guarda SQL rejeita motivos
+formados só por espaços Unicode ou caracteres de controle, além dos limites da
+API. No navegador, o histórico conserva foco ao mudar de página e a recuperação
+de intenção usa UUID sem persistir textos privados. Evidências e limites no
+[plano T10](superpowers/plans/2026-10-22-t10-realizacao-cancelamento.md).
+
 ## Revisão de segurança reutilizável
 
 Fonte e invocação: leia a seção Prompt de
@@ -201,3 +210,144 @@ Detalhes no [plano T08](superpowers/plans/2026-10-22-t08-analise-extrato.md).
 Saldo negativo após gasto e preservação de tickets exigem a integração T09;
 T08 prova estorno real, aritmética assinada e apresentação controlada. Leitor
 de tela, aparelhos físicos, CI remoto e publicação continuam não observados.
+
+## Verificação de T11
+
+Álbuns usam o pipeline real de mídia e tickets reais também nas regressões T06.
+As provas cobrem seleção explícita, três fotos/dois vídeos, lote parcial, ordem
+e legenda imutáveis, remoção autoral, recuperação e corridas com cancelamento.
+A evolução preserva a cadeia financeira e as coleções anteriores; runtime não
+altera itens/eventos nem apaga auditoria.
+
+Retenção deve ser verificada antes da manutenção: um álbum vencido sem hold
+não pode retornar bytes, legendas ou metadados, inclusive para UUIDs válidos
+especiais. O teste nil falhou antes e passou depois do filtro explícito vazio.
+Na UI, remoção confirmada precisa ocultar imediatamente mesmo se a consulta
+seguinte falhar; revisão mantém miniatura/duração e a galeria informa publicação.
+Evidências e limites no [plano T11](superpowers/plans/2026-10-22-t11-album.md).
+
+## Verificação de T12
+
+A leitura do bilhete deve confirmar a versão exibida e nunca aparecer nos
+DTOs do lojista. Rascunho mantém sua versão de base quando outra edição chega.
+Reações usam estado desejado e replay; adicionar/trocar/remover não altera
+ledger, estoque, análise ou ticket. Mural consulta somente origens recebidas
+e mídia publicada dentro da retenção atual.
+
+Grupos preservam Notification por evento; leitura até a versão observada não
+lê entregas posteriores. Silenciar muda atenção sem modificar `readAt` ou
+ocultar decisões financeiras. A consulta automática deve preservar foco,
+descartar respostas de outra conta/loja, recuperar comentários/contexto após
+retorno à aba e reaproveitar os snapshots de reações no mural de cinquenta itens.
+
+Provas SQL, HTTP, Chromium e revisão independente são registradas no
+[plano T12](superpowers/plans/2026-10-22-t12-relacao-paineis.md).
+T12 foi verificada em SQL, HTTP real e Chromium, com as ocorrências e repetições
+focais descritas no plano. Capturas controladas e
+simulação de conectividade não substituem aparelhos físicos, leitor de tela,
+transporte Realtime ou publicação, adiados pelo idealizador.
+
+## Verificação de T13
+
+Administração exige grant e AAL2 em cada fonte, inclusive lookup e replay.
+Leituras administrativas não podem conter conteúdo, saldo ou endereços das
+relações. Exercitar concorrência com revogação de grant/sessão, bloqueio do
+ator e concessão de grant no alvo. Mudança de projeção sem auditoria precisa
+reverter por completo. Capturar logs localmente sem imprimir os valores
+sensíveis usados na prova.
+
+Pausa da plataforma deve bloquear novas origens, incluindo upload DRAFT,
+preservando a pausa do lojista e obrigações anteriores. Bloqueio de conta
+precisa negar inclusive mídia autorizada antes do bloqueio e Range, mantendo
+o acesso legítimo da outra pessoa. No navegador, conferir árvore oculta em
+revalidação, foco, erro associado, 409/429, timeout e recuperação pela mesma
+UUID, sem persistir motivo ou busca no armazenamento/URL.
+
+Resultados e limitações ficam no
+[plano T13](superpowers/plans/2026-10-22-t13-administracao.md);
+comandos em [administração local](admin-local.md). Provas de UI com respostas
+controladas não substituem as provas HTTP com Auth/PostgreSQL/Storage reais.
+
+## Verificação de T14
+
+O [aceite integrado](pilot/acceptance.md) distingue HTTP, SQL, UI controlada,
+navegador com serviços reais e laboratório. `test:web:real` usa formulários,
+Auth/PostgreSQL/Storage e consumidores reais; não intercepta APIs privadas.
+Conferências por SELECT não substituem a ação feita pela UI. Fixtures sintéticas
+têm IDs próprios e limpeza limitada à sua autoria; relatórios e traces ficam
+privados. Aguardar a cota real não autoriza limpar os buckets para acelerar QA.
+
+Direitos precisam provar autoria da projeção, exclusão parcial explícita,
+exportação sem segredos/conteúdo alheio e nova autorização de bytes/Range.
+Recuperação exige cluster/Storage do mesmo corte, componentes autenticados,
+journal externo completo e reaplicado, contextos antigos negados e um novo
+ciclo pela web da cópia. `STACK_VERIFIED` isolado não comprova o RTO da aplicação.
+Teste de componente faltante/adulterado restaura e reconfirma o backup original.
+
+Execute builds, serviços, ensaios e testes que usam a custódia em série.
+`npm run check` também testa o lock real de manutenção e não pode concorrer com
+backup/restore. Desempenho precisa de cinco amostras por cenário/cache e perfil
+registrado, sem outros checks disputando a máquina. Latência de interação de
+laboratório não é INP nem p75 de tráfego real. Câmera/aparelhos/leitores reais e
+publicação conservam suas pendências explícitas.
+
+Formulários de edição precisam projetar os campos editáveis ao receber um DTO
+de leitura. A anotação TypeScript não remove metadados presentes no objeto em
+runtime. T14 reproduziu PATCHs de mimo e atividade recusados por campos extras;
+os dois formulários foram corrigidos com projeção explícita. As regressões de
+navegador agora usam um contrato estrito para esse salvamento, e o ciclo real
+percorre as duas edições. Mocks que aceitam qualquer corpo não comprovam que o
+formulário consegue salvar na API real.
+
+## Verificação da operação de T15
+
+O contrato, identidade nativa, posse, IPC, heartbeat, seleção/intervalo de
+backup, inventário autenticado, diagnóstico e registro de operações têm
+testes em `web/tests/pilot/`. Pare o supervisor antes de `npm run check`:
+esses testes usam a custódia e portas nominais em série. Migrações e valores
+de domínio continuam preservados; T15 não acrescenta uma migração.
+
+Os ensaios operacionais explícitos ficam em `web/tests/integration/pilot/`,
+sem entrar automaticamente no runner comum. Execute de `web/`, um por vez:
+
+| Programa | Pré-condição e prova |
+| --- | --- |
+| `node --conditions=react-server tests/integration/pilot/media-drain-check.mjs` | Escritores parados; HTTP corrente termina, aborto fecha admissão e não abre banco para envelope inválido. |
+| `node tests/integration/pilot/dependency-check.mjs` | Escritores parados; Auth, Storage e PostgreSQL próprios são indisponibilizados por ID comprovado e recuperados em `finally`, com duas leituras saudáveis após a retomada. |
+| `node --conditions=react-server tests/integration/pilot/maintenance-cycle-check.mjs` | Escritores parados; manager/filhos reais, uma janela solicitada pelo callback de QA, backup frio, recibos alheio/vencido recusados, novo `ready` e parada. |
+| `node --conditions=react-server tests/integration/pilot/worker-failure-check.mjs` | Escritores parados; inicia instância própria, interrompe seu outbox confirmado sem fila pendente e exige falha, drenagem dos demais e health sem `ready`. |
+| `node --conditions=react-server tests/integration/pilot/request-drain-check.mjs` | Supervisor pronto e fixture `PREPARED` própria; bloqueia sua loja, aborta duas leituras e um cancelamento admitidos, pede parada, libera a transação e exige uma devolução e três filhos encerrados. |
+| `node --conditions=react-server tests/integration/pilot/fixture-identity-check.mjs` | Escritores parados; duas identidades sintéticas próprias reutilizam o mesmo e-mail em sequência; cleanup development deve recusar ampliar o conjunto de UUIDs e preservar a segunda conta. |
+
+`scripts/pilot/development-web-check.mjs` tem fases explícitas `prepare`,
+`media-invalid`, `verify` e `cleanup`, executadas com `node --conditions=react-server` enquanto
+o supervisor estiver pronto. A preparação cadastra contas sintéticas pela UI
+e confirma pelo correio real; o estado privado permite conferir os mesmos IDs
+após parar/reiniciar. A verificação consulta saldo/ticket, abre a foto pela UI,
+compara seus bytes com Storage e testa devolução única. Só a limpeza explícita
+remove a fixture comprovada; conta sem prova de posse conserva pendência.
+Nenhum desses fluxos semeia o uso diário do idealizador.
+
+Na limpeza development, o e-mail não autoriza incluir outro UUID. A descoberta
+por e-mail da suíte de integração permanece separada. O ensaio negativo acima
+recria somente sua conta sintética e remove a substituta ao final apenas após
+conferir ID, e-mail e marcador da própria execução.
+
+`media-invalid` envia bytes que não são MP4 pela UI, exige `file_invalid`
+persistido e a mensagem de recuperação no álbum; três amostras de saúde após
+o processamento continuam prontas. A rodada concluída conserva a contagem
+do item falho; somente exceção operacional produz `FAILED` no heartbeat.
+Os códigos de saída standalone para itens falhos continuam preservados.
+
+A regressão de drenagem mantém um grafo de bloqueio PostgreSQL que alcança o
+PID do bloqueador desta execução, com prazo monotônico inferior ao timeout da
+transação. Não basta contar quaisquer conexões em espera. O `finally` fecha os
+clientes mesmo se o rollback falhar. A espera de parada preserva processos
+próprios em falha; não mata um desconhecido nem usa timeout para declarar êxito.
+
+Uma janela acionada pelo ensaio não equivale a doze horas decorridas. O corte
+e o limite exato são testados com relógio de função; o SO não é alterado. A
+saúde não varre os bytes de todos os objetos a cada consulta: autentica o
+inventário do backup e lê dependências/metadados, enquanto QA/recuperação
+conferem conteúdo. Provas e limitações observadas ficam no
+[aceite](pilot/acceptance.md).

@@ -48,6 +48,7 @@ export function SubmissionForm({ store, accountKey, activity, draftId }: { store
         try { value = await activityApi.submission(store.id, id, controller.signal); }
         catch (cause) {
           if (!(cause instanceof StoreRequestError && cause.status === 404)) throw cause;
+          if (store.platformPausedAt) throw new StoreRequestError('store_platform_paused', 409, 'Novas conquistas estão pausadas pela plataforma.');
           value = await activityApi.prepare(store.id, activity.id, id, controller.signal);
         }
         if (value.activityId !== activity.id || value.storeId !== store.id) throw new StoreRequestError('resource_not_found', 404, 'Conteúdo indisponível.');
@@ -60,7 +61,7 @@ export function SubmissionForm({ store, accountKey, activity, draftId }: { store
       finally { if (!controller.signal.aborted) { active.current = null; setPreparing(false); } }
     })();
     return () => controller.abort();
-  }, [store.id, activity.id, draftId, generation]);
+  }, [store.id, store.platformPausedAt, activity.id, draftId, generation]);
   useEffect(() => () => active.current?.abort(), []);
   useEffect(() => { if (draft && draft.status !== 'DRAFT') title.current?.focus(); }, [draft]);
   function recover(cause: unknown) {
@@ -70,7 +71,7 @@ export function SubmissionForm({ store, accountKey, activity, draftId }: { store
     } else if (privacyError(cause)) { setDenied(true); setDraft(undefined); setCaption(''); pending.current = null; }
     else if (cause instanceof StoreRequestError && cause.status === 409 && reviewErrors.includes(cause.code)) {
       pending.current = null; setUncertain(false); setNeedsReview(true);
-    } else if (cause instanceof StoreRequestError && ['media_not_ready', 'activity_limit_reached', 'activity_archived', 'store_paused', 'store_closed', 'membership_closed'].includes(cause.code)) {
+    } else if (cause instanceof StoreRequestError && ['media_not_ready', 'activity_limit_reached', 'activity_archived', 'store_paused', 'store_platform_paused', 'store_closed', 'membership_closed'].includes(cause.code)) {
       pending.current = null; setUncertain(false);
     } else if (cause instanceof StoreRequestError && cause.status === 400 && !uncertain) { pending.current = null; setUncertain(false); }
     else setUncertain(true);
@@ -94,6 +95,7 @@ export function SubmissionForm({ store, accountKey, activity, draftId }: { store
         if (controller.signal.aborted) return;
         if (found.status !== 'DRAFT') { setDraft(found); setUncertain(false); pending.current = null; title.current?.focus(); return; }
       }
+      if (store.platformPausedAt) { setError('Novos registros estão pausados pela plataforma. O rascunho permanece nesta tela.'); return; }
       const result = await activityApi.send(store.id, draft.id, body, controller.signal);
       if (!controller.signal.aborted) { setDraft(result); pending.current = null; setUncertain(false); title.current?.focus(); }
     } catch (cause) { if (!controller.signal.aborted) recover(cause); }
@@ -113,7 +115,7 @@ export function SubmissionForm({ store, accountKey, activity, draftId }: { store
   if (draft && draft.status !== 'DRAFT') return <><h2 ref={title} tabIndex={-1}>Envio confirmado</h2><SubmissionContent store={store} accountKey={accountKey} submission={draft} />
     <Link className="primary-link" href={`/lojas/${store.id}/registros/${draft.id}`}>Abrir conquista confirmada</Link></>;
   const currentActivity = draft?.activity ?? activity;
-  const locked = busy || uncertain;
+  const locked = busy || uncertain || !!store.platformPausedAt;
   return <section><Link className="stores-link" href={activityPath(store.id, activity.id)}>Voltar à atividade</Link>
     <h2 ref={title} tabIndex={-1}>Registrar conquista</h2><h3>{currentActivity.name}</h3><Rule activity={currentActivity} /><Availability value={currentActivity.availability} />
     <p role="status" aria-live="polite">{preparing ? 'Preparando sua conquista…' : busy ? 'Consultando a confirmação…' : message}</p><p role="alert" className="stores-error">{error}</p>
@@ -123,7 +125,7 @@ export function SubmissionForm({ store, accountKey, activity, draftId }: { store
         <label className="stores-field" htmlFor={fieldId}>Legenda (opcional)<textarea id={fieldId} ref={captionField} className="ui-input" value={caption} rows={4}
           readOnly={locked} aria-describedby={`${fieldId}-hint`} aria-invalid={[...caption.trim()].length > 500 || undefined} onChange={event => setCaption(event.target.value)} /></label>
         <p id={`${fieldId}-hint`}>{[...caption.trim()].length} de 500 caracteres. A legenda ficará no histórico como foi enviada.</p>
-        <div inert={locked}><MediaUploader accountKey={accountKey} storeId={store.id} collectionId={draft.collectionId} onSelectionChange={selectionChanged} /></div>
+        <div inert={busy || uncertain}><MediaUploader accountKey={accountKey} storeId={store.id} collectionId={draft.collectionId} onSelectionChange={selectionChanged} readOnly={!!store.platformPausedAt} /></div>
         <div className={styles.review}><h3>Confira antes de enviar</h3><Rule activity={currentActivity} />
           {draft.review && <><p>Data prevista do registro: {draft.review.localDate.split('-').reverse().join('/')} · {draft.review.timezone}.</p>
             <p>Última consulta: {localTime(draft.review.now, draft.review.timezone)}. A data efetiva será confirmada pelo servidor; não há registro retroativo.</p></>}
@@ -132,7 +134,7 @@ export function SubmissionForm({ store, accountKey, activity, draftId }: { store
         {needsReview && <p role="status">A regra, a data ou o fuso mudou. Revise os dados atuais antes de confirmar novamente.</p>}
         {needsReview && <Button variant="secondary" disabled={busy} onClick={() => { void review(); }}>Revisar regras e data</Button>}
         {uncertain && <p role="status">O resultado ainda não foi confirmado. Consultaremos o mesmo registro antes de repetir o envio. Sua legenda e sua foto ficam preservadas.</p>}
-        <Button type="submit" disabled={busy || needsReview || (!uncertain && (!currentActivity.availability?.eligible || !media.ready || media.busy || media.unavailable || [...caption.trim()].length > 500))}>
+        <Button type="submit" disabled={busy || needsReview || (!uncertain && (!!store.platformPausedAt || !currentActivity.availability?.eligible || !media.ready || media.busy || media.unavailable || [...caption.trim()].length > 500))}>
           {busy ? 'Confirmando…' : uncertain ? 'Consultar envio' : 'Enviar registro'}</Button>
       </form>
     </>}

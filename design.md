@@ -7,7 +7,44 @@ Recorte T09: catálogo e emissão/histórico de tickets seguem o
 Detalhe usa página responsiva e confirmação em diálogo; catálogo seleciona
 ilustrações locais. Quantidade é a disponível agora; edição antiga não repõe
 unidades consumidas. Vale preserva o conteúdo da ocasião. Realização/cancelamento
-pertencem a T10, álbum a T11 e composição completa da Lojinha a T12.
+seguem o [desenho T10 confirmado](docs/superpowers/specs/2026-10-22-t10-realizacao-cancelamento-design.md),
+álbum a T11 e composição completa da Lojinha a T12.
+
+T10 acrescenta ações por estado no ticket, combinado revisável de até500
+caracteres Unicode com data civil opcional e realização direta dos estados
+abertos. Pedido bloqueia realização; recusa motivada restaura o estado anterior.
+Cancelamento mostra devolução exata e reposição inicialmente desmarcada; terminais
+mantêm histórico/conversa. Timeline é paginada e saldos da emissão são históricos.
+
+T11 integra álbum privado: seleção e progresso reutilizam o envio de mídia;
+publicação exige revisão explícita dos prontos, legenda opcional de até 500
+caracteres Unicode e ordem imutáveis depois da confirmação. Novos lotes entram
+ao fim. Foto abre em diálogo e vídeo tem controles, sem autoplay. Cancelado
+mantém consulta/remoção própria. Política e comandos em [álbum local](docs/albums-local.md).
+
+T12 foi verificada localmente: Lojinha e Resumo usam dados reais; detalhe da
+pessoa reúne potinho, pendências e editor de bilhete. Coração e cartão consultam
+a versão da própria relação, com confirmação exata após exibir o texto.
+Rascunho não adota silenciosamente a versão recebida por atualização.
+Reações reutilizam a conversa da origem; mural preserva filtros no retorno.
+Central de novidades apresenta grupos, leitura observada e contexto autorizado;
+preferências mantêm o histórico. Contratos em [T12 local](docs/relationship-local.md).
+
+T13 acrescenta A01–A04 em navegação própria “Visão geral · Contas · Lojas”,
+com cards, filtros, histórico e confirmação com nome/UUID e alcance da ação.
+“Pausar novas ações da loja” e “Bloquear acesso por segurança” mostram efeitos
+distintos. O motivo fica na audiência administrativa. Erro de motivo é associado
+ao campo; resposta pendente oferece recuperação pela mesma operação após o
+prazo de espera. A árvore privada fica oculta durante revalidação do acesso.
+Estado da verificação e comandos em [T13 local](docs/admin-local.md).
+
+T14 aplica supressão por autoria nas respostas privadas: “Conta removida” e
+“[Conteúdo removido]” substituem identidade/texto suprimidos, sem alterar valores
+financeiros históricos. Arquivos removidos deixam de abrir, inclusive por URL
+anterior ou Range. Conteúdo legítimo da outra pessoa permanece disponível.
+Direitos usam procedimento operacional separado, sem acrescentar uma interface
+administrativa de leitura das relações. O aceite real da web e as limitações
+de celular/desempenho ficam em [aceite local](docs/pilot/acceptance.md).
 
 Este documento reúne a direção visual existente, a experiência aprovada como referência no protótipo e a proposta de produto. As decisões confirmadas pelo idealizador estão na seção 5; os comportamentos operacionais propostos para completar os fluxos estão identificados ao longo do documento. A seção 21 registra a consolidação do protótipo com esta especificação; `requisitos.md` complementa as regras de implementação.
 
@@ -72,7 +109,65 @@ Como ponto de partida, usar uma composição de stickers por tela principal e pe
 - Manter tickets com divisórias tracejadas e recortes semicirculares, recadinhos nos mimos e celebrações curtas, respeitando movimento reduzido.
 - A moldura de telefone e a composição publicitária no desktop continuam úteis para demonstração. A aplicação final adapta o conteúdo ao espaço disponível para permitir gestão e leitura confortáveis.
 
+Em 23/10/2026, o idealizador reforçou a preferência pela composição dentro do
+celular dessa referência, pedindo a maior proximidade possível de cores,
+stickers e imagens fofas e delicadas. A aplicação conserva a paleta original,
+reutiliza o gatinho com óculos e laço no potinho compartilhado e os quatro
+desenhos de recompensas. A marca em minúsculas, o laço preenchido, os ícones de
+traço arredondado, os bilhetes com fita e as divisórias de ticket passam a unir
+a apresentação, a prévia e as telas reais. O gatinho ocupa uma coluna própria,
+sem cobrir números, incluindo saldos negativos ou extensos. Com pouco espaço
+ou texto ampliado, a imagem passa para uma linha própria acima dos valores.
+A moldura é apenas
+uma composição de apresentação e não impõe altura ou rolagem interna à aplicação.
+O plano e as evidências estão no [registro da adaptação](docs/superpowers/plans/2026-10-23-identidade-visual-referencia.md).
+
+Na continuação, o idealizador confirmou a aplicação dessa identidade em todas
+as telas, incluindo login, cadastro, atividades e Meus mimos, e destacou o
+lacinho rosa como logo. O cabeçalho compartilhado e o ícone do app usam esse
+laço. Conta e recuperação recebem colagem do gatinho e cartão de papelaria;
+atividades usam caderninho com coração; tickets usam vale com laço. Convites,
+lojas, novidades e estados vazios reutilizam envelopes e presentes locais.
+Conversas, mídia, álbuns e administração adotam as mesmas superfícies, contornos,
+tipografia e foco, com decoração discreta nas áreas operacionais. Ilustrações
+reservam espaço no layout e não carregam informação indispensável. O registro
+da extensão está no [plano de todas as telas](docs/superpowers/plans/2026-10-23-identidade-todas-telas.md).
+
+### 3.2. Organização desktop da Lojinha e de Atividades
+
+Em 23/10/2026, após a auditoria de UX, foi autorizada a reorganização da barra
+lateral e dessas duas telas, mantendo a identidade existente. O workspace da
+loja usa até 80rem; com pelo menos 66rem disponíveis no workspace, a navegação
+lateral ocupa 15rem. O nome da loja usa tipografia de interface de 18px e os acessos principais
+alinham ícone e texto em linha. Em janelas baixas, a lateral pode rolar para
+manter seus acessos disponíveis por teclado. Celular e texto ampliado mantêm
+a composição empilhada.
+
+Na Lojinha, saudação e potinho precedem a vitrine. Atividades, resumo do dia,
+bilhete e consulta de tickets continuam disponíveis depois dos mimos. O
+potinho compacto no desktop preserva gatinho, disponível e análise separados;
+outros fluxos mantêm a apresentação anterior do componente.
+
+Em Atividades, abas, filtros e catálogo/registros vêm antes do apoio na ordem
+do documento. Com pelo menos 50rem na área de Atividades, saldo e resumo do dia
+ocupam uma coluna ao lado da lista; com menos espaço, aparecem depois dela.
+As colunas respondem ao espaço do contêiner e ao texto ampliado. A introdução conserva o caderninho
+com dimensões menores no desktop. Não há duplicação do conteúdo por breakpoint
+nem alteração das regras de pontos, bilhetes, permissões ou persistência.
+
+Plano e evidências: [organização desktop](docs/superpowers/plans/2026-10-23-desktop-lojinha-atividades.md).
+
 ## 4. Regras de uso e validação
+
+### Biblioteca compartilhada de ilustrações
+
+Em 23/10/2026, o idealizador aprovou vinte novos desenhos e a reutilização dos
+quatro originais em mimos e atividades. Os SVGs mantêm rosa, branco, traço
+framboesa, corações e brilhos. Os dois cadastros usam o mesmo catálogo e
+seletor com amostra; atividades conservam a opção sem ilustração. O catálogo
+completo e a migração aditiva estão em [Biblioteca de ilustrações](docs/illustrations.md).
+A galeria `/visual-check/icones` mostra os 24 desenhos. Texto, valores e
+estados continuam acessíveis independentemente da decoração.
 
 - Nomear as cores por função na implementação: `background`, `surface`, `brand`, `action`, `text`, `text-muted` e `border`.
 - Usar texto branco nos botões framboesa e texto ameixa sobre os fundos claros. O contraste calculado entre branco e framboesa é de **5,68:1**; entre ameixa e branco rosado, **11,50:1**.
@@ -477,7 +572,7 @@ Rascunhos ficam privados para quem envia; só a confirmação da origem os publi
 
 - O lojista escreve um bilhete individual no detalhe do participante. Em uma loja com várias pessoas, cada uma recebe e vê apenas o seu.
 - O bilhete aparece no cartão da Lojinha e no coração do cabeçalho. O ponto de não lido pertence àquela pessoa, loja e versão da mensagem.
-- Proposta inicial: manter um bilhete atual por relação, com nova versão a cada envio. Uma nova versão volta a aparecer como não lida; abrir uma mensagem antiga não marca uma versão nova como lida.
+- Confirmado em T12: manter um bilhete atual por relação, com nova versão a cada envio. Uma nova versão volta a aparecer como não lida; abrir uma mensagem antiga não marca uma versão nova como lida.
 - “Guardar esse carinho” fecha o painel. Não implica favoritar ou criar um arquivo de bilhetes; essas funções ficam para evolução.
 - O estado de leitura deve acompanhar a conta entre dispositivos na aplicação final. O MVP não precisa mostrar confirmação de leitura ao lojista.
 - O recadinho dentro de um mimo pertence ao catálogo compartilhado; o bilhete pessoal pertence exclusivamente à relação com o participante.

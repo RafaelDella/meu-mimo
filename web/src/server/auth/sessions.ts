@@ -1,18 +1,21 @@
 import '../only.ts';
 import { getDb } from '../db/client.ts';
 import { AppError } from '../errors.ts';
+import { suppressionFor } from '../privacy/suppression.ts';
 
 function invalidSession(): never {
   throw new AppError('session_invalid', 401, 'Sua sessão não está disponível. Entre novamente.');
 }
 
 export async function ensureProfile(userId: string): Promise<void> {
+  if ((await suppressionFor(getDb(), [userId])).get(userId)?.identity) invalidSession();
   const profile = await getDb().profile.upsert({
     where: { id: userId },
     create: { id: userId },
     update: {},
     select: { suspendedAt: true },
   });
+  if ((await suppressionFor(getDb(), [userId])).get(userId)?.identity) invalidSession();
   if (profile.suspendedAt) {
     throw new AppError('account_suspended', 403, 'O acesso desta conta está suspenso.');
   }
@@ -56,6 +59,7 @@ export async function readAuthSession(
     },
   });
   if (!session || session.profileId !== userId || session.revokedAt) invalidSession();
+  if ((await suppressionFor(getDb(), [userId])).get(userId)?.identity) invalidSession();
   if (session.profile.suspendedAt) {
     throw new AppError('account_suspended', 403, 'O acesso desta conta está suspenso.');
   }
