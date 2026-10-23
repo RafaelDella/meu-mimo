@@ -196,6 +196,28 @@ ela. Em celular ou com texto ampliado, os controles e colunas se empilham.
 Paleta, gatinho, papelaria e tipografia permanecem; não há novo contrato,
 persistência ou regra financeira. Plano e evidências: [Extrato e Mural no desktop](docs/superpowers/plans/2026-10-23-desktop-extrato-mural.md).
 
+### 3.5. Organização desktop do Resumo e de Pessoas
+
+Na continuação solicitada em 23/10/2026, o Resumo prioriza os contadores,
+registros para cuidar e mimos a realizar. Preparação e apresentação ficam no
+apoio, depois das pendências e dos acontecimentos na ordem do documento. A
+lista completa de acontecimentos substitui a prévia, sem repetir eventos.
+Expandir ou paginar leva o foco ao título dessa consulta.
+
+Pessoas apresenta cartões compactos em sequência, com nome, papel, situação
+textual e abertura da relação em destaque. O encerramento fica numa área
+secundária e conserva confirmação, recuperação e foco. Filtros e paginação
+usam as consultas existentes, sem inventar totais agregados.
+
+No detalhe da pessoa, os acessos à relação antecedem os conteúdos extensos.
+Contadores e momentos recentes ocupam a área principal; potinho compacto e
+bilhete ficam no apoio, depois dos momentos na ordem do documento. O histórico
+de participações encerradas continua acessível com as permissões existentes.
+
+As colunas respondem ao espaço disponível, empilhando no celular e com texto
+ampliado. A Lojinha do participante e os contratos permanecem como antes.
+Plano e evidências: [Resumo e Pessoas no desktop](docs/superpowers/plans/2026-10-23-desktop-resumo-pessoas.md).
+
 ## 4. Regras de uso e validação
 
 ### Biblioteca compartilhada de ilustrações

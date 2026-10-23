@@ -8,6 +8,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ConfirmAction, Feedback, Pagination } from './store-controls';
 import { storeError, storeRequest, useResource, useStoreAction } from './store-api';
+import { StatusBadge } from '@/components/ui/status-badge';
+import styles from './people.module.css';
 
 function EndParticipation({ store, person, onUpdate }: { store: StoreView; person?: PersonView; onUpdate: () => void }) {
   const action = useStoreAction();
@@ -24,10 +26,10 @@ function EndParticipation({ store, person, onUpdate }: { store: StoreView; perso
       }
     }, () => { close(); onUpdate(); });
   }
-  return <><Feedback {...action} />{ended ? <p className="stores-state">Participação encerrada. O histórico continua privado e acessível.</p> :
+  return <div className={styles.endAction}><Feedback {...action} />{ended ? <p className="stores-state">Participação encerrada. O histórico continua privado e acessível.</p> :
     <ConfirmAction label="Encerrar participação" title="Encerrar esta participação?" busy={action.busy}
       description="O encerramento é definitivo e interrompe novos ganhos e resgates nesta loja. Histórico, tickets existentes e conversa para resolver pendências permanecem acessíveis. Análises pendentes precisam ser resolvidas antes."
-      confirmLabel="Confirmar encerramento" error={action.error} onConfirm={end} />}</>;
+      confirmLabel="Confirmar encerramento" error={action.error} onConfirm={end} />}</div>;
 }
 
 function PeopleList({ store, onRefreshed }: { store: StoreView; onRefreshed: () => void }) {
@@ -45,16 +47,16 @@ function PeopleList({ store, onRefreshed }: { store: StoreView; onRefreshed: () 
   }, [loading, refreshing, onRefreshed]);
   function search(event: FormEvent<HTMLFormElement>) { event.preventDefault(); setQuery(draft.trim()); setPage(1); }
   return <>
-    <form className="stores-filters" onSubmit={search}><Input label="Buscar pessoa" value={draft} onChange={event => setDraft(event.target.value)} type="search" maxLength={80} />
-      <label className="stores-field">Mostrar participações<select className="ui-input" value={state} onChange={event => { setState(event.target.value); setPage(1); }}>
+    <form className={styles.filters} aria-label="Filtros de pessoas" onSubmit={search}><Input label="Buscar pessoa" name="q" autoComplete="off" value={draft} onChange={event => setDraft(event.target.value)} type="search" maxLength={80} />
+      <label className="stores-field">Mostrar participações<select className="ui-input" name="state" value={state} onChange={event => { setState(event.target.value); setPage(1); }}>
         <option value="ALL">Todas</option><option value="ACTIVE">Ativas</option><option value="CLOSED">Encerradas</option>
       </select></label><Button type="submit">Buscar</Button></form>
     <div aria-busy={loading}>{loading && <p role="status">Buscando pessoas…</p>}
       {error ? <div role="alert"><p>{storeError(error)}</p><Button variant="secondary" onClick={reload}>Tentar novamente</Button></div> : null}
       {data && <>{!data.items.length && <p>Nenhuma pessoa encontrada. Os participantes aparecem aqui depois de aceitar um convite.</p>}
-        <div className="stores-grid">{data.items.map(person => <article className="stores-card" key={person.id}>
-          <h3>{person.profile.displayName || 'Pessoa participante'}</h3><p>{person.role === 'MERCHANT' ? 'Responsável pela loja' : 'Participante'}</p>
-          {person.role === 'PARTICIPANT' && <Link className="stores-link" href={`/lojas/${store.id}/pessoas/${person.id}`}>Abrir relação de {person.profile.displayName || 'pessoa participante'}</Link>}
+        <div className={styles.list}>{data.items.map(person => <article className={`stores-card ${styles.personCard}`} key={person.id}>
+          <div className={styles.identity}><h3>{person.profile.displayName || 'Pessoa participante'}</h3><p>{person.role === 'MERCHANT' ? 'Responsável pela loja' : 'Participante'}</p><StatusBadge tone={person.closedAt ? 'info' : 'success'} text={person.closedAt ? 'Encerrada' : 'Ativa'} /></div>
+          {person.role === 'PARTICIPANT' && <Link className={`stores-link ${styles.open}`} href={`/lojas/${store.id}/pessoas/${person.id}`}>Abrir relação de {person.profile.displayName || 'pessoa participante'}</Link>}
           {person.role === 'PARTICIPANT' && <EndParticipation store={store} person={person} onUpdate={refresh} />}
         </article>)}</div>
         <Pagination page={data.page} pageSize={data.pageSize} total={data.total} onPage={setPage} />
@@ -65,8 +67,8 @@ function PeopleList({ store, onRefreshed }: { store: StoreView; onRefreshed: () 
 
 export function StorePeople({ store, onUpdate }: { store: StoreView; onUpdate: () => void }) {
   const title = useRef<HTMLHeadingElement>(null);
-  return <section aria-labelledby="people-title"><h2 id="people-title" ref={title} tabIndex={-1}>{store.role === 'MERCHANT' ? 'Pessoas' : 'Minha participação'}</h2>
-    {store.role === 'MERCHANT' ? <PeopleList store={store} onRefreshed={() => title.current?.focus()} /> : <div className="stores-card"><p>Seu vínculo pertence somente a esta loja. Encerrar aqui não altera suas outras lojas.</p>
+  return <section className={styles.area} aria-labelledby="people-title"><h2 id="people-title" ref={title} tabIndex={-1}>{store.role === 'MERCHANT' ? 'Pessoas' : 'Minha participação'}</h2>
+    {store.role === 'MERCHANT' ? <><p className={styles.intro}>Consulte cada relação, seus momentos e a situação da participação.</p><PeopleList store={store} onRefreshed={() => title.current?.focus()} /></> : <div className="stores-card"><p>Seu vínculo pertence somente a esta loja. Encerrar aqui não altera suas outras lojas.</p>
       <EndParticipation store={store} onUpdate={onUpdate} /></div>}
   </section>;
 }

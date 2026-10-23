@@ -7,6 +7,37 @@
 .sectionHeading a { margin-left: auto; }
 .support { display: grid; gap: 1.25rem; min-width: 0; align-items: start; }
 .support > * { min-width: 0; }
+.merchant { container: merchant-summary / inline-size; gap: 1rem; }
+.merchant > h2, .person > h2 { margin: 0; }
+.context { margin: 0; font-size: .875rem; color: var(--text-muted); }
+.merchantLayout, .merchantMain, .merchantSupport, .priorities, .personLayout, .personMain, .personSupport { display: grid; min-width: 0; gap: 1rem; align-items: start; }
+.merchantMain { container: merchant-main / inline-size; }
+.merchantMetrics div, .personMetrics div { padding: .875rem 1rem; }
+.merchantMetrics dt, .personMetrics dt { font-size: .875rem; }
+.merchantMetrics dd, .personMetrics dd { font-variant-numeric: tabular-nums; font-size: 1.75rem; }
+.merchant :where(section, li, p, a), .person :where(section, nav, p, a, div) { min-width: 0; overflow-wrap: anywhere; }
+.priority, .events, .merchantSupport > section { padding: 1rem; }
+.priority h3, .events h2, .merchantSupport h3 { font-size: 1.25rem; }
+.priority li { display: grid; gap: .5rem; padding-bottom: .75rem; border-bottom: 1px dashed var(--border); }
+.priority li > a { font-weight: 600; }
+.priority li p { margin: 0; font-size: .875rem; }
+.priority li :global(.ui-status) { justify-self: start; max-width: 100%; white-space: normal; }
+.priority > a { font-size: .875rem; }
+.merchantSupport li { font-size: .875rem; }
+.presentation { white-space: pre-wrap; font-size: .875rem; }
+.events li p { margin-block: .375rem 0; font-size: .875rem; }
+.person { container: person-summary / inline-size; gap: 1rem; }
+.person > a { justify-self: start; }
+.personLinks { margin: 0; gap: .5rem 1rem; padding: .75rem; border: 1px solid var(--border); border-radius: 1rem; background: var(--surface-soft); }
+.personLinks a { font-weight: 600; font-size: .875rem; }
+.personMain h2 { font-size: 1.375rem; margin-bottom: 0; }
+.personSupport :global(.ui-points) { margin: 0; }
+.personSupport > section { padding: 1rem; }
+.personSupport h2 { font-size: 1.375rem; }
+.personSupport :where(input, textarea) { width: 100%; min-width: 0; }
+@container merchant-summary (min-width: 50rem) { .merchantLayout { grid-template-columns: minmax(0, 1fr) 17rem; gap: 1.5rem; } }
+@container merchant-main (min-width: 38rem) { .priorities { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@container person-summary (min-width: 50rem) { .personLayout { grid-template-columns: minmax(0, 1fr) 19rem; gap: 1.5rem; } }
 @media (min-width: 70rem) {
   .home { gap: 1rem; }
   .welcome h2 { font-size: 1.75rem; }
