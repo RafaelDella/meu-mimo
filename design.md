@@ -159,6 +159,16 @@ Plano e evidências: [organização desktop](docs/superpowers/plans/2026-10-23-d
 
 ## 4. Regras de uso e validação
 
+### Biblioteca compartilhada de ilustrações
+
+Em 23/10/2026, o idealizador aprovou vinte novos desenhos e a reutilização dos
+quatro originais em mimos e atividades. Os SVGs mantêm rosa, branco, traço
+framboesa, corações e brilhos. Os dois cadastros usam o mesmo catálogo e
+seletor com amostra; atividades conservam a opção sem ilustração. O catálogo
+completo e a migração aditiva estão em [Biblioteca de ilustrações](docs/illustrations.md).
+A galeria `/visual-check/icones` mostra os 24 desenhos. Texto, valores e
+estados continuam acessíveis independentemente da decoração.
+
 - Nomear as cores por função na implementação: `background`, `surface`, `brand`, `action`, `text`, `text-muted` e `border`.
 - Usar texto branco nos botões framboesa e texto ameixa sobre os fundos claros. O contraste calculado entre branco e framboesa é de **5,68:1**; entre ameixa e branco rosado, **11,50:1**.
 - Reservar os rosas claros para superfícies e decoração. Controles e campos devem ter contornos suficientemente visíveis.

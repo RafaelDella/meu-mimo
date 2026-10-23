@@ -1,12 +1,12 @@
 import Link from 'next/link';
-import Image from 'next/image';
+import { MimoIllustration } from '@/components/ui/mimo-illustration';
 import type { RewardAvailability, RewardFields, RewardView } from '@/contracts/rewards';
 import { points } from '@/components/activities/format';
 import { rewardPath } from './transport';
 import styles from './rewards.module.css';
 
 export function RewardIllustration({ sticker }: { sticker: RewardFields['sticker'] }) {
-  return <Image className={styles.sticker} src={`/assets/${sticker}.svg`} alt="" aria-hidden="true" width={96} height={96} />;
+  return <MimoIllustration name={sticker} className={styles.sticker} />;
 }
 export function RewardRule({ reward }: { reward: RewardFields }) {
   return <><p><strong>{points(reward.cost)} pontos</strong> · Uma unidade por ticket</p>

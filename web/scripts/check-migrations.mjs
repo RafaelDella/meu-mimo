@@ -13,6 +13,7 @@ import { checkAlbumsMigration } from './check-albums-migration.mjs';
 import { checkRelationshipMigration } from './check-relationship-migration.mjs';
 import { checkAdminMigration } from './check-admin-migration.mjs';
 import { checkRightsMigration } from './check-rights-migration.mjs';
+import { checkIllustrationsMigration, illustrationSnapshot } from './check-illustrations-migration.mjs';
 import { adminEvolutionSnapshot, assertAdminPreserved } from './check-admin-migration-helpers.mjs';
 import { rightsEvolutionSnapshot, assertRightsPreserved } from './check-rights-migration-helpers.mjs';
 
@@ -254,11 +255,15 @@ try {
   assertAdminPreserved(beforeAdmin, await adminEvolutionSnapshot(database, true));
   await checkAdminMigration(database, runtime, { storeId, merchantId: id, participantId, profileId: secondProfile, otherStoreId });
   const beforeRights = await rightsEvolutionSnapshot(database);
-  for (const name of names.filter(name => name >= '20261023004000')) cpSync(path.join(source, name), path.join(migrations, name), { recursive: true });
+  for (const name of names.filter(name => name >= '20261023004000' && name < '20261023005000')) cpSync(path.join(source, name), path.join(migrations, name), { recursive: true });
   deploy();
   assertRightsPreserved(beforeRights, await rightsEvolutionSnapshot(database));
-  assert.equal((await database.query('SELECT count(*)::int AS count FROM app._prisma_migrations WHERE finished_at IS NOT NULL')).rows[0].count, names.length);
   await checkRightsMigration(database, runtime, { storeId, merchantId: id, participantId, profileId: secondProfile, otherStoreId });
+  const beforeIllustrations = await illustrationSnapshot(database);
+  for (const name of names.filter(name => name >= '20261023005000')) cpSync(path.join(source, name), path.join(migrations, name), { recursive: true });
+  deploy();
+  await checkIllustrationsMigration(database, beforeIllustrations);
+  assert.equal((await database.query('SELECT count(*)::int AS count FROM app._prisma_migrations WHERE finished_at IS NOT NULL')).rows[0].count, names.length);
   process.stdout.write('Migrações: banco vazio, evolução com dados preservados, RLS e privilégios efetivos comprovados.\n');
 } finally {
   await runtime?.end();

@@ -1,5 +1,11 @@
 # Atividades e conquistas locais — T07
 
+Evolução de 23/10/2026: atividades e mimos compartilham a
+[biblioteca de 24 ilustrações](illustrations.md); atividades continuam
+permitindo “Sem ilustração”. A migração aditiva
+`20261023005000_shared_illustrations` amplia as escolhas e os snapshots das
+conquistas. Aplicar somente ao ambiente autorizado.
+
 T07 integra atividades, registros, foto privada, conversa, recebimento e crédito
 automático. Use a stack de identidade existente em loopback; nenhum serviço
 publicado ou pago é necessário. O desenho e D04 foram confirmados pelo idealizador.

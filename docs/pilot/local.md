@@ -95,12 +95,17 @@ operação para o Next. Os volumes Docker nomeados de PostgreSQL e Storage
 preservam os dados ao parar ou reiniciar a web. `local:stop` conserva a stack
 Docker e seus volumes.
 
-O startup confere configuração, dezesseis migrações, build de produção,
+O startup confere configuração, a cadeia de migrações local, build de produção,
 ferramentas de mídia e inventário dos sete contêineres. Pode iniciar somente os
 contêineres existentes com os IDs registrados. Não cria build, não migra, não
 semeia e não substitui volumes silenciosamente; execute o comando de preparo
 indicado caso falte uma pré-condição. Pare a web antes de build, typegen, checks
 de custódia ou suítes que compartilham portas e bancos.
+
+A [biblioteca compartilhada de ilustrações](../illustrations.md) acrescenta
+a décima sétima migração, `20261023005000_shared_illustrations`, sem reescrever
+a cadeia anterior. Sua aplicação a desenvolvimento ou integração exige a
+autorização correspondente, com os escritores parados.
 
 ## Backup durante o uso local
 

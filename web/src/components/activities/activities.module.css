@@ -15,7 +15,7 @@
 .text { white-space: pre-wrap; }
 .activityCard { border-top: 3px solid var(--brand); }
 .cardHeading { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem; margin-bottom: 1rem; }
-.cardHeading h3 { flex: 1 1 8rem; min-width: 0; margin: 0; }
+.cardHeading :is(h2, h3) { flex: 1 1 8rem; min-width: 0; margin: 0; }
 .cardSticker { display: block; flex: 0 0 auto; width: 64px; height: 57px; padding: .25rem; border-radius: 1rem; background: var(--surface-soft); transform: rotate(-5deg); }
 .summary { display: grid; gap: .75rem; }
 .listPage, .catalogLayout, .participantLayout, .catalogContent { display: grid; gap: 1.25rem; min-width: 0; align-items: start; }

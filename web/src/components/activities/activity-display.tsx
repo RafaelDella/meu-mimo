@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import Image from 'next/image';
+import { MimoIllustration } from '@/components/ui/mimo-illustration';
 import type { ActivityAvailability, ActivityFields, ActivityView, SubmissionView } from '@/contracts/activities';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Button } from '@/components/ui/button';
@@ -29,7 +29,7 @@ export function Availability({ value }: { value: ActivityAvailability | null }) 
 }
 export function ActivityCard({ activity, merchant }: { activity: ActivityView; merchant: boolean }) {
   return <article className={`stores-card ${styles.activityCard}`}><div className={styles.cardHeading}>
-    {activity.sticker && <Image className={styles.cardSticker} src={`/assets/${activity.sticker}.svg`} alt="" aria-hidden="true" width={170} height={150} />}
+    {activity.sticker && <MimoIllustration name={activity.sticker} className={styles.cardSticker} />}
     <h3>{activity.name}</h3></div>
     {activity.category && <p className="stores-muted">{activity.category}</p>}<Rule activity={activity} />
     {activity.archivedAt && <StatusBadge tone="info" text="Arquivada" />}<Availability value={activity.availability} />
@@ -38,7 +38,9 @@ export function ActivityCard({ activity, merchant }: { activity: ActivityView; m
 }
 export function SubmissionCard({ submission, merchant }: { submission: SubmissionView; merchant: boolean }) {
   const activity = submission.snapshot ?? submission.activity;
-  return <article className="stores-card"><h3>{activity.name}</h3>{merchant && <p>{submission.participant.displayName || 'Participante'}</p>}
+  return <article className="stores-card"><div className={styles.cardHeading}>
+    {activity.sticker && <MimoIllustration name={activity.sticker} className={styles.cardSticker} />}<h3>{activity.name}</h3></div>
+    {merchant && <p>{submission.participant.displayName || 'Participante'}</p>}
     <SubmissionBadges submission={submission} />
     <p>{points(activity.points)} pontos da ocasião</p>
     {submission.receivedAt && <p><time dateTime={submission.receivedAt}>{localTime(submission.receivedAt, submission.timezone || 'UTC')}</time> · {submission.timezone}</p>}

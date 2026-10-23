@@ -8,6 +8,7 @@ import { useResource, storeError } from '@/components/stores/store-api';
 import { MediaUploader } from '@/components/media/media-uploader';
 import { ConversationPanel } from '@/components/conversation/conversation-panel';
 import { Button } from '@/components/ui/button';
+import { MimoIllustration } from '@/components/ui/mimo-illustration';
 import { ReviewPanel } from '@/components/submissions/review-panel';
 import { ResponsePanel } from '@/components/submissions/response-panel';
 import { SubmissionTimeline } from '@/components/submissions/submission-history';
@@ -29,7 +30,8 @@ export function SubmissionContent({ store, accountKey, submission: initial, even
   const approval = submission.analysis?.approval;
   return <>
     <section className="stores-card">{returnTo ? <Link className="stores-link" href={returnTo}>{returnTo.split('?')[0].endsWith('/mural') ? 'Voltar ao mural com os filtros' : 'Voltar ao extrato com os filtros'}</Link> :
-      <Link className="stores-link" href={activityPath(store.id)}>Voltar às atividades</Link>}<h2>{activity.name}</h2>
+      <Link className="stores-link" href={activityPath(store.id)}>Voltar às atividades</Link>}<div className={styles.cardHeading}>
+      {activity.sticker && <MimoIllustration name={activity.sticker} className={styles.cardSticker} />}<h2>{activity.name}</h2></div>
       <SubmissionBadges submission={submission} />
       {submission.status === 'PENDING' && <p role="status">Conquista enviada! Seus {points(activity.points)} pontos aguardam aprovação e ainda não estão disponíveis.</p>}
       {submission.status === 'APPROVED' && <p role="status">{approval?.mode === 'MANUAL' ? `Registro aprovado. ${points(activity.points)} pontos confirmados nesta loja.` : `Conquista registrada! +${points(activity.points)} pontos confirmados nesta loja.`}</p>}

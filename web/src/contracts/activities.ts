@@ -1,9 +1,10 @@
 import type { ConversationView } from './conversations';
 import type { PageResult } from './stores';
+import type { Illustration } from './illustrations';
 
 export type ActivityFrequency = 'ONCE' | 'DAILY' | 'WEEKLY';
 export type ApprovalMode = 'MANUAL' | 'AUTOMATIC';
-export type ActivitySticker = '' | 'gift' | 'coffee' | 'takeout' | 'envelope';
+export type ActivitySticker = '' | Illustration;
 export type ActivityFields = {
   name: string; description: string; category: string; sticker: ActivitySticker;
   points: number; frequency: ActivityFrequency; weeklyLimit: number; approvalMode: ApprovalMode;

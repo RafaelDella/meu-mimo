@@ -18,6 +18,20 @@ desenhados localmente para a extensão da identidade a todas as telas em
 SVGs são decoração; rótulos, valores e estados permanecem em texto acessível.
 O ícone da aplicação em `src/app/icon.svg` usa o mesmo lacinho rosa da marca.
 
+## Biblioteca compartilhada de mimos e atividades
+
+Em 23/10/2026 foram desenhados vinte SVGs adicionais: `cinema`, `dinner`,
+`picnic`, `stars`, `games`, `music`, `relax`, `flowers`, `book`, `dessert`,
+`pizza`, `art`, `puzzle`, `camera`, `map`, `beauty`, `cozy`, `car`, `jar` e
+`clock`. Preservam o viewBox 170 × 150, rosa/branco, traço framboesa de 2,5 px,
+corações e brilhos dos quatro originais, sem modificar aqueles arquivos.
+
+O catálogo `src/contracts/illustrations.ts`, a renderização `MimoIllustration`
+e o seletor `IllustrationSelect` são compartilhados por mimos e atividades.
+A galeria `/visual-check/icones` permite conferir os 24 desenhos com rótulos.
+Identificadores, usos e persistência estão em
+[`docs/illustrations.md`](../../../docs/illustrations.md).
+
 ## Fontes locais
 
 DM Sans (variável, normal) e DM Serif Display (regular) vêm do repositório

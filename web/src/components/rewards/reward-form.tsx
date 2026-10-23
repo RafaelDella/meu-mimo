@@ -2,7 +2,8 @@
 
 import { useId, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
-import type { RewardFields, RewardSticker } from '@/contracts/rewards';
+import type { RewardFields } from '@/contracts/rewards';
+import { IllustrationSelect } from '@/components/ui/illustration-select';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { RewardPreview } from './reward-display';
@@ -60,8 +61,7 @@ export function RewardForm({ initial = emptyReward, busy, locked, canSubmit = tr
     <p id={`${id}-description-error`} role="alert" className="stores-error">{errors.description}</p>
     <Input ref={categoryField} label="Categoria" value={fields.category} list={`${id}-categories`} readOnly={locked} disabled={busy} hint="Até 80 caracteres Unicode. Você pode criar outra categoria." error={errors.category} onChange={event => set('category', event.target.value)} />
     <datalist id={`${id}-categories`}><option value="A dois" /><option value="Pra você" /><option value="Surpresas" /></datalist>
-    <label className="stores-field">Ilustração<select className="ui-input" value={fields.sticker} disabled={busy || locked} onChange={event => set('sticker', event.target.value as RewardSticker)}>
-      <option value="gift">Presente</option><option value="coffee">Café</option><option value="takeout">Comidinha</option><option value="envelope">Cartinha</option></select></label>
+    <IllustrationSelect value={fields.sticker} disabled={busy || locked} onChange={value => set('sticker', value)} />
     <Input ref={costField} label="Custo em pontos" type="number" inputMode="numeric" min={1} max={1_000_000} step={1} required value={Number.isNaN(fields.cost) ? '' : fields.cost}
       readOnly={locked} disabled={busy} hint="Número inteiro entre 1 e 1.000.000 pontos." error={errors.cost} onChange={event => set('cost', event.target.valueAsNumber)} />
     <label className="stores-field" htmlFor={`${id}-note`}>Recadinho do catálogo<textarea ref={noteField} id={`${id}-note`} value={fields.note} readOnly={locked} disabled={busy} rows={3}

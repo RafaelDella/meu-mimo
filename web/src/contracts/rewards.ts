@@ -1,6 +1,7 @@
 import type { PageResult } from './stores';
+import type { Illustration } from './illustrations';
 
-export type RewardSticker = 'gift' | 'coffee' | 'takeout' | 'envelope';
+export type RewardSticker = Illustration;
 export type RewardFields = {
   name: string; description: string; category: string; sticker: RewardSticker;
   cost: number; note: string; instructions: string; available: boolean; stock: number | null;

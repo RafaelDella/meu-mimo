@@ -1,5 +1,10 @@
 # Catálogo e resgates locais — T09
 
+Evolução de 23/10/2026: mimos e atividades compartilham a
+[biblioteca de 24 ilustrações](illustrations.md). A migração aditiva
+`20261023005000_shared_illustrations` precisa estar aplicada no banco de destino
+para salvar as novas escolhas e preservá-las nos tickets.
+
 Desenho e D06/D04 confirmados em 22/10/2026. T09 entrega catálogo privado,
 confirmação com saldo real, emissão atômica, estoque e histórico. Combinado,
 realização e cancelamento/devolução serão implementados em T10; álbum em T11.
