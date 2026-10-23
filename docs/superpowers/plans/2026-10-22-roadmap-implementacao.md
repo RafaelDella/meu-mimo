@@ -10,7 +10,7 @@
 
 **Especificação:** [requisitos](../../../requisitos.md), [arquitetura](../../../arquitetura.md), [design](../../../design.md) e [README](../../../README.md). Operação e qualidade: [onboarding](../../onboarding.md), [setup](../../setup.md) e [quality](../../quality.md).
 
-**Data:** 22/10/2026. **Estado atual:** M0 e T01–T11 entregues localmente; T03 conserva a conferência com leitor de tela real. T11 integra álbum privado, publicação explícita, remoção e retenção da origem; evidências e ocorrências do navegador no [plano T11](2026-10-22-t11-album.md). A próxima entrega é T12, relação/novidades e painéis completos. Os desenhos T12–T15 foram confirmados; o idealizador priorizou web/PostgreSQL locais e adiou provedores, publicação e aparelhos físicos. Esses gates permanecem abertos. Decisões constam em requisitos §6.1; a seção 1 preserva o ponto de partida do planejamento.
+**Data:** 22/10/2026, atualizado em 23/10. **Estado atual:** M0 e T01–T12 entregues localmente; T03 conserva a conferência com leitor de tela real. T12 integra bilhetes versionados, reações, mural, novidades e painéis com dados autorizados; evidências e ocorrências no [plano T12](2026-10-22-t12-relacao-paineis.md). A próxima entrega é T13, administração mínima. Os desenhos T13–T15 foram confirmados; o idealizador priorizou web/PostgreSQL locais e adiou provedores, publicação e aparelhos físicos. Esses gates permanecem abertos. Decisões constam em requisitos §6.1; a seção 1 preserva o ponto de partida do planejamento.
 
 ## 1. Ponto de partida e restrições
 
@@ -262,12 +262,17 @@ capturas a 200% examinadas. Contratos em [álbum local](../../albums-local.md).
 **Responsável:** fluxo de relação. **Depende de:** T11 e T05.
 **Arquivos:** `web/src/server/{notes,reactions,notifications,dashboards}/**`, `web/src/components/{notes,reactions,feed,notifications,dashboards}/**`, `web/src/app/{notificacoes,lojas/[storeId]/pessoas,lojas/[storeId]/mural,lojas/[storeId]/resumo}/**`, `web/src/app/lojas/[storeId]/page.tsx`, `web/tests/{integration,e2e}/relationship/**`, `web/prisma/**`. **Recursos:** padrão T12.
 
-- [ ] Entregar bilhete individual editável com versões/leitura entre dispositivos, coração e cartão; sem confirmação de leitura ao lojista. Recadinho do catálogo permanece distinto do bilhete privado.
-- [ ] Completar reações/comentários e mural privado sobre registros/tickets, conforme design §15; reações não aprovam atividade nem realizam ticket.
-- [ ] Entregar C04 e preferências: loja/autor/evento/leitura/destino, agrupamento de interações e autorização atual ao abrir outra loja. Uso não depende de push.
-- [ ] Integrar L02 com checklist inicial, registros pendentes, mimos a realizar, participantes, acontecimentos recentes e atalhos, usando consultas autorizadas. Montar P01 completa com saudação, saldo/pendências, atividades, vitrine e bilhete da participação; substituir as composições fictícias de T03 por dados reais.
-- [ ] Verificar loja vazia e em uso, contadores após aprovação/resgate/realização e troca de loja/papel. O resumo agrega somente a loja gerenciada; a Lojinha não revela saldos, bilhetes ou acontecimentos de outros participantes.
-- [ ] Verificar abrir versão antiga durante envio de nova, troca de conta, item de outra loja, acesso revogado e perda de Realtime seguida de nova consulta. Nenhum participante acessa bilhete/mural alheio.
+- [x] Entregar bilhete individual editável com versões/leitura entre dispositivos, coração e cartão; sem confirmação de leitura ao lojista. Recadinho do catálogo permanece distinto do bilhete privado.
+- [x] Completar reações/comentários e mural privado sobre registros/tickets, conforme design §15; reações não aprovam atividade nem realizam ticket.
+- [x] Entregar C04 e preferências: loja/autor/evento/leitura/destino, agrupamento de interações e autorização atual ao abrir outra loja. Uso não depende de push.
+- [x] Integrar L02 com checklist inicial, registros pendentes, mimos a realizar, participantes, acontecimentos recentes e atalhos, usando consultas autorizadas. Montar P01 completa com saudação, saldo/pendências, atividades, vitrine e bilhete da participação; substituir as composições fictícias de T03 por dados reais.
+- [x] Verificar loja vazia e em uso, contadores após aprovação/resgate/realização e troca de loja/papel. O resumo agrega somente a loja gerenciada; a Lojinha não revela saldos, bilhetes ou acontecimentos de outros participantes.
+- [x] Verificar abrir versão antiga durante envio de nova, troca de conta, item de outra loja, acesso revogado e interrupção das consultas seguida de recuperação autorizada. Nenhum participante acessa bilhete/mural alheio.
+
+T12: quatorze migrações, checks e revisão independente verificados. Foram
+cobertos 319 casos HTTP reais e 672 cenários Chromium, com correções e repetições
+focais registradas no [plano T12](2026-10-22-t12-relacao-paineis.md).
+Consulta visível de trinta segundos; sem alegação de Realtime ou prova física.
 
 ### T13 · Administração mínima e diagnóstico
 

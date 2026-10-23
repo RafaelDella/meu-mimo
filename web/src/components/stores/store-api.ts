@@ -25,6 +25,10 @@ export async function storeRequest<T>(path: string, method = 'GET', body?: objec
     throw new StoreRequestError(typeof failure.code === 'string' ? failure.code : 'request_failed', response.status,
       typeof failure.message === 'string' ? failure.message : 'Não foi possível continuar agora.');
   }
+  if (typeof window !== 'undefined' && ['POST', 'PATCH', 'PUT', 'DELETE'].includes(method.toUpperCase()) &&
+      !/\/(?:lida|acesso|partes|concluir)(?:\?|$)/.test(path)) {
+    window.dispatchEvent(new Event('meumimo:relationship-changed'));
+  }
   return value as T;
 }
 

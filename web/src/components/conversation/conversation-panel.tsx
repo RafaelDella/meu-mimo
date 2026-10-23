@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useId, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import type { CommentPage } from '@/contracts/conversations';
 import { Button } from '@/components/ui/button';
@@ -8,21 +8,28 @@ import { StoreRequestError, storeError } from '@/components/stores/store-api';
 import { conversationTransport } from './transport';
 import type { CommentOperation, ConversationContext, ConversationTransport } from './transport';
 import styles from './conversation.module.css';
+import { ReactionPicker } from '@/components/reactions/reaction-picker';
+import { invalidateRelationship, useRelationshipRefresh } from '@/components/notifications/relationship-refresh';
+import { accessDenied, useRewardAccess } from '@/components/rewards/access';
 
-type Props = ConversationContext & { accountKey: string; transport?: ConversationTransport };
+type Props = ConversationContext & { accountKey: string; transport?: ConversationTransport; includeReactions?: boolean };
 
 // O chamador monta esta área somente após validar a sessão e o recurso atual.
 // A chave explícita impede preservar rascunhos ou respostas entre contas/assuntos.
-export function ConversationPanel({ accountKey, storeId, conversationId, transport = conversationTransport }: Props) {
+export function ConversationPanel({ accountKey, storeId, conversationId, transport = conversationTransport, includeReactions = true }: Props) {
   return <ConversationContent key={`${accountKey}:${storeId}:${conversationId}`} storeId={storeId}
-    conversationId={conversationId} transport={transport} />;
+    conversationId={conversationId} transport={transport} includeReactions={includeReactions} />;
 }
 
-function ConversationContent({ storeId, conversationId, transport }: ConversationContext & { transport: ConversationTransport }) {
+function ConversationContent({ storeId, conversationId, transport, includeReactions }: ConversationContext & { transport: ConversationTransport; includeReactions: boolean }) {
   const fieldId = useId();
   const title = useRef<HTMLHeadingElement>(null);
   const input = useRef<HTMLTextAreaElement>(null);
   const active = useRef<AbortController | null>(null);
+  const reading = useRef<AbortController | null>(null);
+  const queued = useRef(false);
+  const coordinator = useRelationshipRefresh();
+  const unavailable = useRewardAccess();
   const pending = useRef<CommentOperation | null>(null);
   const focusAfterLoad = useRef(false);
   const [page, setPage] = useState(1);
@@ -41,17 +48,34 @@ function ConversationContent({ storeId, conversationId, transport }: Conversatio
   const data = current?.data;
   const writable = !!data?.conversation.writable && !closedByServer;
   const invalid = count > 500;
-  useEffect(() => {
+  const load = useCallback(async function load() {
+    if (reading.current) { queued.current = true; return; }
     const controller = new AbortController();
-    transport.list({ storeId, conversationId }, page, controller.signal)
-      .then(value => {
-        if (controller.signal.aborted) return;
-        setClosedByServer(false);
-        setResult({ key, data: value });
-      })
-      .catch(cause => { if (!controller.signal.aborted) setResult({ key, error: cause }); });
-    return () => controller.abort();
-  }, [storeId, conversationId, page, key, transport]);
+    reading.current = controller;
+    try {
+      const value = await transport.list({ storeId, conversationId }, page, controller.signal);
+      if (!controller.signal.aborted) { setClosedByServer(false); setResult({ key, data: value }); }
+    } catch (cause) {
+      if (!controller.signal.aborted) {
+        unavailable(cause);
+        setResult(previous => !accessDenied(cause) && previous?.key === key
+          ? { key, data: previous.data, error: cause } : { key, error: cause });
+      }
+    } finally {
+      if (reading.current === controller) {
+        reading.current = null;
+        if (!controller.signal.aborted && queued.current) { queued.current = false; void load(); }
+      }
+    }
+  }, [storeId, conversationId, page, key, transport, unavailable]);
+  useEffect(() => {
+    let mounted = true;
+    // O ciclo descartado pelo StrictMode cancela antes de iniciar a consulta.
+    void Promise.resolve().then(() => { if (mounted) void load(); });
+    const path = `/api/lojas/${storeId}/conversas/${conversationId}/comentarios?page=${page}&pageSize=20`;
+    const unsubscribe = coordinator?.subscribe(path, load);
+    return () => { mounted = false; unsubscribe?.(); const controller = reading.current; reading.current = null; queued.current = false; controller?.abort(); };
+  }, [coordinator, storeId, conversationId, page, load]);
   useEffect(() => () => active.current?.abort(), []);
   useEffect(() => {
     if (!current || !focusAfterLoad.current) return;
@@ -78,6 +102,7 @@ function ConversationContent({ storeId, conversationId, transport }: Conversatio
     void transport.send({ storeId, conversationId }, body, controller.signal).then(async () => {
       if (controller.signal.aborted) return;
       pending.current = null; setUncertain(false); setDraft(''); setMessage('Comentário enviado.');
+      invalidateRelationship();
       title.current?.focus();
       setSynchronizing(true);
       // O POST já confirmou o comentário. Falha na consulta é tratada como
@@ -89,10 +114,11 @@ function ConversationContent({ storeId, conversationId, transport }: Conversatio
         focusAfterLoad.current = true;
         setRevision(value => value + 1);
       } catch (cause) {
-        if (!controller.signal.aborted) setResult({ key, error: cause });
+        if (!controller.signal.aborted) { unavailable(cause); setResult({ key, error: cause }); }
       }
     }).catch(cause => {
       if (controller.signal.aborted) return;
+      unavailable(cause);
       if (cause instanceof StoreRequestError && cause.code === 'conversation_read_only') {
         pending.current = null; setUncertain(false); setClosedByServer(true);
         title.current?.focus();
@@ -113,6 +139,7 @@ function ConversationContent({ storeId, conversationId, transport }: Conversatio
     {current?.error ? <div role="alert"><p>{storeError(current.error)}</p>
       <Button variant="secondary" onClick={reload}>Tentar carregar novamente</Button></div> : null}
     {data && <>
+      {includeReactions && <ReactionPicker key={conversationId} storeId={storeId} conversationId={conversationId} />}
       {!data.items.length && <p>Ainda não há comentários neste item.</p>}
       <ol className={styles.comments} aria-label="Comentários do item">{data.items.map(comment => <li key={comment.id}>
         <p className={styles.author}>{comment.author.displayName || 'Pessoa da relação'} · <time dateTime={comment.createdAt}>

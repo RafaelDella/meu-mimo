@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import type { FormEvent } from 'react';
 import type { PageResult, PersonView, StoreView } from '@/contracts/stores';
 import { Button } from '@/components/ui/button';
@@ -53,6 +54,7 @@ function PeopleList({ store, onRefreshed }: { store: StoreView; onRefreshed: () 
       {data && <>{!data.items.length && <p>Nenhuma pessoa encontrada. Os participantes aparecem aqui depois de aceitar um convite.</p>}
         <div className="stores-grid">{data.items.map(person => <article className="stores-card" key={person.id}>
           <h3>{person.profile.displayName || 'Pessoa participante'}</h3><p>{person.role === 'MERCHANT' ? 'Responsável pela loja' : 'Participante'}</p>
+          {person.role === 'PARTICIPANT' && <Link className="stores-link" href={`/lojas/${store.id}/pessoas/${person.id}`}>Abrir relação de {person.profile.displayName || 'pessoa participante'}</Link>}
           {person.role === 'PARTICIPANT' && <EndParticipation store={store} person={person} onUpdate={refresh} />}
         </article>)}</div>
         <Pagination page={data.page} pageSize={data.pageSize} total={data.total} onPage={setPage} />

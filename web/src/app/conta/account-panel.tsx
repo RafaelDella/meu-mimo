@@ -10,6 +10,7 @@ import { MfaPanel } from './mfa-panel';
 import { AccountRequestError, accountRequest, accountSession, friendlyError, notifySessionChanged } from './account-api';
 import type { AccountSession } from './account-api';
 import { ProfilePanel } from './profile-panel';
+import { NotificationSettingsSection } from '@/components/notifications/notification-preferences';
 
 type Mode = 'login' | 'signup' | 'recovery';
 
@@ -146,6 +147,7 @@ export function AccountPanel() {
           {!session.recovery && <StatusBadge tone="success" text="Você está na sua conta" />}
           {!session.recovery && <p><Link className="primary-link" href="/lojas">Minhas lojas</Link></p>}
           {!session.recovery && <ProfilePanel key={`${session.userId}:${session.sessionId}`} />}
+          {!session.recovery && <NotificationSettingsSection key={`notices:${session.userId}:${session.sessionId}`} accountKey={`${session.userId}:${session.sessionId}`} />}
           <div className="account-actions">
             <Button variant="secondary" disabled={busy} onClick={() => void perform(async () => {
               await accountRequest('logout', 'POST', {});

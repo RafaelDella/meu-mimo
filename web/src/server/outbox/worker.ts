@@ -2,6 +2,7 @@ import '../only.ts';
 import { getDb } from '../db/client.ts';
 import { AppError } from '../errors.ts';
 import { databaseNow } from '../stores/transaction.ts';
+import { projectNotificationGroup } from '../notifications/group-projection.ts';
 
 type Outcome = 'delivered' | 'failed' | 'empty';
 
@@ -17,6 +18,8 @@ async function deliverOne(): Promise<Outcome> {
       if (!rows.length) return 'empty';
       eventId = rows[0].id;
       await tx.notification.createMany({ data: { eventId }, skipDuplicates: true });
+      const notification = await tx.notification.findUniqueOrThrow({ where: { eventId }, select: { id: true } });
+      await projectNotificationGroup(tx, notification.id);
       await tx.outboxEvent.update({ where: { id: eventId }, data: {
         processedAt: await databaseNow(tx), attempts: Math.min(rows[0].attempts + 1, 2_147_483_647), lastErrorCode: null,
       } });

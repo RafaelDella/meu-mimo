@@ -102,7 +102,18 @@
     "media:once:t11": "node scripts/media-local.mjs t11 integration --once",
     "media:purge:t11": "node scripts/media-local.mjs t11 integration --purge-once",
     "outbox:dev:t11": "node scripts/outbox-local.mjs t11 development",
-    "outbox:once:t11": "node scripts/outbox-local.mjs t11 integration --once"
+    "outbox:once:t11": "node scripts/outbox-local.mjs t11 integration --once",
+    "test:integration:t12": "node scripts/integration.mjs t12",
+    "local:prepare:t12": "node scripts/prepare-media.mjs t12",
+    "db:migrate:create:t12": "node scripts/prisma-local.mjs create t12",
+    "db:migrate:dev:t12": "node scripts/prisma-local.mjs development t12",
+    "db:migrate:integration:t12": "node scripts/prisma-local.mjs integration t12",
+    "media:fixtures:t12": "node scripts/media-fixtures.mjs t12",
+    "media:dev:t12": "node scripts/media-local.mjs t12 development",
+    "media:once:t12": "node scripts/media-local.mjs t12 integration --once",
+    "media:purge:t12": "node scripts/media-local.mjs t12 integration --purge-once",
+    "outbox:dev:t12": "node scripts/outbox-local.mjs t12 development",
+    "outbox:once:t12": "node scripts/outbox-local.mjs t12 integration --once"
   },
   "dependencies": {
     "@prisma/adapter-pg": "7.10.1",

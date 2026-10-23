@@ -639,3 +639,27 @@ Fechamento de navegador T11: 562 cenários cobertos;108 novos e453 regressões p
 na execução em grupos. Um histórico antigo teve rede suspensa no ambiente e
 passou na repetição focal em 320/390, sem mudança de código. Sem alegação de suíte
 integral sem falhas em uma única execução.
+
+## Execução de T12
+
+Em 23/10/2026, a preparação reutilizou PostgreSQL/Auth/Storage da stack local
+existente. T12 usa bancos de desenvolvimento, shadow e integração próprios,
+com namespaces de mídia separados. Prisma 7.10.1 foi gerado e validado; a
+prova descartável passou pelas quatorze migrações, preservação, 37 tabelas com
+RLS e privilégios efetivos, antes da aplicação a desenvolvimento e integração.
+As migrações anteriores e seus bytes permaneceram intactos.
+
+A orquestração usou o Vibe Coding Toolkit descoberto no cliente, com escritores
+exclusivos de dados, domínio e interface, integração serial e revisão somente
+leitura de SQL/privacidade e UI. As APIs Next foram conferidas nos guias da
+versão instalada em `web/node_modules/next/dist/docs/`; documentação oficial
+disponível via Context7 foi usada sem enviar código privado ou segredos.
+Nenhuma dependência, serviço pago, configuração global ou hook foi acrescentado.
+
+T12 e as correções da revisão foram verificadas: quatorze migrações, checks,
+319 casos HTTP distintos e 672 cenários Chromium cobertos em grupos e repetições
+focais, sem skips. As ocorrências não são apresentadas como uma execução única
+integral sem falhas. Evidências e limites estão no
+[plano T12](superpowers/plans/2026-10-22-t12-relacao-paineis.md); comandos e
+contratos ficam em [relação local](relationship-local.md). Publicação, provedores
+e aparelhos físicos continuam adiados pelo idealizador.

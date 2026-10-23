@@ -80,7 +80,7 @@ test('busca aceita 80 caracteres Unicode completos sem cortar emojis', async ({ 
 test('potinho real e vitrine aparecem na Lojinha sem saldo de demonstração', async ({ page }) => {
   await mockRewards(page, { balance: '9007199254740993' }); await page.goto(`/lojas/${ids.first}`);
   await expect(page.locator('.ui-points').getByText('9.007.199.254.740.993', { exact: true })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Mimos na sua vitrine', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Vitrine de mimos', exact: true })).toBeVisible();
   await page.getByRole('link', { name: 'Ver todos os mimos', exact: true }).click(); await expect(page).toHaveURL(catalogPath);
 });
 

@@ -225,3 +225,24 @@ especiais. O teste nil falhou antes e passou depois do filtro explícito vazio.
 Na UI, remoção confirmada precisa ocultar imediatamente mesmo se a consulta
 seguinte falhar; revisão mantém miniatura/duração e a galeria informa publicação.
 Evidências e limites no [plano T11](superpowers/plans/2026-10-22-t11-album.md).
+
+## Verificação de T12
+
+A leitura do bilhete deve confirmar a versão exibida e nunca aparecer nos
+DTOs do lojista. Rascunho mantém sua versão de base quando outra edição chega.
+Reações usam estado desejado e replay; adicionar/trocar/remover não altera
+ledger, estoque, análise ou ticket. Mural consulta somente origens recebidas
+e mídia publicada dentro da retenção atual.
+
+Grupos preservam Notification por evento; leitura até a versão observada não
+lê entregas posteriores. Silenciar muda atenção sem modificar `readAt` ou
+ocultar decisões financeiras. A consulta automática deve preservar foco,
+descartar respostas de outra conta/loja, recuperar comentários/contexto após
+retorno à aba e reaproveitar os snapshots de reações no mural de cinquenta itens.
+
+Provas SQL, HTTP, Chromium e revisão independente são registradas no
+[plano T12](superpowers/plans/2026-10-22-t12-relacao-paineis.md).
+T12 foi verificada em SQL, HTTP real e Chromium, com as ocorrências e repetições
+focais descritas no plano. Capturas controladas e
+simulação de conectividade não substituem aparelhos físicos, leitor de tela,
+transporte Realtime ou publicação, adiados pelo idealizador.

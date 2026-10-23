@@ -1,12 +1,18 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import type { AccountSession } from '@/app/conta/account-api';
 import { useResource } from './store-api';
 
 export function useCurrentSession() {
   const session = useResource<AccountSession>('/api/auth/session', true);
-  const reload = session.reload;
+  const focusBeforeRefreshRef = useRef<HTMLElement | null>(null);
+  const refreshSession = session.reload;
+  const reload = useCallback(() => {
+    const element = document.activeElement;
+    if (element instanceof HTMLElement && element.closest('.stores-private-area')) focusBeforeRefreshRef.current = element;
+    refreshSession();
+  }, [refreshSession]);
   useEffect(() => {
     function visible() { if (document.visibilityState === 'visible') reload(); }
     window.addEventListener('focus', reload);
@@ -23,5 +29,14 @@ export function useCurrentSession() {
       channel?.close();
     };
   }, [reload]);
-  return session;
+  useEffect(() => {
+    if (session.loading || session.refreshing) return;
+    const element = focusBeforeRefreshRef.current;
+    focusBeforeRefreshRef.current = null;
+    // A identidade diferente desmonta a árvore antiga. Restaurar apenas o foco
+    // da mesma árvore autorizada, sem substituir uma escolha feita fora dela.
+    if (session.data && !session.data.recovery && !session.error && element?.isConnected &&
+        document.activeElement === document.body) element.focus();
+  }, [session.data, session.error, session.loading, session.refreshing]);
+  return { ...session, reload };
 }

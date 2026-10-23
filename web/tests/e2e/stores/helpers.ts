@@ -1,6 +1,7 @@
 import { expect, test as base } from '@playwright/test';
 import type { Page, Route } from '@playwright/test';
 import type { InvitationPreview, PersonView, StoreView } from '../../../src/contracts/stores';
+import { mockRelationshipDefaults } from './relationship-defaults';
 
 export const test = base.extend<{ storeHealth: void }>({
   storeHealth: [async ({ page }, use) => {
@@ -55,6 +56,7 @@ export async function mockApi(page: Page, handler?: Handler) {
   await page.route('**/api/**', async route => {
     const url = new URL(route.request().url());
     if (handler && await handler(route, url, state)) return;
+    if (await mockRelationshipDefaults(route, url, state.stores, state.displayName)) return;
     const method = route.request().method();
     if (url.pathname === '/api/auth/session') {
       await json(route, state.loggedIn ? {

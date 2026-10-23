@@ -1,0 +1,55 @@
+import '../only.ts';
+import type { Prisma } from '../../generated/prisma/client.ts';
+import type { NotificationCategory, NotificationGroupView } from '../../contracts/notifications.ts';
+import type { Identity } from '../auth/types.ts';
+import type { StoreTransaction } from '../stores/transaction.ts';
+import { unavailable } from '../stores/validation.ts';
+import { notificationAudience, notificationSelect, notificationView } from './queries.ts';
+
+export function groupAudience(identity: Identity, storeId?: string): Prisma.NotificationGroupWhereInput {
+  return { ...(storeId ? { storeId } : {}), recipient: { profileId: identity.userId, accessRevokedAt: null },
+    notifications: { some: notificationAudience(identity, storeId) } };
+}
+
+export const groupSelect = {
+  id: true, version: true, storeId: true, category: true, lastDeliveredAt: true,
+  store: { select: { name: true } },
+  recipient: { select: { notificationPreference: { select: { socialMuted: true, automaticApprovalNotices: true } } } },
+} satisfies Prisma.NotificationGroupSelect;
+type Group = Prisma.NotificationGroupGetPayload<{ select: typeof groupSelect }>;
+
+export async function groupView(tx: StoreTransaction, identity: Identity, group: Group): Promise<NotificationGroupView> {
+  const members = await tx.notification.findMany({ where: { groupId: group.id, ...notificationAudience(identity, group.storeId) },
+    select: { ...notificationSelect, event: { select: { ...notificationSelect.event.select,
+      submission: { select: { id: true, status: true, approvalMode: true } } } } },
+    orderBy: [{ event: { createdAt: 'asc' } }, { id: 'asc' }],
+  });
+  if (!members.length) unavailable();
+  const first = members[0]; const latest = members[members.length - 1];
+  const preferences = group.recipient.notificationPreference;
+  const automatic = latest.event.kind === 'SUBMISSION_RECEIVED' && latest.event.submission?.approvalMode === 'AUTOMATIC';
+  const attentionActive = group.category === 'SOCIAL' ? !preferences?.socialMuted :
+    !automatic || (preferences?.automaticApprovalNotices ?? true);
+  return { id: group.id, version: group.version, storeId: group.storeId, storeName: group.store.name,
+    category: group.category as NotificationCategory, count: members.length,
+    unreadCount: members.filter(member => member.readAt === null).length, attentionActive,
+    latest: notificationView(latest), firstOccurredAt: first.event.createdAt.toISOString(),
+    lastOccurredAt: latest.event.createdAt.toISOString(), lastDeliveredAt: group.lastDeliveredAt.toISOString() };
+}
+
+/** Só grupos não lidos autorizados entram no contador; preferências não alteram os registros. */
+export async function attentionUnreadCount(tx: StoreTransaction, identity: Identity, storeId?: string): Promise<number> {
+  const groups = await tx.notificationGroup.findMany({ where: { ...groupAudience(identity, storeId),
+    notifications: { some: { ...notificationAudience(identity, storeId), readAt: null } } },
+    select: { category: true, recipient: groupSelect.recipient,
+      notifications: { where: { ...notificationAudience(identity, storeId), readAt: null }, take: 1,
+        select: { event: { select: { kind: true, submission: { select: { approvalMode: true } } } } } } },
+  });
+  return groups.filter(group => {
+    const preferences = group.recipient.notificationPreference;
+    if (group.category === 'SOCIAL') return !preferences?.socialMuted;
+    const event = group.notifications[0]?.event;
+    return event?.kind !== 'SUBMISSION_RECEIVED' || event.submission?.approvalMode !== 'AUTOMATIC' ||
+      (preferences?.automaticApprovalNotices ?? true);
+  }).length;
+}

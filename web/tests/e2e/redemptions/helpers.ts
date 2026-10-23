@@ -60,6 +60,16 @@ export async function mockRewards(page: Page, options: { merchant?: boolean; bal
     if (options.handler && await options.handler(route, url, state)) return true;
     const path = url.pathname; const method = route.request().method();
     if (!path.startsWith('/api/lojas/')) return false;
+    if (path.endsWith('/lojinha')) {
+      const currentStore = auth.stores[0];
+      await json(route, { store: currentStore, person: { displayName: auth.displayName }, merchant: { displayName: 'Rafa' },
+        points: { storeId: ids.first, participantMembershipId: currentStore.membershipId, available: state.balance, pending: state.pending,
+          today: { localDate: '2026-10-22', timezone: currentStore.timezone, submitted: 1, approved: 1, credited: '15', adjusted: '0' } },
+        activities: [], rewards: state.rewards.filter(value => !value.archivedAt).slice(0, 6).map(value => withAvailability(state, value)),
+        categories: ['A dois', 'Surpresas'], note: { current: null, writable: false, unread: false },
+        tickets: { total: state.tickets.length, outstanding: state.tickets.filter(value => ['WAITING_AGREEMENT', 'AGREED', 'CANCELLATION_REQUESTED'].includes(value.status)).length } });
+      return true;
+    }
     if (path.endsWith('/album')) {
       await json(route, { id: null, storeId: ids.first, ticketId: path.split('/')[5], version: 0, collectionId: null,
         permissions: { canStart: false, canUpload: false, canPublish: false }, unavailableReason: null,

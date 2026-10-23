@@ -28,7 +28,7 @@ export function SubmissionContent({ store, accountKey, submission: initial, even
   const activity = submission.snapshot!;
   const approval = submission.analysis?.approval;
   return <>
-    <section className="stores-card">{returnTo ? <Link className="stores-link" href={returnTo}>Voltar ao extrato com os filtros</Link> :
+    <section className="stores-card">{returnTo ? <Link className="stores-link" href={returnTo}>{returnTo.split('?')[0].endsWith('/mural') ? 'Voltar ao mural com os filtros' : 'Voltar ao extrato com os filtros'}</Link> :
       <Link className="stores-link" href={activityPath(store.id)}>Voltar às atividades</Link>}<h2>{activity.name}</h2>
       <SubmissionBadges submission={submission} />
       {submission.status === 'PENDING' && <p role="status">Conquista enviada! Seus {points(activity.points)} pontos aguardam aprovação e ainda não estão disponíveis.</p>}

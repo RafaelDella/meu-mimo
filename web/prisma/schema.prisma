@@ -42,6 +42,8 @@ enum NotificationKind {
   REDEMPTION_ISSUED
   REDEMPTION_UPDATED
   ALBUM_PUBLISHED
+  NOTE_SENT
+  REACTION_CHANGED
 
   @@schema("app")
 }
@@ -129,6 +131,12 @@ model Profile {
   redemptionEvents RedemptionEvent[]
   createdAlbums TicketAlbum[]
   albumEvents AlbumEvent[]
+  noteVersions NoteVersion[]
+  noteReads NoteRead[]
+  reactions Reaction[]
+  reactionEvents ReactionEvent[]
+  notificationGroups NotificationGroup[]
+  preferenceEvents NotificationPreferenceEvent[]
 
   @@schema("app")
 }
@@ -166,6 +174,13 @@ model Store {
   redemptionEvents RedemptionEvent[]
   ticketAlbums TicketAlbum[]
   albumEvents AlbumEvent[]
+  personalNotes PersonalNote[]
+  noteVersions NoteVersion[]
+  reactions Reaction[]
+  reactionEvents ReactionEvent[]
+  notificationGroups NotificationGroup[]
+  notificationPreferences NotificationPreference[]
+  preferenceEvents NotificationPreferenceEvent[]
 
   @@index([createdByProfileId])
   @@schema("app")
@@ -191,6 +206,12 @@ model Membership {
 
   redemptions Redemption[]
   ticketAlbums TicketAlbum[]
+  personalNote PersonalNote?
+  noteVersions NoteVersion[]
+  noteReads NoteRead[]
+  notificationGroups NotificationGroup[]
+  notificationPreference NotificationPreference?
+  preferenceEvents NotificationPreferenceEvent[]
 
   @@unique([storeId, profileId])
   @@unique([id, storeId])
@@ -246,8 +267,11 @@ model Conversation {
   store Store @relation(fields: [storeId], references: [id], onDelete: Restrict)
   participantMembership Membership @relation(fields: [participantMembershipId], references: [id], onDelete: Restrict)
   comments Comment[]
+  reactions Reaction[]
+  reactionEvents ReactionEvent[]
 
   @@unique([subjectType, subjectId])
+  @@unique([id, storeId])
   @@index([storeId, participantMembershipId])
   @@schema("app")
 }
@@ -281,6 +305,8 @@ model OutboxEvent {
   redemptionId String? @db.Uuid
   redemptionEventId String? @db.Uuid
   albumEventId String? @db.Uuid
+  noteVersionId String? @db.Uuid
+  reactionEventId String? @db.Uuid
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   availableAt DateTime @default(now()) @db.Timestamptz(6)
   processedAt DateTime? @db.Timestamptz(6)
@@ -297,6 +323,8 @@ model OutboxEvent {
   redemption Redemption? @relation(fields: [redemptionId], references: [id], onDelete: Restrict)
   redemptionEvent RedemptionEvent? @relation(fields: [redemptionEventId], references: [id], onDelete: Restrict)
   albumEvent AlbumEvent? @relation(fields: [albumEventId], references: [id], onDelete: Restrict)
+  noteVersion NoteVersion? @relation(fields: [noteVersionId], references: [id], onDelete: Restrict)
+  reactionEvent ReactionEvent? @relation(fields: [reactionEventId], references: [id], onDelete: Restrict)
   notification Notification?
 
   @@index([processedAt, availableAt, id])
@@ -309,9 +337,151 @@ model Notification {
   eventId String @unique @db.Uuid
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   readAt DateTime? @db.Timestamptz(6)
+  groupId String? @db.Uuid
+  groupVersion Int?
   event OutboxEvent @relation(fields: [eventId], references: [id], onDelete: Restrict)
+  group NotificationGroup? @relation(fields: [groupId], references: [id], onDelete: Restrict)
 
+  @@unique([groupId, groupVersion])
   @@index([createdAt, id])
+  @@schema("app")
+}
+
+model PersonalNote {
+  id String @id @db.Uuid
+  storeId String @db.Uuid
+  participantMembershipId String @unique @db.Uuid
+  version Int
+  store Store @relation(fields: [storeId], references: [id], onDelete: Restrict)
+  participant Membership @relation(fields: [participantMembershipId], references: [id], onDelete: Restrict)
+  versions NoteVersion[]
+
+  @@unique([id, storeId, participantMembershipId])
+  @@schema("app")
+}
+
+model NoteVersion {
+  id String @id @db.Uuid
+  noteId String @db.Uuid
+  storeId String @db.Uuid
+  participantMembershipId String @db.Uuid
+  actorProfileId String @db.Uuid
+  version Int
+  text String
+  requestDigest String
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  note PersonalNote @relation(fields: [noteId], references: [id], onDelete: Restrict)
+  store Store @relation(fields: [storeId], references: [id], onDelete: Restrict)
+  participant Membership @relation(fields: [participantMembershipId], references: [id], onDelete: Restrict)
+  actor Profile @relation(fields: [actorProfileId], references: [id], onDelete: Restrict)
+  reads NoteRead[]
+  outboxEvents OutboxEvent[]
+
+  @@unique([noteId, version])
+  @@unique([id, storeId, participantMembershipId])
+  @@index([storeId, participantMembershipId, createdAt, id])
+  @@schema("app")
+}
+
+model NoteRead {
+  noteVersionId String @db.Uuid
+  readerMembershipId String @db.Uuid
+  actorProfileId String @db.Uuid
+  readAt DateTime @default(now()) @db.Timestamptz(6)
+  version NoteVersion @relation(fields: [noteVersionId], references: [id], onDelete: Restrict)
+  reader Membership @relation(fields: [readerMembershipId], references: [id], onDelete: Restrict)
+  actor Profile @relation(fields: [actorProfileId], references: [id], onDelete: Restrict)
+
+  @@id([noteVersionId, readerMembershipId])
+  @@schema("app")
+}
+
+model Reaction {
+  id String @id @db.Uuid
+  storeId String @db.Uuid
+  conversationId String @db.Uuid
+  actorProfileId String @db.Uuid
+  version Int
+  emoji String?
+  store Store @relation(fields: [storeId], references: [id], onDelete: Restrict)
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Restrict)
+  actor Profile @relation(fields: [actorProfileId], references: [id], onDelete: Restrict)
+  events ReactionEvent[]
+
+  @@unique([conversationId, actorProfileId])
+  @@unique([id, storeId, conversationId, actorProfileId])
+  @@schema("app")
+}
+
+model ReactionEvent {
+  id String @id @db.Uuid
+  reactionId String @db.Uuid
+  storeId String @db.Uuid
+  conversationId String @db.Uuid
+  actorProfileId String @db.Uuid
+  version Int
+  fromEmoji String?
+  toEmoji String?
+  requestDigest String
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  reaction Reaction @relation(fields: [reactionId], references: [id], onDelete: Restrict)
+  store Store @relation(fields: [storeId], references: [id], onDelete: Restrict)
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Restrict)
+  actor Profile @relation(fields: [actorProfileId], references: [id], onDelete: Restrict)
+  outboxEvents OutboxEvent[]
+
+  @@unique([reactionId, version])
+  @@unique([id, storeId])
+  @@index([storeId, createdAt, id])
+  @@schema("app")
+}
+
+model NotificationGroup {
+  id String @id @db.Uuid
+  key String @unique
+  storeId String @db.Uuid
+  recipientMembershipId String @db.Uuid
+  actorProfileId String @db.Uuid
+  category String
+  version Int
+  lastDeliveredAt DateTime @db.Timestamptz(6)
+  store Store @relation(fields: [storeId], references: [id], onDelete: Restrict)
+  recipient Membership @relation(fields: [recipientMembershipId], references: [id], onDelete: Restrict)
+  actor Profile @relation(fields: [actorProfileId], references: [id], onDelete: Restrict)
+  notifications Notification[]
+
+  @@index([recipientMembershipId, lastDeliveredAt, id])
+  @@schema("app")
+}
+
+model NotificationPreference {
+  membershipId String @id @db.Uuid
+  storeId String @db.Uuid
+  version Int
+  socialMuted Boolean @default(false)
+  automaticApprovalNotices Boolean @default(true)
+  membership Membership @relation(fields: [membershipId], references: [id], onDelete: Restrict)
+  store Store @relation(fields: [storeId], references: [id], onDelete: Restrict)
+
+  @@schema("app")
+}
+
+model NotificationPreferenceEvent {
+  id String @id @db.Uuid
+  membershipId String @db.Uuid
+  storeId String @db.Uuid
+  actorProfileId String @db.Uuid
+  version Int
+  requestDigest String
+  socialMuted Boolean
+  automaticApprovalNotices Boolean
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  membership Membership @relation(fields: [membershipId], references: [id], onDelete: Restrict)
+  store Store @relation(fields: [storeId], references: [id], onDelete: Restrict)
+  actor Profile @relation(fields: [actorProfileId], references: [id], onDelete: Restrict)
+
+  @@unique([membershipId, version])
+  @@index([storeId, createdAt, id])
   @@schema("app")
 }
 

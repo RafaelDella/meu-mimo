@@ -9,19 +9,19 @@ import type { StoreView } from '@/contracts/stores';
 import { PointsSummary } from '@/components/ui/points-summary';
 import { Button } from '@/components/ui/button';
 import { storeError } from '@/components/stores/store-api';
-import { useRewardResource } from './access';
+import { useRelationshipResource } from '@/components/notifications/use-relationship-resource';
 import { apiBase, ticketPath } from './transport';
 
-type SummaryResource = ReturnType<typeof useRewardResource<TicketSummary>>;
+type SummaryResource = ReturnType<typeof useRelationshipResource<TicketSummary>>;
 const SummaryContext = createContext<SummaryResource | null>(null);
 export function useTicketSummary() { return useContext(SummaryContext); }
 export function TicketSummaryProvider({ store, children }: { store: StoreView; children: ReactNode }) {
-  const summary = useRewardResource<TicketSummary>(`${apiBase(store.id)}/tickets/resumo`);
+  const summary = useRelationshipResource<TicketSummary>(`${apiBase(store.id)}/tickets/resumo`);
   return <SummaryContext.Provider value={summary}>{children}</SummaryContext.Provider>;
 }
 
 export function RewardBalance({ store }: { store: StoreView }) {
-  const { data, error, loading, denied, reload } = useRewardResource<PointsBalance>(`${apiBase(store.id)}/pontos`);
+  const { data, error, loading, denied, reload } = useRelationshipResource<PointsBalance>(`${apiBase(store.id)}/pontos`);
   if (denied) return null;
   return <>{loading && <p role="status">Consultando seu potinho…</p>}{error ? <div role="alert"><p>{storeError(error)}</p>
     <Button variant="secondary" onClick={reload}>Consultar saldo novamente</Button></div> : null}
@@ -34,7 +34,7 @@ export function RewardCounter({ store, showTotal = false }: { store: StoreView; 
   return summary ? <Counter store={store} summary={summary} showTotal={showTotal} /> : <LoadCounter store={store} showTotal={showTotal} />;
 }
 function LoadCounter({ store, showTotal }: { store: StoreView; showTotal: boolean }) {
-  const summary = useRewardResource<TicketSummary>(`${apiBase(store.id)}/tickets/resumo`);
+  const summary = useRelationshipResource<TicketSummary>(`${apiBase(store.id)}/tickets/resumo`);
   return <Counter store={store} summary={summary} showTotal={showTotal} />;
 }
 function Counter({ store, summary, showTotal }: { store: StoreView; summary: SummaryResource; showTotal: boolean }) {

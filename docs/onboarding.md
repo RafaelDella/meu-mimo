@@ -149,3 +149,9 @@ Para o álbum privado, publicação explícita e retenção por ticket, siga
 usa `meumimo_t11`, com namespace Storage separado e as mesmas portas em série.
 PostgreSQL permanece na stack Docker existente, com consumidores próprios de
 mídia/outbox.
+
+Para bilhetes, reações, mural, novidades e painéis, siga
+[T12 local](relationship-local.md), implementada e verificada localmente. O preparo
+seleciona `meumimo_t12_dev` em `.env.local`; integração usa `meumimo_t12`, shadow
+e Storage separados. PostgreSQL continua na stack persistente existente.
+Next recebe credencial restrita; workers de mídia/outbox têm comandos próprios.

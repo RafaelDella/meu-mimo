@@ -75,6 +75,6 @@ export function ConversationPreview() {
         setConfirmed(comments.current.size);
       }}>Semear 39 comentários fictícios</Button>
     </div>
-    <ConversationPanel accountKey={context} storeId={context} conversationId={context} transport={transport} />
+    <ConversationPanel accountKey={context} storeId={context} conversationId={context} transport={transport} includeReactions={false} />
   </main>;
 }

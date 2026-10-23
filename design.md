@@ -22,6 +22,14 @@ caracteres Unicode e ordem imutáveis depois da confirmação. Novos lotes entra
 ao fim. Foto abre em diálogo e vídeo tem controles, sem autoplay. Cancelado
 mantém consulta/remoção própria. Política e comandos em [álbum local](docs/albums-local.md).
 
+T12 foi verificada localmente: Lojinha e Resumo usam dados reais; detalhe da
+pessoa reúne potinho, pendências e editor de bilhete. Coração e cartão consultam
+a versão da própria relação, com confirmação exata após exibir o texto.
+Rascunho não adota silenciosamente a versão recebida por atualização.
+Reações reutilizam a conversa da origem; mural preserva filtros no retorno.
+Central de novidades apresenta grupos, leitura observada e contexto autorizado;
+preferências mantêm o histórico. Contratos em [T12 local](docs/relationship-local.md).
+
 Este documento reúne a direção visual existente, a experiência aprovada como referência no protótipo e a proposta de produto. As decisões confirmadas pelo idealizador estão na seção 5; os comportamentos operacionais propostos para completar os fluxos estão identificados ao longo do documento. A seção 21 registra a consolidação do protótipo com esta especificação; `requisitos.md` complementa as regras de implementação.
 
 ## 1. Conceito e sensação
@@ -490,7 +498,7 @@ Rascunhos ficam privados para quem envia; só a confirmação da origem os publi
 
 - O lojista escreve um bilhete individual no detalhe do participante. Em uma loja com várias pessoas, cada uma recebe e vê apenas o seu.
 - O bilhete aparece no cartão da Lojinha e no coração do cabeçalho. O ponto de não lido pertence àquela pessoa, loja e versão da mensagem.
-- Proposta inicial: manter um bilhete atual por relação, com nova versão a cada envio. Uma nova versão volta a aparecer como não lida; abrir uma mensagem antiga não marca uma versão nova como lida.
+- Confirmado em T12: manter um bilhete atual por relação, com nova versão a cada envio. Uma nova versão volta a aparecer como não lida; abrir uma mensagem antiga não marca uma versão nova como lida.
 - “Guardar esse carinho” fecha o painel. Não implica favoritar ou criar um arquivo de bilhetes; essas funções ficam para evolução.
 - O estado de leitura deve acompanhar a conta entre dispositivos na aplicação final. O MVP não precisa mostrar confirmação de leitura ao lojista.
 - O recadinho dentro de um mimo pertence ao catálogo compartilhado; o bilhete pessoal pertence exclusivamente à relação com o participante.

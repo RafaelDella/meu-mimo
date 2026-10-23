@@ -46,7 +46,7 @@ function TicketContent({ store, accountKey, initial, returnTo }: { store: StoreV
     },
   }), [unavailable]);
   const reward = ticket.snapshot;
-  return <><Link className="stores-link" href={returnTo ?? ticketPath(store.id)}>{returnTo?.split('?')[0].endsWith('/extrato') ? 'Voltar ao extrato com os filtros' : 'Voltar aos tickets com os filtros'}</Link>
+  return <><Link className="stores-link" href={returnTo ?? ticketPath(store.id)}>{returnTo?.split('?')[0].endsWith('/mural') ? 'Voltar ao mural com os filtros' : returnTo?.split('?')[0].endsWith('/extrato') ? 'Voltar ao extrato com os filtros' : 'Voltar aos tickets com os filtros'}</Link>
     <article className={styles.ticket} aria-label="Seu vale mimo"><p>Vale mimo · {ticket.code}</p><RewardIllustration sticker={reward.sticker} />
       <h2 ref={title} tabIndex={-1}>{reward.name}</h2><p>{ticketStatuses[ticket.status]}</p><p>{points(reward.cost)} pontos · Uma unidade</p>
       {store.role === 'MERCHANT' && <p>Participante: {ticket.participant.displayName || 'Pessoa participante'}</p>}

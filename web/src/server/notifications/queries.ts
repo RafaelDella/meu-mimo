@@ -13,6 +13,8 @@ export const notificationSelect = {
     comment: { select: { conversation: { select: { id: true, subjectType: true, subjectId: true } } } },
     submission: { select: { id: true, status: true } },
     reviewEvent: { select: { id: true } },
+    noteVersion: { select: { id: true, storeId: true, participantMembershipId: true } },
+    reactionEvent: { select: { conversation: { select: { id: true, subjectType: true, subjectId: true } } } },
     redemption: { select: { id: true } },
     albumEvent: { select: { id: true, kind: true, storeId: true, redemptionId: true,
       album: { select: { participantMembershipId: true } } } },
@@ -44,6 +46,8 @@ export function notificationAudience(identity: Identity, storeId?: string): Pris
         recipientMembership: { role: 'PARTICIPANT' } },
       { kind: 'ALBUM_PUBLISHED', redemptionId: { not: null }, albumEvent: { kind: 'PUBLISH' },
         recipientMembership: { role: 'PARTICIPANT' } },
+      { kind: 'NOTE_SENT', noteVersionId: { not: null }, recipientMembership: { role: 'PARTICIPANT' } },
+      { kind: 'REACTION_CHANGED', reactionEvent: { conversation: { participantMembership: { accessRevokedAt: null } } } },
     ],
   } };
 }
@@ -61,6 +65,11 @@ export async function notificationTarget(notification: SelectedNotification, tx:
   const { event } = notification;
   const common = { storeId: event.storeId, participantMembershipId: event.participantMembershipId };
   if (event.kind === 'INVITATION_ACCEPTED') return { ...common, type: 'membership', path: `/lojas/${event.storeId}/pessoas` };
+  if (event.kind === 'NOTE_SENT') {
+    const version = event.noteVersion;
+    if (!version || version.storeId !== event.storeId || version.participantMembershipId !== event.participantMembershipId) unavailable();
+    return { ...common, type: 'note', subjectId: version.id, path: `/lojas/${event.storeId}?bilhete=${version.id}` };
+  }
   if (event.kind === 'ALBUM_PUBLISHED') {
     const publication = event.albumEvent;
     if (!event.redemption || !publication || publication.kind !== 'PUBLISH' || publication.storeId !== event.storeId ||
@@ -83,7 +92,7 @@ export async function notificationTarget(notification: SelectedNotification, tx:
     return { ...common, type: 'submission', subjectId: event.submission.id,
       path: `/lojas/${event.storeId}/registros/${event.submission.id}${event.reviewEvent ? `?evento=${event.reviewEvent.id}` : ''}` };
   }
-  const conversation = event.comment?.conversation;
+  const conversation = event.kind === 'REACTION_CHANGED' ? event.reactionEvent?.conversation : event.comment?.conversation;
   if (!conversation) unavailable();
   const submission = conversation.subjectType === 'SUBMISSION' ? await tx.activitySubmission.findFirst({
     where: { id: conversation.subjectId, storeId: event.storeId,

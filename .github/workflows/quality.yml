@@ -85,8 +85,8 @@ jobs:
       - run: npm --prefix web run db:migrate:integration:t08
       - run: npm --prefix web run media:fixtures:t08
       - run: npm --prefix web run test:integration:t08
-      - run: npm --prefix web run local:prepare:t11
-      - run: npm --prefix web run db:migrate:dev:t11
-      - run: npm --prefix web run db:migrate:integration:t11
-      - run: npm --prefix web run media:fixtures:t11
-      - run: npm --prefix web run test:integration:t11
+      - run: npm --prefix web run local:prepare:t12
+      - run: npm --prefix web run db:migrate:dev:t12
+      - run: npm --prefix web run db:migrate:integration:t12
+      - run: npm --prefix web run media:fixtures:t12
+      - run: npm --prefix web run test:integration:t12

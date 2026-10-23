@@ -1,2 +1,4 @@
 # Preserva os bytes da migração T09 já aplicada; não normalizar seu checksum.
 web/prisma/migrations/20261022235940_rewards_redemptions/migration.sql -text
+# A migração T12 foi aplicada com LF e deve conservar esse formato no checkout.
+web/prisma/migrations/20261023002000_relationship/migration.sql text eol=lf

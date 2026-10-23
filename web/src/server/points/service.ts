@@ -2,13 +2,13 @@ import '../only.ts';
 import type { PageResult } from '../../contracts/stores.ts';
 import type { PointsBalance, PointsEntryView, PointsKind } from '../../contracts/activities.ts';
 import type { Identity } from '../auth/types.ts';
-import { periodAt } from '../activities/periods.ts';
 import { consumeStoreLimit } from '../stores/limits.ts';
 import type { StoreScope } from '../stores/transaction.ts';
-import { databaseNow, withStoreTransaction } from '../stores/transaction.ts';
+import { withStoreTransaction } from '../stores/transaction.ts';
 import { choice, invalidField, operationConflict, pagination } from '../stores/validation.ts';
 import { localDate } from '../submissions/validation.ts';
 import { movementRange, targetParticipant } from './queries.ts';
+import { pointsBalance } from './balance.ts';
 
 /** Somente a origem recebida chama o crédito, dentro da própria transação. */
 export async function creditSubmission(scope: StoreScope, submissionId: string, now: Date): Promise<void> {
@@ -32,32 +32,7 @@ export async function readPoints(identity: Identity, storeId: string, query = ne
   await consumeStoreLimit(identity, 'read');
   return withStoreTransaction(identity, storeId, async scope => {
     const membershipId = (await targetParticipant(scope, query))!;
-    const now = await databaseNow(scope.tx);
-    const day = await periodAt(scope.tx, scope.store.timezone, 'DAILY', now);
-    const totals = await scope.tx.$queryRaw<{ available: string; pending: string; credited: string; adjusted: string; approved: number }[]>`
-      SELECT
-        (SELECT COALESCE(sum(amount),0)::text FROM app."PointsEntry"
-          WHERE "storeId"=${scope.store.id}::uuid AND "participantMembershipId"=${membershipId}::uuid) AS available,
-        (SELECT COALESCE(sum(points),0)::text FROM app."ActivitySubmission" AS submission
-          WHERE "storeId"=${scope.store.id}::uuid AND "participantMembershipId"=${membershipId}::uuid
-          AND status IN ('PENDING','CONTESTED') AND "receivedAt" IS NOT NULL
-          AND (SELECT COALESCE(sum(amount),0) FROM app."PointsEntry" WHERE "submissionId"=submission.id)=0) AS pending,
-        (SELECT COALESCE(sum(amount),0)::text FROM app."PointsEntry"
-          WHERE "storeId"=${scope.store.id}::uuid AND "participantMembershipId"=${membershipId}::uuid
-          AND kind='ACTIVITY_CREDIT' AND "createdAt">=${day.startsAt} AND "createdAt"<${day.endsAt}) AS credited,
-        (SELECT COALESCE(sum(amount),0)::text FROM app."PointsEntry"
-          WHERE "storeId"=${scope.store.id}::uuid AND "participantMembershipId"=${membershipId}::uuid
-          AND kind IN ('ACTIVITY_REVERSAL','ACTIVITY_RESTORE')
-          AND "createdAt">=${day.startsAt} AND "createdAt"<${day.endsAt}) AS adjusted,
-        (SELECT count(*)::int FROM app."PointsEntry"
-          WHERE "storeId"=${scope.store.id}::uuid AND "participantMembershipId"=${membershipId}::uuid
-          AND kind='ACTIVITY_CREDIT' AND "createdAt">=${day.startsAt} AND "createdAt"<${day.endsAt}) AS approved`;
-    const where = { storeId: scope.store.id, participantMembershipId: membershipId,
-      receivedAt: { gte: day.startsAt!, lt: day.endsAt! } };
-    const submitted = await scope.tx.activitySubmission.count({ where });
-    return { storeId: scope.store.id, participantMembershipId: membershipId, available: totals[0].available, pending: totals[0].pending,
-      today: { localDate: day.localDate, timezone: day.timezone, submitted, approved: totals[0].approved,
-        credited: totals[0].credited, adjusted: totals[0].adjusted } };
+    return pointsBalance(scope, membershipId);
   });
 }
 

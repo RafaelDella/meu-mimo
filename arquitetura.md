@@ -33,7 +33,7 @@ não justificou uma dependência adicional. Os contratos estão no
 [registro de T03](docs/superpowers/plans/2026-10-22-t03-interface.md).
 Fontes DM Sans/DM Serif são locais, com licença, `font-display: swap` e
 alternativas. `/visual-check` usa somente dados fictícios em memória, sem
-serviços ou persistência; P01/L02 com dados autorizados continuam em T12.
+serviços ou persistência; P01/L02 com dados autorizados estão integrados em T12.
 
 ### 1.1. Seleções técnicas de M0
 
@@ -105,7 +105,7 @@ As consultas revalidam destinatário, vínculos e recurso; a ordenação pela
 entrega recupera eventos antigos processados mais tarde. Destinos são tipados e
 derivados; T07/T09 integram as telas reais de registro/ticket. Realtime é
 opcional e não foi necessário ao consumidor SQL; central/preferências e demais
-interações ficam em T12. Comandos e fronteiras em [T05 local](docs/relation-local.md).
+interações foram integradas em T12. Comandos e fronteiras em [T05 local](docs/relation-local.md).
 
 ### 1.4. Mídia privada em T06
 
@@ -347,7 +347,28 @@ coleções na transação vigente. Manutenção usa Store → coleção → asse
 SKIP LOCKED, na mesma ordem das operações do domínio.
 
 Comandos, API e limites em [T11 local](docs/albums-local.md). Bilhete, reações,
-mural e central completa de novidades continuam em T12.
+mural e central completa de novidades estão integrados em T12.
+
+### 3.7. Relação e painéis em T12
+
+Implementação verificada localmente. `PersonalNote` aponta à versão atual;
+`NoteVersion` conserva envio, autor e digest. `NoteRead` confirma somente a
+versão e o destinatário, sem integrar DTOs do lojista. `Reaction` mantém a
+escolha por ator/conversa, com `ReactionEvent` imutável. Projeções, versões,
+eventos e outbox confirmam na transação autorizada da loja.
+
+`NotificationGroup` projeta as notificações individuais, preservando fonte e
+leitura anteriores. Comentários/reações usam janela de cinco minutos; outros
+eventos mantêm grupo próprio. A leitura recebe a versão observada do grupo.
+Preferências versionadas por vínculo mudam a atenção, sem apagar avisos ou
+decisões. Defaults são virtuais até a primeira escrita.
+
+Mural pagina registros recebidos e tickets no servidor. Previews consultam a
+publicação e retenção atuais. Painéis reutilizam o cálculo de saldo e as fontes
+do domínio, sem ledger ou conversa paralelos. Consulta visível a cada trinta
+segundos recupera atualizações, com isolamento por conta, sessão e loja; não
+constitui transporte Realtime. Contratos e comandos em
+[T12 local](docs/relationship-local.md).
 
 ## 4. Modelo conceitual de dados
 
