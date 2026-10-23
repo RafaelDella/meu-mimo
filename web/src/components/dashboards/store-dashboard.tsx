@@ -14,6 +14,7 @@ import { Pagination } from '@/components/stores/store-controls';
 import { useRelationshipResource } from '@/components/notifications/use-relationship-resource';
 import { notificationLabels } from '@/components/notifications/notification-labels';
 import styles from '@/components/notifications/relationship.module.css';
+import dashboard from './dashboard.module.css';
 
 export function RecentEvents({ storeId, events }: { storeId: string; events: DashboardEvent[] }) {
   const [expanded, setExpanded] = useState(false);
@@ -51,24 +52,24 @@ function MerchantHome({ store }: { store: StoreView }) {
 }
 function ParticipantHome({ store }: { store: StoreView }) {
   const resource = useRelationshipResource<ParticipantDashboard>(`/api/lojas/${store.id}/lojinha`); const data = resource.data;
-  return <section className={styles.stack}>
+  return <section className={dashboard.home}>
     {resource.loading && <p role="status">Consultando sua lojinha…</p>}
     {resource.error && !resource.denied ? <div role="alert"><p>{storeError(resource.error)}</p><Button variant="secondary" onClick={resource.reload}>Consultar lojinha novamente</Button></div> : null}
-    {data && <><section className={styles.card}><h2>Que bom ter você aqui{data.person.displayName ? `, ${data.person.displayName}` : ''}</h2>
-      <p>Uma lojinha preparada por {data.merchant.displayName || 'quem oferece os mimos'}.</p><p>{store.presentation}</p></section>
-      <PointsSummary storeName={store.name || 'Sua lojinha'} available={data.points.available} pending={data.points.pending} />
+    {data && <><header className={dashboard.welcome}><h2>Que bom ter você aqui{data.person.displayName ? `, ${data.person.displayName}` : ''}</h2>
+      <p>Uma lojinha preparada por {data.merchant.displayName || 'quem oferece os mimos'}.</p>{store.presentation && <p>{store.presentation}</p>}</header>
+      <PointsSummary compact storeName={store.name || 'Sua lojinha'} available={data.points.available} pending={data.points.pending} />
       {BigInt(data.points.available) < 0n && <p role="status">Seu saldo está negativo por ajustes registrados. Os tickets já emitidos continuam válidos.</p>}
-      <section className={styles.card}><h3>Hoje nesta loja</h3><p>{data.points.today.localDate.split('-').reverse().join('/')} · {data.points.today.timezone}</p>
+      <section><div className={dashboard.sectionHeading}><h2>Vitrine de mimos</h2><Link className="stores-link" href={`/lojas/${store.id}/mimos`}>Ver todos os mimos</Link></div>
+        {!data.rewards.length && <p>Os próximos mimos preparados para você aparecerão aqui.</p>}
+        {data.categories.length > 0 && <p>Categorias: {data.categories.join(' · ')}</p>}
+        <div className={`stores-grid ${dashboard.catalog}`}>{data.rewards.map(reward => <RewardCard key={reward.id} reward={reward} merchant={false} />)}</div></section>
+      <section><div className={dashboard.sectionHeading}><h2>Atividades para você</h2><Link className="stores-link" href={`/lojas/${store.id}/atividades`}>Ver todas as atividades</Link></div>
+        {!data.activities.length && <p>Quando a loja preparar atividades, elas aparecerão aqui.</p>}
+        <div className="stores-grid">{data.activities.map(activity => <ActivityCard key={activity.id} activity={activity} merchant={false} />)}</div></section>
+      <div className={dashboard.support}><section className={styles.card}><h3>Hoje nesta loja</h3><p>{data.points.today.localDate.split('-').reverse().join('/')} · {data.points.today.timezone}</p>
         <p>{data.points.today.submitted} registros enviados · {data.points.today.approved} aprovados.</p><p>Créditos de atividades: {data.points.today.credited} pontos. Ajustes líquidos: {data.points.today.adjusted} pontos.</p>
         <Link className="stores-link" href={`/lojas/${store.id}/extrato`}>Ver extrato de pontos</Link></section>
-      <OwnNote storeId={store.id} />
-      <section><h2>Atividades para você</h2>{!data.activities.length && <p>Quando a loja preparar atividades, elas aparecerão aqui.</p>}
-        <div className="stores-grid">{data.activities.map(activity => <ActivityCard key={activity.id} activity={activity} merchant={false} />)}</div>
-        <Link className="stores-link" href={`/lojas/${store.id}/atividades`}>Ver todas as atividades</Link></section>
-      <section><h2>Vitrine de mimos</h2>{!data.rewards.length && <p>Os próximos mimos preparados para você aparecerão aqui.</p>}
-        {data.categories.length > 0 && <p>Categorias: {data.categories.join(' · ')}</p>}
-        <div className="stores-grid">{data.rewards.map(reward => <RewardCard key={reward.id} reward={reward} merchant={false} />)}</div>
-        <Link className="stores-link" href={`/lojas/${store.id}/mimos`}>Ver todos os mimos</Link></section>
+        <OwnNote storeId={store.id} /></div>
       <section className={styles.card}><h3>Seus mimos</h3><p>{data.tickets.outstanding} mimos ainda a realizar · {data.tickets.total} tickets no histórico.</p><Link className="stores-link" href={`/lojas/${store.id}/tickets`}>Abrir meus tickets</Link></section>
     </>}
   </section>;

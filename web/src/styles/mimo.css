@@ -18,3 +18,9 @@
 .mimo-eyebrow { display: flex; align-items: center; gap: .5rem; margin-block: 0 .75rem; color: var(--action); font-size: .75rem; letter-spacing: .06em; }
 .mimo-eyebrow svg { width: 18px; height: 18px; flex-shrink: 0; }
 .mimo-back { display: inline-flex; min-height: 48px; min-width: 44px; align-items: center; padding: .75rem 8px; color: var(--action); text-underline-offset: 4px; }
+@media (min-width: 70rem) {
+  .mimo-intro-compact { margin-block: 0; padding: 1rem 16px; }
+  .mimo-intro-compact .mimo-intro-art { width: 64px; }
+  .mimo-intro-compact .mimo-eyebrow { margin-bottom: .375rem; }
+  .mimo-intro-compact h2 { margin-bottom: .5rem; }
+}

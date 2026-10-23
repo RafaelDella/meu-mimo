@@ -16,8 +16,8 @@ export function MimoMasthead() {
     <span className="mimo-masthead-note"><MimoIcon name="heart" />feito de pequenos carinhos</span></div>;
 }
 
-export function MimoIntro({ kind, children }: { kind: MimoIllustration; children: ReactNode }) {
-  return <div className={`mimo-intro ${kind === 'ticket' || kind === 'gift' ? 'mimo-intro-cream' : ''}`}>
+export function MimoIntro({ kind, children, compact = false }: { kind: MimoIllustration; children: ReactNode; compact?: boolean }) {
+  return <div className={`mimo-intro ${kind === 'ticket' || kind === 'gift' ? 'mimo-intro-cream' : ''}${compact ? ' mimo-intro-compact' : ''}`}>
     <div className="mimo-intro-copy">{children}</div>
     <div className="mimo-intro-art" aria-hidden="true"><MimoSticker kind={kind} /><MimoIcon name="sparkle" /></div>
   </div>;

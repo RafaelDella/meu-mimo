@@ -133,6 +133,30 @@ tipografia e foco, com decoração discreta nas áreas operacionais. Ilustraçõ
 reservam espaço no layout e não carregam informação indispensável. O registro
 da extensão está no [plano de todas as telas](docs/superpowers/plans/2026-10-23-identidade-todas-telas.md).
 
+### 3.2. Organização desktop da Lojinha e de Atividades
+
+Em 23/10/2026, após a auditoria de UX, foi autorizada a reorganização da barra
+lateral e dessas duas telas, mantendo a identidade existente. O workspace da
+loja usa até 80rem; com pelo menos 66rem disponíveis no workspace, a navegação
+lateral ocupa 15rem. O nome da loja usa tipografia de interface de 18px e os acessos principais
+alinham ícone e texto em linha. Em janelas baixas, a lateral pode rolar para
+manter seus acessos disponíveis por teclado. Celular e texto ampliado mantêm
+a composição empilhada.
+
+Na Lojinha, saudação e potinho precedem a vitrine. Atividades, resumo do dia,
+bilhete e consulta de tickets continuam disponíveis depois dos mimos. O
+potinho compacto no desktop preserva gatinho, disponível e análise separados;
+outros fluxos mantêm a apresentação anterior do componente.
+
+Em Atividades, abas, filtros e catálogo/registros vêm antes do apoio na ordem
+do documento. Com pelo menos 50rem na área de Atividades, saldo e resumo do dia
+ocupam uma coluna ao lado da lista; com menos espaço, aparecem depois dela.
+As colunas respondem ao espaço do contêiner e ao texto ampliado. A introdução conserva o caderninho
+com dimensões menores no desktop. Não há duplicação do conteúdo por breakpoint
+nem alteração das regras de pontos, bilhetes, permissões ou persistência.
+
+Plano e evidências: [organização desktop](docs/superpowers/plans/2026-10-23-desktop-lojinha-atividades.md).
+
 ## 4. Regras de uso e validação
 
 - Nomear as cores por função na implementação: `background`, `surface`, `brand`, `action`, `text`, `text-muted` e `border`.

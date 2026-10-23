@@ -44,6 +44,19 @@
 .ui-points-pending dd { font-size: .875rem; }
 .ui-points-kitten { width: 100%; height: auto; transform: rotate(6deg); filter: drop-shadow(0 5px 2px rgb(178 58 104 / 8%)); pointer-events: none; }
 .ui-points-note { margin: .875rem 0 0; padding-top: .75rem; border-top: 1px dashed var(--border-control); color: var(--text-muted); font-size: .75rem; line-height: 1.6; }
+@media (min-width: 70rem) {
+  .ui-points-compact { padding: 1rem 16px; }
+  .ui-points-compact .ui-points-store { margin-bottom: .25rem; font-size: .75rem; }
+  .ui-points-compact .ui-points-collage { grid-template-columns: minmax(0, 1fr) 88px; gap: .5rem; }
+  .ui-points-compact .ui-points-title { margin-bottom: .5rem; }
+  .ui-points-compact dl { flex-direction: row; flex-wrap: wrap; align-items: center; gap: .75rem 1.5rem; }
+  .ui-points-compact .ui-points-available dd strong { font-size: clamp(1.375rem, 8cqi, 2.25rem); }
+  .ui-points-compact .ui-points-note { margin-top: .5rem; padding-top: .5rem; }
+  @container (max-width: 22rem) {
+    .ui-points-compact .ui-points-collage { grid-template-columns: minmax(0, 1fr); }
+    .ui-points-compact .ui-points-kitten { grid-row: 1; width: 64px; justify-self: end; }
+  }
+}
 @container (max-width: 12rem) {
   .ui-points-collage { grid-template-columns: minmax(0, 1fr); }
   .ui-points-kitten { grid-row: 1; width: 112px; max-width: 60%; justify-self: center; }

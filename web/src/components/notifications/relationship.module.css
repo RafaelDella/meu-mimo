@@ -20,5 +20,24 @@
 .card[aria-label="Bilhete da sua relação"] { position: relative; margin-top: .75rem; padding-top: 1.75rem; border-style: dashed; background: var(--surface-paper); }
 .card[aria-label="Bilhete da sua relação"]::before { content: ''; position: absolute; width: 64px; height: 19px; top: -10px; left: calc(50% - 32px); background: rgb(242 167 196 / 40%); transform: rotate(-5deg); }
 .layout { min-width: 0; }
-@media (min-width: 70rem) { .layout { display: grid; grid-template-columns: minmax(14rem, 17rem) minmax(0, 1fr); gap: 2rem; align-items: start; } .sidebar { position: sticky; top: 1rem; } .sidebar :global(.store-local-nav) { display: flex; flex-direction: column; } }
+@container store-workspace (min-width: 66rem) {
+  .layout { display: grid; grid-template-columns: 15rem minmax(0, 1fr); gap: 2rem; align-items: start; }
+  .sidebar { position: sticky; top: 1rem; max-height: calc(100svh - 2rem); overflow-y: auto; padding: 6px; margin: -6px; scroll-padding-block: 12px; scrollbar-width: thin; }
+  .sidebar :global(.store-context) { margin-bottom: 0; padding: 1rem 12px; }
+  .sidebar :global(.stores-account-links) { gap: .25rem; font-size: .75rem; padding-bottom: .5rem; border-bottom: 1px solid var(--border); }
+  .sidebar :global(.stores-account-links a) { min-height: 44px; padding: .5rem 4px; }
+  .sidebar :global(.store-identity) { align-items: start; gap: .625rem; margin-block: 1rem .25rem; }
+  .sidebar :global(.store-identity h1) { margin-block: .125rem; font: 600 1.125rem/1.4 var(--font-body); }
+  .sidebar :global(.store-identity p) { font-size: .75rem; }
+  .sidebar :global(.stores-mark) { width: 2.25rem; height: 2.25rem; }
+  .sidebar :global(.stores-mark svg) { width: 24px; height: 24px; }
+  .sidebar :global(.store-local-nav) { display: flex; flex-direction: column; gap: .375rem; margin-top: .75rem; }
+  .sidebar :global(.store-local-nav a) { flex-direction: row; justify-content: start; gap: .75rem; min-width: 0; padding: .625rem 10px; text-align: left; }
+  .sidebar :global(.stores-actions) { display: grid; gap: .125rem; margin-block: .75rem; }
+  .sidebar :global(.stores-actions > span) { display: grid; }
+  .sidebar :global(.stores-actions .stores-muted) { padding-inline: 8px; }
+  .sidebar :global(.stores-link) { min-height: 44px; padding: .5rem 8px; font-size: .875rem; }
+  .sidebar :global(.stores-link[aria-current="page"]) { border-radius: .75rem; background: var(--surface-soft); color: var(--action-pressed); font-weight: 600; }
+  .sidebar :global(.stores-muted) { font-size: .75rem; }
+}
 @media (prefers-reduced-motion: reduce) { .card, .reaction { scroll-behavior: auto; transition: none; animation: none; } }

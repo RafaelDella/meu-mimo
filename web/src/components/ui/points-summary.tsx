@@ -5,13 +5,14 @@ export type PointsSummaryProps = {
   storeName: string;
   available: number | string;
   pending: number | string;
+  compact?: boolean;
 };
 
 const points = new Intl.NumberFormat('pt-BR');
 
-export function PointsSummary({ storeName, available, pending }: PointsSummaryProps) {
+export function PointsSummary({ storeName, available, pending, compact = false }: PointsSummaryProps) {
   return (
-    <section className="ui-points" aria-label="Seu potinho de pontos">
+    <section className={`ui-points${compact ? ' ui-points-compact' : ''}`} aria-label="Seu potinho de pontos">
       <p className="ui-points-store">{storeName}</p>
       <div className="ui-points-collage">
         <div>

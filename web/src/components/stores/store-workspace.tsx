@@ -61,7 +61,7 @@ function Workspace({ storeId, section, accountKey, activityRoute, rewardRoute, m
 }
 
 export function StoreWorkspace({ storeId, section, activityRoute, rewardRoute, membershipId }: { storeId: string; section: StoreSection; activityRoute?: ActivityRoute; rewardRoute?: RewardRoute; membershipId?: string }) {
-  return <main className="stores-shell"><MimoMasthead /><PrivateArea>{session =>
+  return <main className="stores-shell stores-workspace-shell"><MimoMasthead /><PrivateArea>{session =>
     <RewardAccess key={`${session.userId}:${session.sessionId}:${storeId}`}><RelationshipRefresh accountKey={`${session.userId}:${session.sessionId}`} storeId={storeId}><Workspace storeId={storeId} section={section}
       accountKey={`${session.userId}:${session.sessionId}`} activityRoute={activityRoute} rewardRoute={rewardRoute} membershipId={membershipId} /></RelationshipRefresh></RewardAccess>
   }</PrivateArea></main>;
