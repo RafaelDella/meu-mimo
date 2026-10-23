@@ -1,4 +1,4 @@
-# T14 local
+# Web local de T14–T15
 
 T14 usa a stack Docker/Supabase `meumimo-t02`, PostgreSQL/Prisma e dados
 persistentes. Desenvolvimento, integração e shadow têm bancos separados;
@@ -7,9 +7,9 @@ inclui esse cluster inteiro. Os contratos e limites da recuperação estão em
 [Recuperação local](recovery.md), e os procedimentos de exportação e exclusão
 estão em [Direitos de dados](data-rights.md).
 
-T15 permanece pendente. Este documento descreve o preparo e os comandos
-existentes; o supervisor de uso diário e seu relatório de saúde ainda não foram
-entregues.
+T14 foi concluída no commit `206e0ce`. T15 entrega o supervisor de uso diário,
+saúde, manutenção e reinício verificados localmente no
+[plano de operação](../superpowers/plans/2026-10-23-t15-operacao-local.md).
 
 ## Preparo de T14
 
@@ -53,7 +53,80 @@ O shadow é `meumimo_t14_shadow`. Todas as portas publicadas ficam em loopback.
 As mesmas portas de integração são usadas pelas tarefas anteriores; builds,
 typegen, testes com serviços e servidores continuam serializados no checkout.
 
-## Comandos atuais
+## Abrir, conferir e parar a web
+
+Depois do preparo explícito, execute na raiz:
+
+```sh
+npm --prefix web run local:web
+```
+
+Mantenha esse terminal aberto. Aguarde `LOCAL_READY` e abra
+[Meu Mimo local](http://127.0.0.1:4301/conta). Em outro terminal:
+
+```sh
+npm --prefix web run local:health
+npm --prefix web run local:stop
+```
+
+`local:health` retorna JSON sem credenciais e código de saída zero somente em
+`ready`. Confere PostgreSQL com papel runtime, Auth, bucket privado/consulta
+limitada de Storage, Next e os heartbeats de mídia/outbox. Uma página HTTP 200
+sozinha não declara a aplicação pronta. `maintenance` indica a janela de backup;
+`stopped` indica que o supervisor não está servindo a aplicação.
+
+Ctrl+C no terminal do supervisor também solicita parada. Ela fecha a admissão
+de Next e aguarda requisições, mídia e entregas em curso; só confirma
+`LOCAL_STOPPED` após os filhos próprios saírem. `LOCAL_STOP_PENDING` ou uma
+falha de identidade exige conferir o estado; não apague locks nem mate um
+ocupante de porta para forçar o próximo start. Uma segunda instância é recusada.
+
+Cadastre sua conta pela web e confirme o e-mail no
+[correio local](http://127.0.0.1:54324). Não há conta padrão nem domínio semeado
+no startup. Crie uma loja; para testar a participante, use outra conta/e-mail e
+uma sessão de navegador separada. Administração exige provisionamento separado
+e TOTP, como em [administração local](../admin-local.md).
+
+O PostgreSQL de desenvolvimento é `meumimo_t14_dev`, em
+`127.0.0.1:54322`, com schema `app` e usuário runtime restrito
+`meumimo_runtime`. Auth usa o banco `postgres` da mesma stack. Credenciais
+permanecem no estado privado e no ambiente gerenciado; não copie o estado de
+operação para o Next. Os volumes Docker nomeados de PostgreSQL e Storage
+preservam os dados ao parar ou reiniciar a web. `local:stop` conserva a stack
+Docker e seus volumes.
+
+O startup confere configuração, dezesseis migrações, build de produção,
+ferramentas de mídia e inventário dos sete contêineres. Pode iniciar somente os
+contêineres existentes com os IDs registrados. Não cria build, não migra, não
+semeia e não substitui volumes silenciosamente; execute o comando de preparo
+indicado caso falte uma pré-condição. Pare a web antes de build, typegen, checks
+de custódia ou suítes que compartilham portas e bancos.
+
+## Backup durante o uso local
+
+Antes de abrir os escritores, o supervisor autentica um backup utilizável de
+desenvolvimento. Se não houver conjunto válido ou o corte tiver doze horas,
+captura outro. Enquanto permanece aberto, verifica o intervalo de doze horas
+pelo corte consistente, sem depender de mtime. A janela fecha e drena seus
+escritores, conserva o manager vivo com recibo de quiescência, captura o cluster
+e Storage frios e só reabre a web depois da retomada e saúde confirmadas.
+A aplicação fica temporariamente indisponível nessa janela; o backup inclui
+todos os bancos da stack compartilhada.
+
+O agendamento funciona enquanto o processo e a máquina estão ligados. Após
+um período desligado, o startup trata o backup devido antes de novas escritas;
+isso não garante RPO contínuo durante o desligamento. Retenção máxima: backups
+de trinta dias, exports e logs de sete dias. A manutenção preserva arquivos
+desconhecidos, journal, checkpoints e chaves ainda necessárias, reportando
+resultado parcial quando não pode provar uma remoção segura. Backup inválido
+ou retomada pendente impede declarar a web pronta.
+
+Snapshots, pedidos de parada, logs e arquivos cifrados ficam sob custódia em
+`.artifacts/t14-runtime/`, fora do Git. Não mova só os componentes cifrados:
+chaves e journal externos integram a recuperação descrita em
+[Recuperação local](recovery.md).
+
+## Comandos de QA e operação
 
 ```sh
 npm --prefix web run test:integration:t14
@@ -92,5 +165,6 @@ O ensaio completo passou com TOTP original, dados/arquivos, supressão posterior
 novo ciclo web e limpeza identificada da cópia. Os instantes, volume e metas
 locais estão em [Recuperação](recovery.md); as provas funcionais e de laboratório
 estão no [aceite](acceptance.md). O resultado continua restrito a esta máquina e
-à carga sintética. Startup diário, saúde contínua e agenda de doze horas são o
-próximo marco T15; recuperação em outra máquina ainda não foi testada.
+à carga sintética. Startup, saúde, reinício com dados persistidos, Ctrl+C no
+terminal e parada por comando passaram em T15, com as provas no aceite.
+Recuperação em outra máquina ainda não foi testada.

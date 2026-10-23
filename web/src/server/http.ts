@@ -1,11 +1,12 @@
 import './only.ts';
 import { AppError } from './errors.ts';
 import { getServerEnv } from './env.ts';
+import { trackRequestOperation } from './request-lifecycle.ts';
 
 export async function handleRoute(operation: () => Promise<Response>): Promise<Response> {
   let response: Response;
   try {
-    response = await operation();
+    response = await trackRequestOperation(operation);
   } catch (error) {
     const known = error instanceof AppError;
     response = Response.json({

@@ -129,6 +129,11 @@ altera pontos, estoque, tickets ou vínculos.
 ### 3.9. Direitos e operação local
 
 O recorte T14–T15 confirmado prioriza a web com PostgreSQL persistente local.
+O uso diário mantém supervisão em primeiro plano, saúde real, parada própria
+e backup a cada doze horas enquanto a máquina e o processo estiverem ligados.
+Ao reiniciar, um backup devido é tratado antes de novas escritas. A parada
+conserva os volumes e aguarda as operações admitidas; não encerra um processo
+alheio nem inicia nova operação de domínio durante a drenagem.
 Exportação/exclusão exige identificação manual da pessoa e protocolo próprio;
 o CLI de prova aceita somente contas sintéticas rastreadas. Remover autoria
 oculta texto e identidade daquela pessoa, retira acesso à mídia e preserva o

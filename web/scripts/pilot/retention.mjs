@@ -2,6 +2,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readdir, lstat, unlink, rmdir, mkdir } from 'node:fs/promises';
 import { randomUUID } from 'node:crypto';
+import { knownLocalLog } from './local-diagnostics.mjs';
 import { openJson, decryptComponent } from './archive.mjs';
 import { ensurePrivateDirectory, readPrivateJson, backupKey, deleteBackupKey, withMaintenanceLock } from './custody.mjs';
 import { runtimeRoot, DAY, listBackupIds, backupLocation, readBackupManifest, withVerifiedBackup,
@@ -90,7 +91,7 @@ async function expireLogs(now, counts) {
     if (!entry.isFile() || entry.isSymbolicLink() || !entry.name.endsWith('.json') || !UUID.test(id)) { counts.preserved += 1; continue; }
     try {
       const file = path.join(directory, entry.name); const value = await readPrivateJson(file);
-      if (!knownLog(value, id)) throw new Error('Log desconhecido.');
+      if (!knownLocalLog(value, id)) throw new Error('Log desconhecido.');
       if (retentionExpired(value, now)) { await unlink(file); counts.logs += 1; }
     } catch { counts.preserved += 1; }
   }
@@ -101,6 +102,11 @@ export async function maintainLocal(now = new Date()) {
   return withMaintenanceLock(async () => {
     const counts = { backups: 0, exports: 0, logs: 0, preserved: 0 };
     await expireBackups(now, counts); await expireExports(now, counts); await expireLogs(now, counts);
+    // Media mode directories belong to lease-aware workers. Unproven abandoned staging stays private.
+    const temporary = path.join(runtimeRoot, 'temp'); await ensurePrivateDirectory(temporary);
+    for (const entry of await readdir(temporary, { withFileTypes: true })) {
+      if (!['development', 'integration'].includes(entry.name) || !entry.isDirectory() || entry.isSymbolicLink()) counts.preserved += 1;
+    }
     return { status: counts.preserved ? 'PARTIAL' : 'COMPLETE', checkedAt: now.toISOString(), counts,
       pending: counts.preserved ? ['UNKNOWN_OR_INCOMPLETE_ARTIFACTS_PRESERVED'] : [] };
   });

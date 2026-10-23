@@ -60,10 +60,13 @@ async function verifyCaptured(components, input) {
   } finally { await clearBackupStaging(staging, files); }
 }
 
-async function capture(mode) {
+async function capture(mode, options) {
   if (!['development', 'integration'].includes(mode)) throw new Error('Backup aceita development ou integration.');
+  if (!options || typeof options !== 'object' || Array.isArray(options)
+    || Object.keys(options).some(key => key !== 'quiescenceReceipt')
+    || (options.quiescenceReceipt !== undefined && mode !== 'development')) throw new Error('Opções de captura inválidas.');
   const resources = pilotResources(mode); const id = randomUUID(); const startedAt = new Date().toISOString();
-  await assertSourceWritersAbsent();
+  await assertSourceWritersAbsent(options.quiescenceReceipt);
   const engine = await backupEngine(); const snapshots = await inspectSource(engine);
   const metadata = await sourceMetadata(mode, snapshots); const application = await applicationMetadata();
   const directory = backupLocation(id); await ensurePrivateDirectory(path.dirname(directory));
@@ -72,6 +75,8 @@ async function capture(mode) {
   await writePrivateJson(marker, { formatVersion: 1, id, startedAt }, { exclusive: true });
   const key = await backupKey(id, { create: true }); const stopped = [];
   try {
+    // Admit only a still-current receipt immediately before the first source stop.
+    await assertSourceWritersAbsent(options.quiescenceReceipt);
     await stopSource(engine, snapshots, stopped);
     const consistentAt = new Date().toISOString(); const journal = await snapshotJournal({ consistentAt });
     const input = { key, id, directory }; const components = [];
@@ -102,8 +107,8 @@ async function capture(mode) {
   }
 }
 
-export async function createBackup(mode = 'development') {
-  return withMaintenanceLock(() => capture(mode));
+export async function createBackup(mode = 'development', options = {}) {
+  return withMaintenanceLock(() => capture(mode, options));
 }
 
 export async function verifyBackup(id) {

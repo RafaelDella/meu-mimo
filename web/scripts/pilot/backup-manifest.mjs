@@ -8,9 +8,36 @@ import { pilotResources } from './resources.mjs';
 import { sealJson, openJson, decryptComponent } from './archive.mjs';
 import { ensurePrivateDirectory, readPrivateJson, writePrivateJson, backupKey } from './custody.mjs';
 import { inspectTar } from './backup-tar.mjs';
+import { BACKUP_INTERVAL_MS } from './process-contract.mjs';
 
 export const runtimeRoot = pilotResources('integration').directory;
 export const DAY = 86_400_000;
+const UUID = /^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/;
+const canonicalTime = value => typeof value === 'string' && Number.isFinite(Date.parse(value))
+  && new Date(value).toISOString() === value;
+
+/** Pure selection only; callers must separately authenticate the selected bundle. */
+export function selectDevelopmentBackup(manifests, now = new Date()) {
+  if (!Array.isArray(manifests) || !(now instanceof Date) || !Number.isFinite(now.getTime())) throw new Error('BACKUP_REQUIRED');
+  const candidates = manifests.filter(value => {
+    if (value?.formatVersion !== 1 || value.kind !== 'backup' || !UUID.test(value.id ?? '')
+      || value.sourceProject !== 'meumimo-t02' || value.sourceMode !== 'development'
+      || value.sourceDatabase !== 'meumimo_t14_dev' || value.sourcePrefix !== 't14-development'
+      || !['startedAt', 'consistentAt', 'completedAt', 'expiresAt'].every(key => canonicalTime(value[key]))) return false;
+    const [start, cut, end, expiry] = ['startedAt', 'consistentAt', 'completedAt', 'expiresAt'].map(key => Date.parse(value[key]));
+    return start <= cut && cut <= end && end <= now.getTime() && expiry > now.getTime() && expiry === start + 30 * DAY;
+  }).sort((a, b) => Date.parse(b.consistentAt) - Date.parse(a.consistentAt) || a.id.localeCompare(b.id));
+  if (!candidates.length) return null;
+  const { id, consistentAt, completedAt, expiresAt } = candidates[0];
+  return { id, consistentAt, completedAt, expiresAt };
+}
+
+export function backupDue(backup, now = new Date()) {
+  if (!(now instanceof Date) || !Number.isFinite(now.getTime())) throw new Error('BACKUP_REQUIRED');
+  if (!backup || !UUID.test(backup.id ?? '') || !['consistentAt', 'completedAt', 'expiresAt'].every(key => canonicalTime(backup[key]))) return true;
+  const cut = Date.parse(backup.consistentAt); const end = Date.parse(backup.completedAt); const expiry = Date.parse(backup.expiresAt);
+  return cut > end || end > now.getTime() || expiry <= now.getTime() || now.getTime() - cut >= BACKUP_INTERVAL_MS;
+}
 export function backupLocation(id) {
   if (typeof id !== 'string' || !/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/.test(id)) throw new Error('Identificador de backup inválido.');
   return path.join(runtimeRoot, 'backups', id);
@@ -73,6 +100,25 @@ export async function readBackupManifest(id, options) {
   } finally { key.fill(0); }
 }
 
+/** Authenticated manifest and exact file inventory; payload authentication remains withVerifiedBackup. */
+export async function inspectBackupBundle(id, options) {
+  const manifest = await readBackupManifest(id, options);
+  const directory = backupLocation(id);
+  const known = ['manifest.json', ...manifest.components.map(component => component.file)].sort();
+  const entries = await readdir(directory, { withFileTypes: true });
+  if (entries.length !== known.length || entries.some(entry => !known.includes(entry.name)
+    || !entry.isFile() || entry.isSymbolicLink())) throw new Error('Backup contém entradas desconhecidas ou ausentes.');
+  const fingerprint = [];
+  for (const name of known) {
+    const entry = await lstat(path.join(directory, name), { bigint: true });
+    if (!entry.isFile() || entry.isSymbolicLink() || entry.nlink !== 1n) throw new Error('Backup contém arquivo não regular.');
+    fingerprint.push(`${name}:${entry.dev}:${entry.ino}:${entry.size}:${entry.mtimeNs}:${entry.ctimeNs}`);
+  }
+  const confirmed = (await readdir(directory)).sort();
+  if (JSON.stringify(confirmed) !== JSON.stringify(known)) throw new Error('Inventário do backup divergiu.');
+  return { manifest, fingerprint: fingerprint.join('|') };
+}
+
 export async function writeBackupManifest(manifest, key) {
   assertManifest(manifest, manifest.id);
   await writePrivateJson(path.join(backupLocation(manifest.id), 'manifest.json'),
@@ -99,13 +145,8 @@ export async function clearBackupStaging(directory, files) {
 }
 
 export async function withVerifiedBackup(id, action, options) {
-  const manifest = await readBackupManifest(id, options);
+  const { manifest } = await inspectBackupBundle(id, options);
   const directory = backupLocation(id);
-  const known = new Set(['manifest.json', ...manifest.components.map(item => item.file)]);
-  const entries = await readdir(directory, { withFileTypes: true });
-  if (entries.length !== known.size || entries.some(entry => !known.has(entry.name) || !entry.isFile() || entry.isSymbolicLink())) {
-    throw new Error('Backup contém entradas desconhecidas.');
-  }
   const key = await backupKey(id); const staging = await createBackupStaging(id); const plaintext = new Map();
   try {
     for (const component of manifest.components) {

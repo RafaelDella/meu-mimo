@@ -1,6 +1,7 @@
 # Aceite da web local
 
-Registro de 23 de outubro de 2026, no fechamento local de T14. Esta matriz
+Registro de 23 de outubro de 2026, com o fechamento local de T14 e a operação
+de T15 descrita na seção própria. Esta matriz
 confronta os cenários de [requisitos §5](../../requisitos.md) com testes existentes
 e com as provas novas observadas. O recorte segue o
 [desenho confirmado](../superpowers/specs/2026-10-22-t14-t15-piloto-design.md) e o
@@ -8,9 +9,10 @@ e com as provas novas observadas. O recorte segue o
 
 A base identificada é T13, commit
 `72bbe85737e3cdc3efaded7723bb4b845dce358d`. O candidato T14 foi verificado na branch
-`codex/t14-piloto-local`; o commit que contém este registro identifica seus fontes.
+`codex/t14-piloto-local` e foi commitado em
+`206e0ce68b91765328b13a27ac8028e61fa37307`.
 As execuções abaixo foram conduzidas pelo responsável pela integração, em série.
-Esta revisão documental leu fontes e logs existentes; não executou novos testes.
+Cada seção distingue a revisão documental das execuções realizadas pelo integrador.
 
 O ciclo integrado, recuperação de conta, privacidade, direitos e recuperação
 completa e laboratório tiveram provas locais aprovadas. A regressão T14 passou
@@ -18,8 +20,8 @@ completa e laboratório tiveram provas locais aprovadas. A regressão T14 passou
 final passou o ciclo ampliado com edição real de atividade/mimo, snapshot
 preservado, reposição explícita e publicação parcial/substituição de vídeo.
 O mesmo fator TOTP foi preservado e verificado no ensaio completo de recuperação.
-T14 está verificada no recorte local confirmado. T15 e os gates físicos e de
-publicação conservam os limites registrados abaixo.
+T14 está verificada no recorte local confirmado. A operação local de T15 e os
+gates físicos e de publicação têm evidências e limites próprios abaixo.
 
 ## Métodos e evidências observadas
 
@@ -133,7 +135,7 @@ uma página visível não comprova.
 | Migração e privilégios | M14 confere dezesseis migrações, preservação da baseline, constraints, atomicidade, RLS e papel operacional estreito; runtime não recebe os poderes do operador. Repetição final passou em `.artifacts/t14-migrations-final.log`; H14 passou 362/362 e UI14 passou 736/736. Fontes: [check-rights-migration.mjs](../../web/scripts/check-rights-migration.mjs) e [helpers](../../web/scripts/check-rights-migration-helpers.mjs). | A cobertura de privilégios é local; não comprova configuração de um provedor futuro. |
 | Credenciais, caminhos e arquivo cifrado | U14 cobre ambiente Next sem credenciais operacionais, conexão nominal, isolamento de restore, caminhos/links, exclusividade, lock, journal/checkpoint, retenção e falha de autenticação AES antes de publicar plaintext. Fontes em [tests/pilot](../../web/tests/pilot). | Funções e observações de teste não comprovam uma stack restaurada, continuidade operacional ou custódia fora desta máquina. |
 | Backup e restauração | REC14 passou com cluster/Auth/Storage, seis objetos por hash, finanças, privilégios, contextos antigos negados, TOTP original verificado e supressão posterior reaplicada antes de abrir. RPO de 77,838s e RTO completo de 96,593s, dentro das metas locais de 24h/8h. | Não extrapolar o ensaio sintético para outra máquina/carga, disponibilidade remota ou cópia física externa. Intervalo de doze horas sob supervisão pertence a T15; retenção de trinta dias já tem provas por manifesto. |
-| Persistência para o idealizador | C14 conserva resultados após reload; PR14 autentica novamente e consulta a loja criada. | Reinício de filhos/computador, supervisão/saúde e versão local continuamente utilizável são aceite T15 próprio, ainda sem prova neste registro. |
+| Persistência para o idealizador | C14 conserva resultados após reload; PR14 autentica novamente e consulta a loja criada. T15 confere os mesmos IDs, foto, saldo e ticket após reiniciar os filhos, conforme a seção operacional abaixo. | Não houve reinício físico do computador nem prova de disponibilidade com a máquina desligada. |
 
 ## Laboratório e metas móveis
 
@@ -190,3 +192,68 @@ os instantes e resultados, sem publicação automática de conteúdo sensível.
 Hospedagem, custos, publicação, CI remoto observado, tráfego móvel real e M6
 têm condições próprias. A entrega web local não os aprova nem depende de
 inventar evidência para eles.
+
+## Operação persistente de T15
+
+A base de T15 é o commit T14 `206e0ce68b91765328b13a27ac8028e61fa37307`.
+A execução ocorreu depois desse commit, na branch `codex/t15-web-local`, com
+Node 24.12.0 e as versões de T14. O banco nominal de desenvolvimento é
+`meumimo_t14_dev`, em PostgreSQL local persistente; Auth/Storage pertencem à
+stack `meumimo-t02`. O supervisor serve o build em loopback, sem seed ou
+migração escondida. Comandos e correio estão em [operação local](local.md).
+
+| Fronteira | Execução observada | Evidência privada |
+| --- | --- | --- |
+| Posse e instância concorrente | Porta ocupada preservada, segundo start e pedido de outro owner recusados; identidade nativa inclui PID, criação e executável. | `t15-process-green-1`, `t15-ownership-green-1` |
+| Canal e trabalho em curso | Filhos reais recebem BOOT, emitem heartbeat durante unidade ocupada, drenam por STOP/desconexão e mantêm modo standalone. | `t15-heartbeat-green-1`, `t15-media-drain-1` |
+| Saúde de dependências | PostgreSQL com papel runtime, Auth, Storage privado, Next e workers prontos; interrupções dos contêineres próprios de Auth, Storage e PostgreSQL deixam de ser prontas e são revertidas em `finally`, com duas leituras saudáveis após cada recuperação. | `t15-health-ready-1`, `t15-dependencies-2` |
+| Falha operacional | Interrupção controlada do outbox próprio e sem fila é detectada; os demais filhos encerram e health não declara `ready`. | `t15-worker-failure-1` |
+| Persistência web | Contas criadas/confirmadas por UI/Mailpit, convite, registro com foto, aprovação de 15 pontos e resgate de 10; após Ctrl+C e reinício, os mesmos IDs e bytes da foto persistem. Cancelamento devolve 10 uma vez. A limpeza final usa a guarda de UUID. | `t15-development-prepare-5`, `t15-development-verify-5`, `t15-development-cleanup-5` |
+| Parada pelo terminal/comando | Ctrl+C enviado ao PTY produz STOPPED e nenhuma identidade nativa própria restante; PowerShell termina esse comando interrompido com código1. Após retomada e UI, `local:stop` confirma STOPPED com código0; manager também termina com código0. | `t15-terminal-stop-1`, `t15-stop-5`, `t15-local-web-5` |
+| Item de mídia inválido | UI recebe MP4 inválido; DB registra `FAILED/file_invalid`, álbum oferece recuperação e três amostras de saúde continuam `ready`, sem alterar saldo/ticket. | `t15-dev-invalid-media-1`, `t15-dev-verify-4`, `t15-dev-cleanup-4` |
+| Operação com cliente abortado | Duas leituras e cancelamento bloqueados na loja própria; clientes abortados, parada aguarda operação real, liberação produz um CANCEL e uma devolução, três filhos saem naturalmente. Grafo de bloqueio alcança o PID da fixture; lock de 1.660 ms. | `t15-request-drain-2` |
+| Backup com manager vivo | Escritores drenados antes da captura, manager permanece vivo, recibos alheio e vencido são recusados; backup concluído e web pronta novamente. | `t15-maintenance-cycle-2` |
+
+A segunda captura operacional tem ID
+`4f66ac7e-d521-4111-97bd-57095ea2a5ee`, corte em
+`2026-10-23T16:57:14.067Z`, conclusão em `16:57:34.565Z`, dezesseis componentes
+e 437.310.933 bytes. A web voltou a `ready` em `16:58:38.817Z`, depois da
+conferência do mesmo recibo vencido, e parou em `16:58:41.905Z`. A janela foi
+solicitada pelo callback de QA; não representa doze horas decorridas. A função
+de agenda prova o limite de doze horas, corte futuro inválido e startup devido.
+Nenhum relógio do SO ou snapshot de recibo foi falsificado.
+
+A primeira parada após UI falhou: Next reteve uma promise de transporte após
+aborto de GETs de álbum/reação. O diagnóstico da instância antiga de QA e seu
+encerramento explícito não contam como parada graciosa. A correção acompanha
+eventos HTTP e, separadamente, operações de API admitidas em registro global
+do processo; STOP fecha admissão e aguarda essas operações antes de Next/Prisma.
+As duas drenagens reais e as paradas posteriores estão registradas. A quarta
+parada encerrou todos os processos, mas revelou uma corrida da confirmação
+CLI. O helper de confirmação agora relê o estado após observar o manager
+ausente, exige o mesmo owner/identidades e prova a saída dos filhos. Cinco
+regressões determinísticas passaram em `t15-stop-confirmation-green`;
+`FAILED`, outro owner e filho vivo não são confirmação de parada.
+
+Falha de item já persistida ou retry registrado conserva `counts.failed` com
+rodada `OK`; exceção operacional propagada gera `FAILED`. O upload negativo
+acima confere essa distinção. Os códigos standalone para itens falhos permanecem.
+
+A revisão também encontrou ampliação indevida da limpeza development por
+e-mail reutilizado. O ensaio com duas identidades sintéticas próprias falhou
+antes da guarda e passou depois (`t15-fixture-identity-red/green`): a segunda
+conta permaneceu íntegra e só o finally comprovado a removeu. Integração mantém
+sua descoberta anterior; development exige UUID previamente rastreado.
+
+Não houve reinício físico do computador, espera real de doze horas nem cópia
+externa. A agenda só roda com máquina/supervisor ligados; startup confere
+backup devido antes de novos escritores. O alcance continua web local, com
+contas sintéticas e sem publicação ou homologação de aparelhos físicos.
+
+Fechamento T15: `npm run check` passou com base7/web62, lint, tipos e build
+em `t15-check-final-3`. A segunda regressão HTTP passou362/362, sem skips,
+em `t15-http-full-2` (577.123,999 ms), após a correção de operações admitidas.
+A guarda posterior de limpeza development teve RED/GREEN próprio e foi
+exercitada no quinto ciclo web; o ramo de integração conserva o comportamento.
+Não se declara uma segunda execução dos736 Chromium ou de REC14 em T15:
+suas evidências e versões continuam descritas na seção T14.

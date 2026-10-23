@@ -3,10 +3,12 @@ import { createHmac, randomUUID } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
 import pg from 'pg';
 import { integrationEnvironment } from './environment.mjs';
+import { developmentEnvironment } from './development.mjs';
 import { BrowserSession, expectStatus } from './http-client.mjs';
 
-export async function createFixture(t) {
-  const environment = integrationEnvironment();
+export async function createFixture(t, { target = 'integration' } = {}) {
+  assert.ok(['integration', 'development'].includes(target), 'Fixture exige alvo nominal conhecido.');
+  const environment = target === 'development' ? developmentEnvironment() : integrationEnvironment();
   const database = new pg.Pool({ connectionString: environment.databaseURL, max: 2, connectionTimeoutMillis: 5000 });
   const authDatabase = environment.authDatabaseURL === environment.databaseURL ? database :
     new pg.Pool({ connectionString: environment.authDatabaseURL, max: 1, connectionTimeoutMillis: 5000 });
@@ -21,6 +23,10 @@ export async function createFixture(t) {
   const fixtureRun = randomUUID();
   const newEmail = () => `t02-${randomUUID()}@example.test`;
   const client = () => new BrowserSession(environment);
+  let closed;
+  const close = () => closed ??= Promise.all([
+    database.end(), ...(authDatabase === database ? [] : [authDatabase.end()]),
+  ]);
 
   async function createUser({ confirmed = true } = {}) {
     const email = newEmail();
@@ -71,6 +77,8 @@ export async function createFixture(t) {
     try {
       if (emails.size) {
         const result = await authDatabase.query('SELECT id FROM auth.users WHERE email = ANY($1::text[])', [[...emails]]);
+        if (target === 'development') assert.ok(result.rows.every(row => userIds.has(row.id)),
+          'Fixture de desenvolvimento não pode ampliar usuários por e-mail.');
         for (const row of result.rows) userIds.add(row.id);
         assert.ok(process.env.AUTH_RATE_LIMIT_SECRET, 'A limpeza exige o segredo da stack de testes.');
         for (const email of emails) for (const kind of ['login', 'recovery']) {
@@ -160,15 +168,14 @@ export async function createFixture(t) {
         assert.ok(!error || (removedAuthIds.has(id) && error.status === 404), 'A limpeza deve remover somente usuários criados pela fixture.');
       }
     } finally {
-      await database.end();
-      if (authDatabase !== database) await authDatabase.end();
+      await close();
     }
   }
 
   t.after(cleanup);
-  await database.query('SELECT 1');
+  try { await database.query('SELECT 1'); } catch (error) { await close(); throw error; }
   return {
-    environment, database, auth, client, createUser, login, createStore, addMembership, newEmail,
+    environment, database, auth, client, createUser, login, createStore, addMembership, newEmail, close,
     trackAuthRemoval: id => { assert.ok(userIds.has(id)); removedAuthIds.add(id); },
     trackEmail: email => emails.add(email), trackUser: id => userIds.add(id), trackStore: id => storeIds.add(id), trackRateKey: key => rateKeys.add(key),
   };

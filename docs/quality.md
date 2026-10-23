@@ -298,3 +298,56 @@ os dois formulários foram corrigidos com projeção explícita. As regressões 
 navegador agora usam um contrato estrito para esse salvamento, e o ciclo real
 percorre as duas edições. Mocks que aceitam qualquer corpo não comprovam que o
 formulário consegue salvar na API real.
+
+## Verificação da operação de T15
+
+O contrato, identidade nativa, posse, IPC, heartbeat, seleção/intervalo de
+backup, inventário autenticado, diagnóstico e registro de operações têm
+testes em `web/tests/pilot/`. Pare o supervisor antes de `npm run check`:
+esses testes usam a custódia e portas nominais em série. Migrações e valores
+de domínio continuam preservados; T15 não acrescenta uma migração.
+
+Os ensaios operacionais explícitos ficam em `web/tests/integration/pilot/`,
+sem entrar automaticamente no runner comum. Execute de `web/`, um por vez:
+
+| Programa | Pré-condição e prova |
+| --- | --- |
+| `node --conditions=react-server tests/integration/pilot/media-drain-check.mjs` | Escritores parados; HTTP corrente termina, aborto fecha admissão e não abre banco para envelope inválido. |
+| `node tests/integration/pilot/dependency-check.mjs` | Escritores parados; Auth, Storage e PostgreSQL próprios são indisponibilizados por ID comprovado e recuperados em `finally`, com duas leituras saudáveis após a retomada. |
+| `node --conditions=react-server tests/integration/pilot/maintenance-cycle-check.mjs` | Escritores parados; manager/filhos reais, uma janela solicitada pelo callback de QA, backup frio, recibos alheio/vencido recusados, novo `ready` e parada. |
+| `node --conditions=react-server tests/integration/pilot/worker-failure-check.mjs` | Escritores parados; inicia instância própria, interrompe seu outbox confirmado sem fila pendente e exige falha, drenagem dos demais e health sem `ready`. |
+| `node --conditions=react-server tests/integration/pilot/request-drain-check.mjs` | Supervisor pronto e fixture `PREPARED` própria; bloqueia sua loja, aborta duas leituras e um cancelamento admitidos, pede parada, libera a transação e exige uma devolução e três filhos encerrados. |
+| `node --conditions=react-server tests/integration/pilot/fixture-identity-check.mjs` | Escritores parados; duas identidades sintéticas próprias reutilizam o mesmo e-mail em sequência; cleanup development deve recusar ampliar o conjunto de UUIDs e preservar a segunda conta. |
+
+`scripts/pilot/development-web-check.mjs` tem fases explícitas `prepare`,
+`media-invalid`, `verify` e `cleanup`, executadas com `node --conditions=react-server` enquanto
+o supervisor estiver pronto. A preparação cadastra contas sintéticas pela UI
+e confirma pelo correio real; o estado privado permite conferir os mesmos IDs
+após parar/reiniciar. A verificação consulta saldo/ticket, abre a foto pela UI,
+compara seus bytes com Storage e testa devolução única. Só a limpeza explícita
+remove a fixture comprovada; conta sem prova de posse conserva pendência.
+Nenhum desses fluxos semeia o uso diário do idealizador.
+
+Na limpeza development, o e-mail não autoriza incluir outro UUID. A descoberta
+por e-mail da suíte de integração permanece separada. O ensaio negativo acima
+recria somente sua conta sintética e remove a substituta ao final apenas após
+conferir ID, e-mail e marcador da própria execução.
+
+`media-invalid` envia bytes que não são MP4 pela UI, exige `file_invalid`
+persistido e a mensagem de recuperação no álbum; três amostras de saúde após
+o processamento continuam prontas. A rodada concluída conserva a contagem
+do item falho; somente exceção operacional produz `FAILED` no heartbeat.
+Os códigos de saída standalone para itens falhos continuam preservados.
+
+A regressão de drenagem mantém um grafo de bloqueio PostgreSQL que alcança o
+PID do bloqueador desta execução, com prazo monotônico inferior ao timeout da
+transação. Não basta contar quaisquer conexões em espera. O `finally` fecha os
+clientes mesmo se o rollback falhar. A espera de parada preserva processos
+próprios em falha; não mata um desconhecido nem usa timeout para declarar êxito.
+
+Uma janela acionada pelo ensaio não equivale a doze horas decorridas. O corte
+e o limite exato são testados com relógio de função; o SO não é alterado. A
+saúde não varre os bytes de todos os objetos a cada consulta: autentica o
+inventário do backup e lê dependências/metadados, enquanto QA/recuperação
+conferem conteúdo. Provas e limitações observadas ficam no
+[aceite](pilot/acceptance.md).

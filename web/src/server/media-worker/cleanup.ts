@@ -6,12 +6,14 @@ import { databaseNow } from '../stores/transaction.ts';
 import { deleteObjects, listAssetObjects } from './storage.ts';
 
 /** Expurgo de remoções explícitas ou já marcadas pela política D08. */
-export async function purgeRemovedMediaBatch(options: { limit?: number } = {}): Promise<{ purged: number; failed: number }> {
+export async function purgeRemovedMediaBatch(options: { limit?: number; signal?: AbortSignal } = {}): Promise<{ purged: number; failed: number }> {
   const limit = options.limit ?? 20;
   if (!Number.isInteger(limit) || limit < 1 || limit > 50) throw new AppError('field_invalid', 400, 'Lote de limpeza inválido.');
   const result = { purged: 0, failed: 0 };
   for (let index = 0; index < limit; index += 1) {
+    if (options.signal?.aborted) break;
     const job = await getDb().$transaction(async tx => {
+      if (options.signal?.aborted) return null;
       // Aguarda a tentativa anterior e suas duas gravações com timeout de 30 s.
       // Remoção lógica já nega a leitura; nenhum trabalho externo fica no lock.
       const rows = await tx.$queryRaw<{ id: string }[]>`
@@ -19,8 +21,9 @@ export async function purgeRemovedMediaBatch(options: { limit?: number } = {}): 
         AND "removedAt" IS NOT NULL AND "availableAt" <= clock_timestamp()
         AND ("leaseUntil" IS NULL OR "leaseUntil" < clock_timestamp() - interval '2 minutes')
         ORDER BY "availableAt", id FOR UPDATE SKIP LOCKED LIMIT 1`;
-      if (!rows.length) return null;
+      if (!rows.length || options.signal?.aborted) return null;
       const now = await databaseNow(tx);
+      if (options.signal?.aborted) return null;
       const token = randomUUID();
       const asset = await tx.mediaAsset.update({ where: { id: rows[0].id }, data: {
         leaseToken: token, leaseUntil: new Date(now.getTime() + 300_000),

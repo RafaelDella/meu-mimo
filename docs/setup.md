@@ -731,3 +731,43 @@ o Auth v2.197.0 oficial: segredo TOTP usa Security.DBEncryption, preservada na
 cópia; rotação JWT não exige novo cadastro do fator. Expectativas de status do
 teste foram ajustadas às respostas 403/bad_jwt e 422/mfa_factor_not_found reais, sem aceitar
 identidade ou tokens nesses retornos. Instantes e limites estão na recuperação.
+
+## Operação web local de T15
+
+T14 foi commitada em `206e0ce68b91765328b13a27ac8028e61fa37307`; T15 foi
+implementada depois, na branch `codex/t15-web-local`, com as mesmas versões
+e serviços. O Vibe Coding Toolkit orientou três escritores com arquivos
+separados e revisão independente somente leitura; recursos/checks/Git foram
+executados em série pelo responsável pela integração.
+
+Não há pacote, provedor ou instalação global nova. A hospedagem Next usa a API
+customizada instalada, conferida nos guias shipped e no código da versão.
+Context7 corroborou contratos, mas retornou main/canary em parte das consultas;
+a versão local permaneceu a fonte para `close` e o comportamento efetivo.
+O diagnóstico do aborto HTTP consultou também a documentação oficial do Node
+24.12.0; o inspector temporário de QA foi restrito a loopback, ao processo
+próprio confirmado, e encerrado. Ele não faz parte do produto ou do startup.
+
+`local:web`, `local:health` e `local:stop` ligam supervisor, três filhos,
+saúde e manutenção aos recursos nominais T14 de desenvolvimento. Startup
+valida o inventário por IDs exatos e exige migrações/build prontos. Backups
+autenticam manifesto/componentes; o cache confere nomes, arquivos regulares e
+metadados de mudança. Arquivo extra ou componente ausente invalida o conjunto
+sem autorizar remover a entrada desconhecida. Filhos recebem somente seus
+ambientes filtrados; Next/outbox não recebem service role de mídia/migração.
+
+O ensaio de parada após UI revelou promise de transporte Next retida após
+abortar leituras. O host passou a acompanhar término HTTP por eventos, enquanto
+`handleRoute` registra operações admitidas em um estado global opcional do
+processo. O STOP fecha essa admissão, aguarda operações, fecha Next/Prisma e só
+então confirma saída. A correção foi exercitada com leituras e cancelamento
+bloqueados no PostgreSQL, preservando uma devolução mesmo com cliente abortado.
+Execução e sequência de QA em [qualidade](quality.md); uso diário e limites da
+máquina desligada em [operação local](pilot/local.md).
+
+O upload negativo de T15 confirmou outro limite operacional: arquivo inválido
+tratado recebe erro recuperável no álbum, sem tornar o supervisor indisponível.
+Workers conservam as contagens de itens falhos/retries numa rodada concluída;
+somente exceção propagada da rodada sinaliza falha operacional. A quarta parada
+CLI mostrou ainda uma corrida entre a leitura de DRAINING e a saída do manager;
+a confirmação passou a reler o estado final e a identidade dos filhos.

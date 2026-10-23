@@ -38,7 +38,9 @@ bloqueio de segurança; contratos e comandos em `docs/admin-local.md`.
 T14 entrega validação integrada, direitos por autoria, exportação cifrada,
 backup do cluster/Storage e cópia de recuperação isolada. Consulte
 `docs/pilot/{local,acceptance,data-rights,recovery}.md` e o plano T14–T15.
-O supervisor de uso diário e a saúde contínua pertencem ao próximo marco T15.
+T15 acrescenta supervisor local, saúde e backup programado. Comandos
+`local:web`, `local:health` e `local:stop` em `web/`; detalhes em
+`docs/pilot/local.md`. Pare a web antes dos checks e ensaios compartilhados.
 O plano da fundação e as dependências estão em
 [M0](docs/superpowers/plans/2026-10-22-m0-fundacao.md).
 

@@ -10,7 +10,7 @@
 
 **Especificação:** [requisitos](../../../requisitos.md), [arquitetura](../../../arquitetura.md), [design](../../../design.md) e [README](../../../README.md). Operação e qualidade: [onboarding](../../onboarding.md), [setup](../../setup.md) e [quality](../../quality.md).
 
-**Data:** 22/10/2026, atualizado em 23/10. **Estado atual:** M0 e T01–T14 entregues no recorte local; direitos, web, laboratório e recuperação foram verificados. O [plano local T14–T15](2026-10-22-t14-t15-local.md) e o [aceite](../../pilot/acceptance.md) registram execução e limites. T15 local é a próxima implementação, após o commit T14. O idealizador priorizou web/PostgreSQL locais e adiou provedores, publicação e aparelhos físicos; esses gates continuam abertos, inclusive leitor de tela real. Decisões constam em requisitos §6.1; a seção 1 preserva o ponto de partida do planejamento.
+**Data:** 22/10/2026, atualizado em 23/10. **Estado atual:** M0 e T01–T15 entregues no recorte web local; direitos, laboratório, recuperação e operação persistente foram verificados. O [plano local T14–T15](2026-10-22-t14-t15-local.md), a [operação T15](2026-10-23-t15-operacao-local.md) e o [aceite](../../pilot/acceptance.md) registram execução e limites. O idealizador priorizou web/PostgreSQL locais e adiou provedores, publicação e aparelhos físicos; esses gates continuam abertos, inclusive leitor de tela real. Decisões constam em requisitos §6.1; a seção 1 preserva o ponto de partida do planejamento.
 
 ## 1. Ponto de partida e restrições
 
@@ -306,6 +306,8 @@ Recorte posterior confirmado: primeiro entregar a operação web persistente loc
 com supervisor, saúde, manutenção e comandos em [T14–T15 local](2026-10-22-t14-t15-local.md).
 Os itens publicados abaixo conservam suas dependências e permanecem adiados.
 
+- [x] Entregar o recorte web local: supervisor em primeiro plano, PostgreSQL persistente, saúde real, parada própria, backup programado e retomada com os mesmos dados; provas no [aceite T15](../../pilot/acceptance.md).
+
 **Responsável:** orquestrador/operação. **Depende de:** T14 e autorização de publicação, serviços/custo e migrações reais.
 **Arquivos:** configuração do provedor escolhido, `docs/pilot/**`, `docs/{setup,onboarding,quality}.md`. **Recursos:** ambientes nomeados e autorizados, secrets no serviço apropriado; ações serializadas.
 
@@ -401,8 +403,9 @@ Planos/cobrança, colaboradores, transferência, múltiplas fotos por registro d
 - Na elaboração inicial do roadmap, versões e provedores ainda não estavam escolhidos. M0 confirmou D01, selecionou versões e executou consultas reais ao Context7 e às fontes oficiais, registradas no plano da fundação. Isso atualiza a descoberta inicial sem alegar instalação ou integração já concluída.
 
 O estado atual está no início deste documento e nos planos de execução de cada
-entrega. T14 foi verificada localmente; T15 local é a próxima implementação após seu
-fechamento. D06 e os desenhos locais até T15 foram confirmados. Os limites
+entrega. T14 e a operação web local de T15 foram verificadas. O próximo passo do
+idealizador é testar essa web; o piloto publicado mantém suas condições próprias.
+D06 e os desenhos locais até T15 foram confirmados. Os limites
 e gates restantes mantêm suas dependências em
 requisitos §6.1. A aprovação do roadmap não autoriza publicação, cobrança ou
 migração em ambiente real.

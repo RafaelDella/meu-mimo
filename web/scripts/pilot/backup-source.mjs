@@ -9,6 +9,8 @@ import { pilotResources } from './resources.mjs';
 import { readPrivateJson } from './custody.mjs';
 import { containerRoute } from './backup-streams.mjs';
 import { financialFingerprints } from './backup-consistency.mjs';
+import { assertReceipt, assertSnapshot } from './process-contract.mjs';
+import { observeProcess, sameProcess } from './process-identity.mjs';
 
 export const sourceServices = ['db', 'inbucket', 'auth', 'rest', 'realtime', 'storage', 'kong'];
 const stopOrder = ['kong', 'auth', 'rest', 'storage', 'realtime', 'inbucket', 'db'];
@@ -28,15 +30,49 @@ async function portOccupied(port) {
   });
 }
 
-export async function assertSourceWritersAbsent() {
+export async function assertSourcePortsFree() {
   for (const port of [4301, 4302, 4303, 4310, 4311]) {
     if (await portOccupied(port)) throw new Error('Encerre os escritores locais identificados antes da manutenção.');
   }
-  for (const name of ['supervisor.json', 'processes.json', 'local-handle.json']) {
+}
+
+export async function assertLegacyWritersAbsent() {
+  for (const name of ['processes.json', 'local-handle.json']) {
+    try { await readPrivateJson(path.join(root, name)); }
+    catch (error) { if (error.code === 'ENOENT') continue; throw error; }
+    // T15 has no producer/ownership contract for these legacy authorities.
+    throw new Error('Registro legado exige conferência de posse antes da operação.');
+  }
+}
+
+export async function assertSourceWritersAbsent(receipt) {
+  await assertSourcePortsFree();
+  if (receipt !== undefined) {
+    await assertLegacyWritersAbsent();
+    assertReceipt(receipt);
+    const state = assertSnapshot(await readPrivateJson(path.join(root, 'supervisor.json')));
+    const now = Date.now();
+    if (state.phase !== 'MAINTENANCE' || state.owner !== receipt.owner || receipt.manager.pid !== process.pid
+      || JSON.stringify(state.maintenance) !== JSON.stringify(receipt)
+      || now < Date.parse(receipt.issuedAt) || now >= Date.parse(receipt.expiresAt)
+      || !await sameProcess(receipt.manager)) throw new Error('Recibo de quiescência inválido.');
+    const children = Object.values(state.children);
+    if (children.length !== 0 && children.length !== 3) throw new Error('Escritores incompletos no recibo.');
+    for (const child of children) {
+      if (child.state !== 'stopped' || await observeProcess(child.identity.pid) !== null) throw new Error('Escritor ainda observável.');
+    }
+  }
+  for (const name of [...(receipt === undefined ? ['supervisor.json'] : []), 'processes.json', 'local-handle.json']) {
     try {
       const state = await readPrivateJson(path.join(root, name));
       if (state.status !== 'stopped') throw new Error('Supervisor local precisa estar parado.');
     } catch (error) { if (error.code !== 'ENOENT') throw error; }
+  }
+  if (receipt !== undefined) {
+    const state = assertSnapshot(await readPrivateJson(path.join(root, 'supervisor.json')));
+    if (state.phase !== 'MAINTENANCE' || state.owner !== receipt.owner
+      || JSON.stringify(state.maintenance) !== JSON.stringify(receipt)
+      || Date.now() < Date.parse(receipt.issuedAt) || Date.now() >= Date.parse(receipt.expiresAt)) throw new Error('Admissão da captura expirou.');
   }
 }
 

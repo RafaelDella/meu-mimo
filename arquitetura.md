@@ -420,6 +420,34 @@ O `BUILD_ID`, SHA de base, hashes de migrações e imagens identificam a captura
 Contratos e provas em [direitos](docs/pilot/data-rights.md),
 [recuperação](docs/pilot/recovery.md) e [aceite](docs/pilot/acceptance.md).
 
+### 3.10. Supervisão local em T15
+
+O manager em primeiro plano possui UUID e identidade nativa de processo
+(PID, instante de criação com precisão do SO e executável). Os filhos Next,
+mídia e outbox usam IPC com BOOT, heartbeat independente da rodada e STOP.
+Snapshot, lock e pedido de parada ficam sob a custódia privada existente;
+ambientes e conteúdo de relações não são serializados. Instância concorrente,
+porta ocupada ou identidade ambígua não autoriza matar/adotar um processo.
+
+O Next customizado fecha admissão HTTP e acompanha `finish`/`close`/`error`.
+A operação de cada API é registrada separadamente por `handleRoute`, inclusive
+Auth e administração. Um registro opcional no global do processo compartilha
+host e bundle; ao parar, recusa novas operações com 503 e aguarda as admitidas
+antes de fechar Next e Prisma. Assim, a promise de transporte que o framework
+pode conservar após aborto do cliente não representa uma transação em curso.
+O registro permanece fechado até a saída; o runtime standalone conserva seu
+comportamento. Mídia drena HTTP e termina a unidade atual; consumidores não
+iniciam outro claim após STOP.
+
+Saúde usa clientes PostgreSQL curtos, Auth/Storage reais e identidade/heartbeat
+dos filhos; uma página 200 não basta. Drenagem e manutenção não abrem novos
+probes de dados. O backup de desenvolvimento é autenticado antes dos
+escritores e vence para a agenda após doze horas do corte. Na janela, os filhos
+são drenados e o manager vivo apresenta recibo de quiescência válido somente
+para admitir aquela captura fria. Não há lock de manutenção aninhado.
+Retomada falha ou backup devido sem conjunto utilizável impede `ready`.
+Limites, comandos e provas estão em [operação local](docs/pilot/local.md).
+
 ## 4. Modelo conceitual de dados
 
 A tabela descreve o modelo completo proposto. T02/T04/T05/T06/T07/T08/T09 implementam os
