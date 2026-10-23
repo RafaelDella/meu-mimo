@@ -7,6 +7,7 @@ test('retorno de autenticação preserva apenas caminhos internos permitidos', (
     '/conta', '/conta/seguranca', '/conta/', '/convites/convite-123',
     '/lojas/loja-123/mimos?ordem=recentes#catalogo',
     '/convites/convite_123?origem=email', '/conta?nome=Ana%20Maria',
+    '/admin', '/admin/contas/11111111-1111-4111-8111-111111111111',
   ]) assert.equal(safeReturnPath(value), value);
 });
 
@@ -15,7 +16,7 @@ test('retorno rejeita origem externa, controles e rotas fora da lista', () => {
     null, '', ' /lojas', 'conta', 'https://example.org/conta',
     '//example.org/conta', '///example.org', 'javascript:alert(1)',
     '/\\example.org', '/conta\\seguranca', '/conta\n', '/conta\t',
-    '/admin', '/contabilidade', '/api/auth/callback', '/lojas//outra',
+    '/administracao', '/contabilidade', '/api/auth/callback', '/lojas//outra',
     '/convites/../admin', '/lojas/./outra', '/conta;externo',
     `/lojas/${'a'.repeat(2048)}`,
   ]) assert.equal(safeReturnPath(value), '/conta', String(value));

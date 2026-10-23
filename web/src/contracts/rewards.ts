@@ -7,7 +7,7 @@ export type RewardFields = {
 };
 export type RewardAvailability = {
   eligible: boolean;
-  reason: 'AVAILABLE' | 'INSUFFICIENT_POINTS' | 'SOLD_OUT' | 'UNAVAILABLE' | 'ARCHIVED' | 'STORE_PAUSED' | 'STORE_CLOSED' | 'MEMBERSHIP_CLOSED';
+  reason: 'AVAILABLE' | 'INSUFFICIENT_POINTS' | 'SOLD_OUT' | 'UNAVAILABLE' | 'ARCHIVED' | 'STORE_PAUSED' | 'STORE_PLATFORM_PAUSED' | 'STORE_CLOSED' | 'MEMBERSHIP_CLOSED';
   available: string; pending: string; resulting: string; shortfall: string;
 };
 export type RewardView = RewardFields & {

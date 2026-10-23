@@ -43,6 +43,7 @@ function Workspace({ storeId, section, accountKey, activityRoute, rewardRoute, m
     <div className={styles.sidebar}><StoreNavigation store={store} section={section} /></div><div className={styles.stack}>
     {error ? <div role="alert" className="stores-banner"><p>Não foi possível atualizar o contexto da loja. {storeError(error)}</p>
       <Button variant="secondary" onClick={refresh}>Atualizar contexto da loja</Button></div> : null}
+    {store.platformPausedAt && <p className="stores-banner" role="status">Novas ações pausadas pela plataforma. Novos convites, registros, resgates e evidências de novas conquistas estão suspensos. Análises, tickets e demais pendências existentes continuam acessíveis.</p>}
     {store.state !== 'ACTIVE' && <p className="stores-banner" role="status">{store.state === 'PAUSED' ?
       'Esta loja está pausada. Novos convites, conquistas e resgates estão suspensos. O histórico continua acessível.' :
       'Esta loja foi encerrada. Você continua com acesso privado ao histórico e aos mimos já emitidos.'}</p>}

@@ -35,7 +35,8 @@ export async function requireMediaCollection(scope: StoreScope, collectionId: st
     const origin = await scope.tx.activitySubmission.findUnique({ where: { id: collection.subjectId },
       select: { status: true, authorProfileId: true } });
     if (origin?.status === 'DRAFT' && origin.authorProfileId !== scope.identity.userId) unavailable();
-    allowPausedEvidence = origin?.status === 'CONTESTED' && scope.store.state === 'PAUSED';
+    allowPausedEvidence = origin?.status === 'CONTESTED' && scope.store.state !== 'CLOSED' &&
+      (scope.store.state === 'PAUSED' || scope.store.platformPausedAt !== null);
   }
   return { ...scope, collection, allowPausedEvidence, memoryPolicy };
 }
@@ -72,10 +73,17 @@ export function assertMediaUpload(scope: MediaScope, asset?: MediaAsset): void {
         scope.memoryPolicy.authorProfileId !== scope.identity.userId))) unavailable();
   if (scope.collection.uploadsClosedAt ||
       scope.memoryPolicy?.cancelled || scope.memoryPolicy?.expired ||
-      (scope.collection.purpose === 'EVIDENCE' && (actor.closedAt ||
-        (scope.store.state !== 'ACTIVE' && !scope.allowPausedEvidence))) ||
+      (scope.collection.purpose === 'EVIDENCE' && (actor.closedAt || scope.store.state === 'CLOSED')) ||
       (asset && (asset.revision !== scope.collection.revision || asset.removedAt))) {
     throw new AppError('media_read_only', 409, 'Este envio de mídia está fechado. O histórico continua disponível.');
+  }
+  if (scope.collection.purpose === 'EVIDENCE' && !scope.allowPausedEvidence) {
+    if (scope.store.platformPausedAt) {
+      throw new AppError('store_platform_paused', 409, 'Novas ações desta lojinha estão pausadas pela plataforma.');
+    }
+    if (scope.store.state !== 'ACTIVE') {
+      throw new AppError('media_read_only', 409, 'Este envio de mídia está fechado. O histórico continua disponível.');
+    }
   }
 }
 

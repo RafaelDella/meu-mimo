@@ -31,7 +31,8 @@ export function rewardAvailability(scope: StoreScope, reward: Reward, balance: R
   const actor = requireMembership(scope);
   const cost = BigInt(reward.cost);
   const reason: RewardAvailability['reason'] = actor.closedAt ? 'MEMBERSHIP_CLOSED' :
-    scope.store.state === 'CLOSED' ? 'STORE_CLOSED' : scope.store.state === 'PAUSED' ? 'STORE_PAUSED' :
+    scope.store.state === 'CLOSED' ? 'STORE_CLOSED' : scope.store.platformPausedAt ? 'STORE_PLATFORM_PAUSED' :
+    scope.store.state === 'PAUSED' ? 'STORE_PAUSED' :
     reward.archivedAt ? 'ARCHIVED' : !reward.available ? 'UNAVAILABLE' : reward.stock === 0 ? 'SOLD_OUT' :
     balance.available < cost ? 'INSUFFICIENT_POINTS' : 'AVAILABLE';
   return { eligible: reason === 'AVAILABLE', reason, available: balance.available.toString(), pending: balance.pending.toString(),

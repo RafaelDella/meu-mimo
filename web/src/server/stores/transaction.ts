@@ -95,6 +95,9 @@ export function assertStoreWritable(scope: StoreScope, allowPaused = false): voi
   const membership = requireMembership(scope);
   if (membership.closedAt) throw new AppError('membership_closed', 409, 'Esta participação foi encerrada. O histórico continua disponível.');
   if (scope.store.state === 'CLOSED') throw new AppError('store_closed', 409, 'Esta lojinha foi encerrada. O histórico continua disponível.');
+  if (!allowPaused && scope.store.platformPausedAt) {
+    throw new AppError('store_platform_paused', 409, 'Novas ações desta lojinha estão pausadas pela plataforma.');
+  }
   if (!allowPaused && scope.store.state === 'PAUSED') throw new AppError('store_paused', 409, 'Esta lojinha está pausada. Aguarde a retomada.');
 }
 

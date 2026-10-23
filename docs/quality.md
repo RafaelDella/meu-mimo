@@ -246,3 +246,24 @@ T12 foi verificada em SQL, HTTP real e Chromium, com as ocorrências e repetiç�
 focais descritas no plano. Capturas controladas e
 simulação de conectividade não substituem aparelhos físicos, leitor de tela,
 transporte Realtime ou publicação, adiados pelo idealizador.
+
+## Verificação de T13
+
+Administração exige grant e AAL2 em cada fonte, inclusive lookup e replay.
+Leituras administrativas não podem conter conteúdo, saldo ou endereços das
+relações. Exercitar concorrência com revogação de grant/sessão, bloqueio do
+ator e concessão de grant no alvo. Mudança de projeção sem auditoria precisa
+reverter por completo. Capturar logs localmente sem imprimir os valores
+sensíveis usados na prova.
+
+Pausa da plataforma deve bloquear novas origens, incluindo upload DRAFT,
+preservando a pausa do lojista e obrigações anteriores. Bloqueio de conta
+precisa negar inclusive mídia autorizada antes do bloqueio e Range, mantendo
+o acesso legítimo da outra pessoa. No navegador, conferir árvore oculta em
+revalidação, foco, erro associado, 409/429, timeout e recuperação pela mesma
+UUID, sem persistir motivo ou busca no armazenamento/URL.
+
+Resultados e limitações ficam no
+[plano T13](superpowers/plans/2026-10-22-t13-administracao.md);
+comandos em [administração local](admin-local.md). Provas de UI com respostas
+controladas não substituem as provas HTTP com Auth/PostgreSQL/Storage reais.

@@ -42,6 +42,7 @@ function StoreList() {
           <span className="stores-mark" aria-hidden="true">♡</span><h2>{store.name || 'Sua lojinha'}</h2>
           <p>{store.presentation || 'Um cantinho de pequenos gestos.'}</p>
           <p className="stores-state">{store.membershipClosedAt ? 'Participação encerrada' : store.state === 'CLOSED' ? 'Loja encerrada' : store.state === 'PAUSED' ? 'Loja pausada' : role === 'MERCHANT' ? 'Gerenciando' : 'Participando'}</p>
+          {store.platformPausedAt && <p className="stores-state">Novas ações pausadas pela plataforma</p>}
           <Link className="stores-link" href={`/lojas/${store.id}`}>{store.membershipClosedAt || store.state === 'CLOSED' ? 'Consultar loja' : role === 'MERCHANT' ? 'Gerenciar loja' : 'Entrar na loja'}</Link>
         </article>)}</div>
         <Pagination page={data.page} pageSize={data.pageSize} total={data.total} onPage={setPage} />

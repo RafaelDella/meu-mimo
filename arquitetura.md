@@ -370,6 +370,29 @@ segundos recupera atualizações, com isolamento por conta, sessão e loja; não
 constitui transporte Realtime. Contratos e comandos em
 [T12 local](docs/relationship-local.md).
 
+### 3.8. Administração em T13
+
+`Store.platformPausedAt/platformVersion` e `Profile.securityVersion` separam
+a revisão administrativa dos estados do lojista. `AdminAction` registra alvo
+tipado, autor, motivo NFC, digest, revisão e transição imutável. Projeção e ação
+confirmam juntas pela função restrita `app.apply_admin_action`, com executor
+sem login, search_path fixo e grants mínimos. O runtime não atualiza esses
+campos diretamente nem cria grants. O default de securityVersion é gerado
+pelo PostgreSQL no mapeamento Prisma para preservar INSERT por coluna.
+
+Consultas administrativas usam Repeatable Read com selects explícitos de
+metadados. Comandos usam Read Committed para conferir concessões de grant
+ocorridas durante espera pelo alvo. Cada tentativa revalida identidade Auth,
+perfil, sessão e grant sob lock; AAL2 vem do provedor. Provisionamento externo
+bloqueia Profile antes de conferir suspensão e criar/reativar AdminGrant.
+
+Pausa da plataforma bloqueia novas origens pelo mesmo lock Store usado pelos
+comandos normais; preserva obrigações e a pausa independente do lojista.
+Bloqueio de conta conserva economia/conteúdo e retira suas respostas privadas,
+incluindo URLs e Range de mídia. DTOs administrativos não incluem conteúdo
+ou endereço das relações. Diagnóstico serializa apenas cinco campos permitidos.
+Contratos, comandos e estado de verificação em [T13 local](docs/admin-local.md).
+
 ## 4. Modelo conceitual de dados
 
 A tabela descreve o modelo completo proposto. T02/T04/T05/T06/T07/T08/T09 implementam os

@@ -11,6 +11,8 @@ import { checkRedemptionsMigration } from './check-redemptions-migration.mjs';
 import { checkTicketsMigration } from './check-tickets-migration.mjs';
 import { checkAlbumsMigration } from './check-albums-migration.mjs';
 import { checkRelationshipMigration } from './check-relationship-migration.mjs';
+import { checkAdminMigration } from './check-admin-migration.mjs';
+import { adminEvolutionSnapshot, assertAdminPreserved } from './check-admin-migration-helpers.mjs';
 
 const state = readState();
 const databaseName = `meumimo_t02_migrations_${randomUUID().replaceAll('-', '')}`;
@@ -231,7 +233,7 @@ try {
     const order = table === 'AlbumItem' ? '"assetId"' : 'id';
     beforeRelationship.set(table, (await database.query(`SELECT to_jsonb(t) AS row FROM app."${table}" t ORDER BY ${order}`)).rows);
   }
-  for (const name of names.filter(name => name >= '20261023002000')) cpSync(path.join(source, name), path.join(migrations, name), { recursive: true });
+  for (const name of names.filter(name => name >= '20261023002000' && name < '20261023003000')) cpSync(path.join(source, name), path.join(migrations, name), { recursive: true });
   deploy();
   for (const [table, rows] of beforeRelationship) {
     const order = table === 'AlbumItem' ? '"assetId"' : 'id';
@@ -241,6 +243,14 @@ try {
   }
   await checkRelationshipMigration(database, runtime, { storeId, merchantId: id, merchantMembershipId: membershipId,
     participantId, profileId: secondProfile, otherStoreId });
+  // Restrições legadas não recebem revisão ou auditoria administrativa retroativa.
+  await database.query('UPDATE app."Store" SET state=\'PAUSED\',"pausedAt"=clock_timestamp() WHERE id=$1', [otherStoreId]);
+  await database.query('UPDATE app."Profile" SET "suspendedAt"=clock_timestamp() WHERE id=$1', [secondProfile]);
+  const beforeAdmin = await adminEvolutionSnapshot(database);
+  for (const name of names.filter(name => name >= '20261023003000')) cpSync(path.join(source, name), path.join(migrations, name), { recursive: true });
+  deploy();
+  assertAdminPreserved(beforeAdmin, await adminEvolutionSnapshot(database, true));
+  await checkAdminMigration(database, runtime, { storeId, merchantId: id, participantId, profileId: secondProfile, otherStoreId });
   process.stdout.write('Migrações: banco vazio, evolução com dados preservados, RLS e privilégios efetivos comprovados.\n');
 } finally {
   await runtime?.end();

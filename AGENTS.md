@@ -33,6 +33,8 @@ em `docs/albums-local.md`. Os testes de mídia usam tickets reais na cadeia atua
 T12 integra relação, novidades e painéis; a validação local e os comandos estão
 em `docs/relationship-local.md`. Bancos T12 dev/shadow/integração são separados,
 com namespaces próprios; Next 4301/4310 e mídia 4311 continuam em série.
+T13 acrescenta administração por metadados, pausa independente da plataforma e
+bloqueio de segurança; contratos e comandos em `docs/admin-local.md`.
 O plano da fundação e as dependências estão em
 [M0](docs/superpowers/plans/2026-10-22-m0-fundacao.md).
 
@@ -67,8 +69,11 @@ T10 usa `test:integration:t10`, domínio `meumimo_t10`/dev/shadow, namespaces pr
 e Next4310/mídia4311, em série com os modos anteriores.
 T11 usa `test:integration:t11`, bancos `meumimo_t11`/dev/shadow, namespaces próprios
 e as mesmas portas em série. Não alterar as treze migrações já aplicadas.
-T12 usa `test:integration:t12` e bancos `meumimo_t12`/dev/shadow. A cadeia atual
-tem quatorze migrações aplicadas e 37 tabelas com RLS; correções são aditivas.
+T12 usa `test:integration:t12` e bancos `meumimo_t12`/dev/shadow.
+T13 usa `test:integration:t13`, bancos `meumimo_t13`/dev/shadow e namespaces
+próprios. A cadeia atual tem quinze migrações aplicadas e 38 tabelas com RLS;
+correções são aditivas. A revisão de segurança tem default gerado pelo banco
+no Prisma para preservar o INSERT restrito de Profile.
 T05 usa `test:integration:t05`, domínio `meumimo_t05` e a mesma porta em série;
 o consumidor local tem comando próprio e credencial restrita.
 T06 usa `test:integration:t06`, bancos `meumimo_t06`/dev/shadow e gateway local

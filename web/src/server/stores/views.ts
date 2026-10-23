@@ -7,6 +7,7 @@ export function storeView(store: Store, membership: Membership): StoreView {
     id: store.id, name: store.name, presentation: store.presentation, timezone: store.timezone,
     state: store.state, role: membership.role, membershipId: membership.id,
     membershipClosedAt: membership.closedAt?.toISOString() ?? null,
+    platformPausedAt: store.platformPausedAt?.toISOString() ?? null,
   };
 }
 

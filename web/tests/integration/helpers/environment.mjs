@@ -19,7 +19,7 @@ function localURL(value, port) {
 
 export function integrationEnvironment() {
   const task = process.env.T02_TASK ?? 't02';
-  assert.ok(['t02', 't04', 't05', 't06', 't07', 't08', 't09', 't10', 't11', 't12'].includes(task));
+  assert.ok(['t02', 't04', 't05', 't06', 't07', 't08', 't09', 't10', 't11', 't12', 't13'].includes(task));
   const origin = localURL(required('T02_TEST_ORIGIN'), task === 't02' ? 4302 : 4310);
   const supabaseURL = localURL(required('SUPABASE_URL'), 54321);
   const mailURL = localURL(required('T02_MAIL_URL'), 54324);

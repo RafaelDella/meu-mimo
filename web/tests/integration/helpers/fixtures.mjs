@@ -77,6 +77,9 @@ export async function createFixture(t) {
         }
       }
       const profiles = [...userIds];
+      const adminAction = await database.query('SELECT to_regclass($1) AS relation', ['app."AdminAction"']);
+      if (adminAction.rows[0].relation) await database.query(`DELETE FROM app."AdminAction"
+        WHERE "actorProfileId"=ANY($1::uuid[]) OR "targetProfileId"=ANY($1::uuid[]) OR "targetStoreId"=ANY($2::uuid[])`, [profiles, [...storeIds]]);
       for (const profile of profiles) for (const kind of ['read', 'write']) {
         rateKeys.add(createHmac('sha256', process.env.AUTH_RATE_LIMIT_SECRET)
           .update('meumimo:t04:domain-rate:v1\0').update(kind).update('\0').update(profile).digest('hex'));
@@ -126,7 +129,7 @@ export async function createFixture(t) {
       const mediaScope = '"authorProfileId" = ANY($2::uuid[]) OR "collectionId" IN (SELECT id FROM app."MediaCollection" WHERE ' + conversationScope + ')';
       const media = await database.query(`SELECT id FROM app."MediaAsset" WHERE ${mediaScope}`, scopeValues);
       if (media.rowCount) {
-        assert.ok(['t06', 't07', 't08', 't09', 't10', 't11', 't12'].includes(environment.task), 'Mídia de fixture só pode existir nos domínios reservados T06/T07/T08/T09/T10/T11/T12.');
+        assert.ok(['t06', 't07', 't08', 't09', 't10', 't11', 't12', 't13'].includes(environment.task), 'Mídia de fixture só pode existir nos domínios reservados T06/T07/T08/T09/T10/T11/T12/T13.');
         const { listAssetObjects, deleteObjects } = await import('../../../src/server/media-worker/storage.ts');
         for (const item of media.rows) await deleteObjects(await listAssetObjects(item.id));
       }

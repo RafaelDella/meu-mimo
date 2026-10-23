@@ -11,7 +11,7 @@ export type ActivityFields = {
 export type ActivityAvailability = {
   eligible: boolean; used: number; limit: number; remaining: number;
   localDate: string; timezone: string; startsAt: string | null; endsAt: string | null; now: string;
-  reason: 'AVAILABLE' | 'LIMIT' | 'STORE_CLOSED' | 'MEMBERSHIP_CLOSED' | 'ARCHIVED';
+  reason: 'AVAILABLE' | 'LIMIT' | 'STORE_CLOSED' | 'STORE_PLATFORM_PAUSED' | 'MEMBERSHIP_CLOSED' | 'ARCHIVED';
 };
 export type ActivityView = ActivityFields & {
   id: string; storeId: string; version: number; createdAt: string; archivedAt: string | null;

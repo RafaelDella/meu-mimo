@@ -663,3 +663,26 @@ integral sem falhas. Evidências e limites estão no
 [plano T12](superpowers/plans/2026-10-22-t12-relacao-paineis.md); comandos e
 contratos ficam em [relação local](relationship-local.md). Publicação, provedores
 e aparelhos físicos continuam adiados pelo idealizador.
+
+## Execução de T13
+
+Em 23/10/2026, T13 reutilizou PostgreSQL 17/Auth/Storage persistentes locais,
+com bancos dev/shadow/integração e namespaces próprios. Prisma 7.10.1 foi
+gerado; as quinze migrações passaram por preservação e 38 tabelas RLS/grants
+antes da aplicação a desenvolvimento/integração. As 14 migrações anteriores
+conservam seus bytes; correções posteriores são aditivas.
+
+A orquestração Toolkit manteve escritores exclusivos e revisão somente leitura
+de SQL, API/segurança, guardas operacionais, UI e runtime. O root serializou
+Git, serviços, banco, build e testes. Next 16.4.2 foi consultado nos guias locais;
+Context7 não confirmou Prisma 7.10.1 e a referência oficial v7 complementou a
+verificação do default gerado pelo banco, comprovado com conexão restrita real.
+
+Checks e correções foram verificados. A execução HTTP completa passou 355/356;
+a única expectativa antiga omitia platformPausedAt. Após atualizar somente
+o teste, os quatro casos do arquivo passaram. São 356 casos distintos cobertos
+sem skips por execução completa e repetição focal, sem alegar uma execução
+única 356/356 sem falhas. Chromium completo passou 736/736 sem falhas ou skips.
+Comandos em [administração local](admin-local.md), com ocorrências e limites
+no [plano T13](superpowers/plans/2026-10-22-t13-administracao.md). T14–T15
+seguem locais; provedores, publicação e aparelhos físicos permanecem adiados.

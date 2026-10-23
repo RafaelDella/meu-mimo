@@ -18,7 +18,7 @@ test('coração mostra leitura da versão atual também na área secundária de 
 
 for (const location of ['central', 'conta']) test(`seletor da ${location} encontra a loja51 com busca paginada`, async ({ page }) => {
   const stores = Array.from({ length: 51 }, (_, index) => ({ id: `a1111111-1111-4111-8111-${String(index + 1).padStart(12, '0')}`,
-    name: `Loja ${String(index + 1).padStart(2, '0')}`, presentation: '', timezone: 'America/Sao_Paulo', state: 'ACTIVE', role: 'PARTICIPANT', membershipId: ids.ana, membershipClosedAt: null }));
+    name: `Loja ${String(index + 1).padStart(2, '0')}`, presentation: '', timezone: 'America/Sao_Paulo', state: 'ACTIVE', platformPausedAt: null, role: 'PARTICIPANT', membershipId: ids.ana, membershipClosedAt: null }));
   const { state } = await mockRelationship(page, { handler: async (route, url) => {
     if (url.pathname !== '/api/lojas') return false;
     const q = url.searchParams.get('q') ?? ''; const pageNumber = Number(url.searchParams.get('page') ?? '1'); const pageSize = Number(url.searchParams.get('pageSize') ?? '20');

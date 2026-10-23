@@ -10,7 +10,7 @@
 
 **Especificação:** [requisitos](../../../requisitos.md), [arquitetura](../../../arquitetura.md), [design](../../../design.md) e [README](../../../README.md). Operação e qualidade: [onboarding](../../onboarding.md), [setup](../../setup.md) e [quality](../../quality.md).
 
-**Data:** 22/10/2026, atualizado em 23/10. **Estado atual:** M0 e T01–T12 entregues localmente; T03 conserva a conferência com leitor de tela real. T12 integra bilhetes versionados, reações, mural, novidades e painéis com dados autorizados; evidências e ocorrências no [plano T12](2026-10-22-t12-relacao-paineis.md). A próxima entrega é T13, administração mínima. Os desenhos T13–T15 foram confirmados; o idealizador priorizou web/PostgreSQL locais e adiou provedores, publicação e aparelhos físicos. Esses gates permanecem abertos. Decisões constam em requisitos §6.1; a seção 1 preserva o ponto de partida do planejamento.
+**Data:** 22/10/2026, atualizado em 23/10. **Estado atual:** M0 e T01–T13 entregues localmente; T03 conserva a conferência com leitor de tela real. T13 integra administração por metadados, pausa independente e bloqueio de segurança; evidências e ocorrências no [plano T13](2026-10-22-t13-administracao.md). A próxima entrega é T14, aceite e recuperação locais. T14–T15 têm desenho confirmado; o idealizador priorizou web/PostgreSQL locais e adiou provedores, publicação e aparelhos físicos. Esses gates permanecem abertos. Decisões constam em requisitos §6.1; a seção 1 preserva o ponto de partida do planejamento.
 
 ## 1. Ponto de partida e restrições
 
@@ -279,9 +279,14 @@ Consulta visível de trinta segundos; sem alegação de Realtime ou prova físic
 **Responsável:** operação da plataforma. **Depende de:** T12 e D02/D09 aplicáveis.
 **Arquivos:** `web/src/server/admin/**`, `web/src/app/admin/**`, `web/tests/{integration,e2e}/admin/**`, `web/src/server/audit/**`, `web/prisma/**`. **Recursos:** padrão T13; conta administrativa fictícia provisionada pelo procedimento aprovado.
 
-- [ ] Entregar A01–A04: contagens, busca/listas de contas e lojas, detalhe de metadados e pausa/reativação com motivo, alcance e auditoria.
-- [ ] Verificar ausência de promoção por autocadastro, tentativa de administrar como usuário comum e ações auditadas; administrador não ganha acesso cotidiano a fotos, pontos, análises ou tickets privados.
-- [ ] Conferir logs úteis para falhas/decisões, sem tokens, arquivos ou conteúdo de conversas; distinguir suspensão operacional de bloqueio de segurança conforme contrato.
+- [x] Entregar A01–A04: contagens, busca/listas de contas e lojas, detalhe de metadados e pausa/reativação com motivo, alcance e auditoria.
+- [x] Verificar ausência de promoção por autocadastro, tentativa de administrar como usuário comum e ações auditadas; administrador não ganha acesso cotidiano a fotos, pontos, análises ou tickets privados.
+- [x] Conferir logs úteis para falhas/decisões, sem tokens, arquivos ou conteúdo de conversas; distinguir suspensão operacional de bloqueio de segurança conforme contrato.
+
+T13: quinze migrações, checks, revisão independente e 356 casos HTTP distintos
+cobertos por execução completa e repetição focal. A regressão Chromium passou
+com 736 cenários, sem skips. Ocorrências e limites no
+[plano T13](2026-10-22-t13-administracao.md). Publicação permanece adiada.
 
 ### T14 · Aceite integrado e recuperação antes do piloto
 

@@ -18,21 +18,23 @@ type Props = MediaContext & {
   onRemoved?: (assetId: string) => void;
   localPreviews?: boolean;
   refreshKey?: number;
+  readOnly?: boolean;
 };
 
 // Sessão e origem são responsabilidade do chamador. A chave descarta arquivos,
 // requisições e URLs imediatamente ao trocar conta, loja ou coleção.
-export function MediaUploader({ accountKey, storeId, collectionId, transport = mediaTransport, onSelectionChange, onPrivacyFailure, canRemoveOwn, onRemoved, localPreviews = false, refreshKey = 0 }: Props) {
+export function MediaUploader({ accountKey, storeId, collectionId, transport = mediaTransport, onSelectionChange, onPrivacyFailure, canRemoveOwn, onRemoved, localPreviews = false, refreshKey = 0, readOnly = false }: Props) {
   return <MediaUploadContent key={`${accountKey}:${storeId}:${collectionId}`} context={{ storeId, collectionId }}
-    transport={transport} onSelectionChange={onSelectionChange} onPrivacyFailure={onPrivacyFailure} canRemoveOwn={canRemoveOwn} onRemoved={onRemoved} localPreviews={localPreviews} refreshKey={refreshKey} />;
+    transport={transport} onSelectionChange={onSelectionChange} onPrivacyFailure={onPrivacyFailure} canRemoveOwn={canRemoveOwn} onRemoved={onRemoved} localPreviews={localPreviews} refreshKey={refreshKey} readOnly={readOnly} />;
 }
 
-function MediaUploadContent({ context, transport, onSelectionChange, onPrivacyFailure, canRemoveOwn, onRemoved, localPreviews, refreshKey }: {
+function MediaUploadContent({ context, transport, onSelectionChange, onPrivacyFailure, canRemoveOwn, onRemoved, localPreviews, refreshKey, readOnly }: {
   context: MediaContext; transport: MediaTransport; onSelectionChange?: Props['onSelectionChange'];
   onPrivacyFailure?: Props['onPrivacyFailure']; canRemoveOwn?: boolean;
   onRemoved?: Props['onRemoved'];
   localPreviews: boolean;
   refreshKey: number;
+  readOnly: boolean;
 }) {
   const id = useId();
   const title = useRef<HTMLHeadingElement>(null);
@@ -42,7 +44,7 @@ function MediaUploadContent({ context, transport, onSelectionChange, onPrivacyFa
   const focusAfterLoad = useRef(false);
   const upload = useMediaUpload(context, transport, onPrivacyFailure, onRemoved, refreshKey);
   const evidence = upload.page?.collection.purpose === 'EVIDENCE';
-  const writable = !!upload.page?.collection.writable && !upload.denied && !upload.closedByServer;
+  const writable = !readOnly && !!upload.page?.collection.writable && !upload.denied && !upload.closedByServer;
   const selection = upload.items.filter(item => item.file && !item.invalid && ['selected', 'error'].includes(item.phase)).map(item => item.id);
   useEffect(() => {
     const unavailable = !upload.page || upload.loading || !!upload.loadError || upload.denied;

@@ -11,6 +11,7 @@ import { AccountRequestError, accountRequest, accountSession, friendlyError, not
 import type { AccountSession } from './account-api';
 import { ProfilePanel } from './profile-panel';
 import { NotificationSettingsSection } from '@/components/notifications/notification-preferences';
+import { AdminEntry } from '@/components/admin/admin-entry';
 
 type Mode = 'login' | 'signup' | 'recovery';
 
@@ -146,6 +147,7 @@ export function AccountPanel() {
         <div className="account-status" hidden={checking} inert={checking}>
           {!session.recovery && <StatusBadge tone="success" text="Você está na sua conta" />}
           {!session.recovery && <p><Link className="primary-link" href="/lojas">Minhas lojas</Link></p>}
+          {!session.recovery && <AdminEntry key={`admin:${session.userId}:${session.sessionId}:${session.assuranceLevel}`} />}
           {!session.recovery && <ProfilePanel key={`${session.userId}:${session.sessionId}`} />}
           {!session.recovery && <NotificationSettingsSection key={`notices:${session.userId}:${session.sessionId}`} accountKey={`${session.userId}:${session.sessionId}`} />}
           <div className="account-actions">

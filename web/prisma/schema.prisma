@@ -106,6 +106,7 @@ model Profile {
   id             String          @id @db.Uuid
   displayName    String?
   suspendedAt    DateTime?       @db.Timestamptz(6)
+  securityVersion Int @default(dbgenerated("0"))
   createdAt      DateTime        @default(now()) @db.Timestamptz(6)
   authoredStores Store[]
   memberships    Membership[]
@@ -137,6 +138,8 @@ model Profile {
   reactionEvents ReactionEvent[]
   notificationGroups NotificationGroup[]
   preferenceEvents NotificationPreferenceEvent[]
+  adminActions AdminAction[] @relation("AdminActor")
+  securityActions AdminAction[] @relation("AdminTargetProfile")
 
   @@schema("app")
 }
@@ -150,6 +153,8 @@ model Store {
   timezone           String       @default("America/Sao_Paulo")
   state              StoreState   @default(ACTIVE)
   pausedAt           DateTime?    @db.Timestamptz(6)
+  platformPausedAt DateTime? @db.Timestamptz(6)
+  platformVersion Int @default(0)
   closedAt           DateTime?    @db.Timestamptz(6)
   domainStartedAt    DateTime?    @db.Timestamptz(6)
   operationId        String?      @unique @db.Uuid
@@ -181,6 +186,7 @@ model Store {
   notificationGroups NotificationGroup[]
   notificationPreferences NotificationPreference[]
   preferenceEvents NotificationPreferenceEvent[]
+  adminActions AdminAction[]
 
   @@index([createdByProfileId])
   @@schema("app")
@@ -491,6 +497,31 @@ model AdminGrant {
   revokedAt DateTime? @db.Timestamptz(6)
   profile   Profile   @relation(fields: [profileId], references: [id], onDelete: Restrict)
 
+  @@schema("app")
+}
+
+model AdminAction {
+  id String @id @db.Uuid
+  actorProfileId String @db.Uuid
+  targetProfileId String? @db.Uuid
+  targetStoreId String? @db.Uuid
+  kind String
+  expectedVersion Int
+  version Int
+  reason String
+  requestDigest String
+  previousRestrictedAt DateTime? @db.Timestamptz(6)
+  restrictedAt DateTime? @db.Timestamptz(6)
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  actor Profile @relation("AdminActor", fields: [actorProfileId], references: [id], onDelete: Restrict)
+  targetProfile Profile? @relation("AdminTargetProfile", fields: [targetProfileId], references: [id], onDelete: Restrict)
+  targetStore Store? @relation(fields: [targetStoreId], references: [id], onDelete: Restrict)
+
+  @@unique([targetProfileId, version])
+  @@unique([targetStoreId, version])
+  @@index([targetProfileId, createdAt, id])
+  @@index([targetStoreId, createdAt, id])
+  @@index([actorProfileId, createdAt, id])
   @@schema("app")
 }
 

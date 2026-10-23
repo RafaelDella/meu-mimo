@@ -1,5 +1,5 @@
 const fallback = '/conta';
-const allowedPath = /^\/(?:conta|convites|lojas)(?:\/[a-zA-Z0-9_-]+)*\/?$/;
+const allowedPath = /^\/(?:conta|convites|lojas|admin)(?:\/[a-zA-Z0-9_-]+)*\/?$/;
 const forbidden = /[\u0000-\u001f\u007f\\]/;
 
 export function safeReturnPath(value: string | null): string {

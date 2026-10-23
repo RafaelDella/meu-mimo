@@ -155,3 +155,9 @@ Para bilhetes, reações, mural, novidades e painéis, siga
 seleciona `meumimo_t12_dev` em `.env.local`; integração usa `meumimo_t12`, shadow
 e Storage separados. PostgreSQL continua na stack persistente existente.
 Next recebe credencial restrita; workers de mídia/outbox têm comandos próprios.
+
+Para administrar metadados e aplicar restrições independentes, siga
+[T13 local](admin-local.md). O preparo seleciona `meumimo_t13_dev`; integração
+usa `meumimo_t13`, shadow e Storage próprios, nas mesmas portas em série.
+Provisionamento do grant continua separado e exige bloqueio do perfil antes
+da concessão; a conta administrativa também confirma TOTP/AAL2 no Auth local.

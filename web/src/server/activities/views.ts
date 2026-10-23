@@ -24,7 +24,8 @@ export async function activityAvailability(scope: StoreScope, activity: Activity
   const period = await periodAt(scope.tx, scope.store.timezone, activity.frequency, now);
   const used = await receivedCount(scope, activity.id, actor.id, period);
   const limit = activity.frequency === 'WEEKLY' ? activity.weeklyLimit : 1;
-  const reason = actor.closedAt ? 'MEMBERSHIP_CLOSED' : scope.store.state !== 'ACTIVE' ? 'STORE_CLOSED' :
+  const reason = actor.closedAt ? 'MEMBERSHIP_CLOSED' : scope.store.state === 'CLOSED' ? 'STORE_CLOSED' :
+    scope.store.platformPausedAt ? 'STORE_PLATFORM_PAUSED' : scope.store.state !== 'ACTIVE' ? 'STORE_CLOSED' :
     activity.archivedAt ? 'ARCHIVED' : used >= limit ? 'LIMIT' : 'AVAILABLE';
   return { eligible: reason === 'AVAILABLE', used, limit, remaining: Math.max(0, limit - used), reason,
     localDate: period.localDate, timezone: period.timezone, startsAt: period.startsAt?.toISOString() ?? null,

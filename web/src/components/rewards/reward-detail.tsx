@@ -27,6 +27,8 @@ function Detail({ store, initial, operationId }: { store: StoreView; initial: Re
   const pending = useRef<{ operationId: string; expectedVersion: number; expectedStockRevision: number } | null>(null);
   const unavailable = useRewardAccess();
   const merchant = store.role === 'MERCHANT';
+  const availability = store.platformPausedAt && store.state !== 'CLOSED' && !store.membershipClosedAt && !reward.archivedAt && reward.availability ?
+    { ...reward.availability, eligible: false, reason: 'STORE_PLATFORM_PAUSED' as const } : reward.availability;
   useEffect(() => () => active.current?.abort(), []);
   async function archive() {
     if (active.current || conflict) return;
@@ -65,7 +67,7 @@ function Detail({ store, initial, operationId }: { store: StoreView; initial: Re
         <p>Arquivar {reward.name} retira o mimo de novos resgates. Os tickets emitidos permanecem acessíveis. Não será possível desarquivar nesta etapa.</p>
         <p role="alert">{error}</p>{uncertain && <p>O resultado ainda não foi confirmado. Consulte o mesmo arquivamento.</p>}
         <Button disabled={busy || conflict} onClick={() => { void archive(); }}>{uncertain ? 'Consultar arquivamento' : 'Confirmar arquivamento'}</Button></Dialog></> :
-      <><RewardAvailabilityText value={reward.availability} storeId={store.id} />
+      <><RewardAvailabilityText value={availability} storeId={store.id} />
         <RedeemControl store={store} reward={reward} operationId={operationId} recovered={!!operationId} onUpdate={setReward} /></>}
   </section>;
 }

@@ -21,7 +21,7 @@ export function Availability({ value }: { value: ActivityAvailability | null }) 
   return <div className={styles.availability}>
     <p>{value.reason === 'AVAILABLE' ? `${value.remaining} ${value.remaining === 1 ? 'registro disponível' : 'registros disponíveis'} neste período.` :
       value.reason === 'LIMIT' ? 'Você já usou os registros disponíveis neste período.' : value.reason === 'ARCHIVED' ? 'Esta atividade foi arquivada. Os registros anteriores continuam acessíveis.' :
-        value.reason === 'MEMBERSHIP_CLOSED' ? 'Sua participação foi encerrada. Você pode consultar seu histórico.' : 'Novos registros estão suspensos nesta loja.'}</p>
+        value.reason === 'MEMBERSHIP_CLOSED' ? 'Sua participação foi encerrada. Você pode consultar seu histórico.' : value.reason === 'STORE_PLATFORM_PAUSED' ? 'Novos registros e evidências de novas conquistas estão pausados pela plataforma. Seu histórico e as pendências existentes continuam acessíveis.' : 'Novos registros estão suspensos nesta loja.'}</p>
     {value.reason === 'LIMIT' && value.endsAt && <p>Nova disponibilidade em {localTime(value.endsAt, value.timezone)}.</p>}
     <p>Data da loja: {value.localDate.split('-').reverse().join('/')} · Fuso: {value.timezone}.</p>
   </div>;

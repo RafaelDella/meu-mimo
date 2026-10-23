@@ -30,7 +30,7 @@ export const ids = {
 export function store(overrides: Partial<StoreView> = {}): StoreView {
   return {
     id: ids.first, name: 'Loja da Ana', presentation: 'Apresentação privada da Ana',
-    timezone: 'America/Sao_Paulo', state: 'ACTIVE', role: 'PARTICIPANT',
+    timezone: 'America/Sao_Paulo', state: 'ACTIVE', platformPausedAt: null, role: 'PARTICIPANT',
     membershipId: '55555555-5555-4555-8555-555555555555', membershipClosedAt: null, ...overrides,
   };
 }
@@ -67,6 +67,8 @@ export async function mockApi(page: Page, handler?: Handler) {
       await json(route, { id: state.userId, displayName: state.displayName, email: `${state.userId}@example.test` });
     } else if (url.pathname === '/api/auth/mfa') {
       await json(route, { factors: [] });
+    } else if (url.pathname === '/api/admin/session') {
+      await json(route, { code: 'admin_forbidden', message: 'Acesso administrativo não permitido.' }, 403);
     } else if (url.pathname === '/api/auth/logout') {
       state.loggedIn = false;
       await json(route, { message: 'Você saiu da sua conta.' });

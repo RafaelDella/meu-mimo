@@ -66,8 +66,13 @@ export async function nextEvidenceRevision(scope: StoreScope, collectionId: stri
   const context = await requireMediaCollection(scope, collectionId);
   if (context.collection.purpose !== 'EVIDENCE') invalidField();
   const participant = await requireConversationAudience(scope, context.collection.participantMembershipId);
-  if ((scope.store.state !== 'ACTIVE' && !context.allowPausedEvidence) ||
-      participant.closedAt || context.collection.revision >= 2_147_483_647) {
+  if (scope.store.state === 'CLOSED' || participant.closedAt || context.collection.revision >= 2_147_483_647) {
+    throw new AppError('media_read_only', 409, 'Este registro não pode receber uma nova foto agora.');
+  }
+  if (!context.allowPausedEvidence && scope.store.platformPausedAt) {
+    throw new AppError('store_platform_paused', 409, 'Novas ações desta lojinha estão pausadas pela plataforma.');
+  }
+  if (scope.store.state !== 'ACTIVE' && !context.allowPausedEvidence) {
     throw new AppError('media_read_only', 409, 'Este registro não pode receber uma nova foto agora.');
   }
   return scope.tx.mediaCollection.update({ where: { id: context.collection.id },

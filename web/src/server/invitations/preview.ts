@@ -8,14 +8,14 @@ export async function previewInvitation(token: string): Promise<InvitationPrevie
     where: { tokenHash: invitationHash(token) },
     select: {
       expiresAt: true, revokedAt: true, acceptedAt: true,
-      store: { select: { id: true, name: true, presentation: true, state: true } },
+      store: { select: { id: true, name: true, presentation: true, state: true, platformPausedAt: true } },
       creator: { select: { displayName: true } },
     },
   });
   if (!invitation) invitationInvalid();
   const { store, creator } = invitation;
   const status: InvitationPreview['status'] = store.state === 'CLOSED' ? 'CLOSED'
-    : store.state === 'PAUSED' ? 'PAUSED'
+    : store.state === 'PAUSED' || store.platformPausedAt ? 'PAUSED'
       : invitation.revokedAt ? 'REVOKED' : invitation.acceptedAt ? 'ACCEPTED'
         : invitation.expiresAt.getTime() <= Date.now() ? 'EXPIRED' : 'PENDING';
   return {

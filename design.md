@@ -30,6 +30,14 @@ Reações reutilizam a conversa da origem; mural preserva filtros no retorno.
 Central de novidades apresenta grupos, leitura observada e contexto autorizado;
 preferências mantêm o histórico. Contratos em [T12 local](docs/relationship-local.md).
 
+T13 acrescenta A01–A04 em navegação própria “Visão geral · Contas · Lojas”,
+com cards, filtros, histórico e confirmação com nome/UUID e alcance da ação.
+“Pausar novas ações da loja” e “Bloquear acesso por segurança” mostram efeitos
+distintos. O motivo fica na audiência administrativa. Erro de motivo é associado
+ao campo; resposta pendente oferece recuperação pela mesma operação após o
+prazo de espera. A árvore privada fica oculta durante revalidação do acesso.
+Estado da verificação e comandos em [T13 local](docs/admin-local.md).
+
 Este documento reúne a direção visual existente, a experiência aprovada como referência no protótipo e a proposta de produto. As decisões confirmadas pelo idealizador estão na seção 5; os comportamentos operacionais propostos para completar os fluxos estão identificados ao longo do documento. A seção 21 registra a consolidação do protótipo com esta especificação; `requisitos.md` complementa as regras de implementação.
 
 ## 1. Conceito e sensação

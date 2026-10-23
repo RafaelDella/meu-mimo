@@ -37,7 +37,7 @@ Decisões adicionais confirmadas: adotar **Prisma para acesso e migrações de e
 | RF-17 | P0 | **Resumo das atividades:** diferenciar atividades disponíveis, registros em análise e aprovações. Progresso diário só tem percentual quando existir rotina diária definida; atividades semanais usam sua própria unidade. |
 | RF-18 | P0 | **Privacidade entre participantes:** cada pessoa vê seus registros, saldo, fotos, bilhete, tickets e interações. O lojista vê as relações de sua loja; outros participantes não veem esses dados. |
 | RF-19 | P0 | **Pausa e encerramento:** interromper novas ações conforme estado da loja/participação, preservando consulta ao histórico e tratamento dos tickets existentes segundo a política definida em `design.md`. |
-| RF-20 | P0 | **Administração mínima:** listar contas e lojas e executar ações administrativas autorizadas com motivo e auditoria, sem se tornar lojista de todas as lojas. |
+| RF-20 | P0 | **Administração mínima:** listar contas e lojas por metadados e executar pausa da plataforma por loja ou bloqueio de segurança por conta, com motivo e auditoria. Pausa da plataforma é independente da pausa do lojista; bloqueio retira leitura privada da própria conta. Administração não concede vínculo nem leitura do conteúdo das relações. |
 | RF-21 | P1 | **Push:** oferecer permissão de maneira contextual, respeitar preferências por loja, agrupar interações e abrir o destino autorizado. O uso pelo navegador funciona sem ativar push. |
 | RF-22 | P1 | **Meta de mimo:** marcar uma recompensa como objetivo para mostrar progresso em destaque, preservando a possibilidade de escolher outros mimos. |
 | RF-23 | P0 | **Histórico de mimos:** consultar todos os resgates da participação, com nome e custo da ocasião, data, ticket, situação e linha do tempo de realização/cancelamento. Filtrar por período e situação; arquivar ou editar o mimo não altera tickets anteriores. |
@@ -110,6 +110,21 @@ somente o contador; preserva histórico, leitura e decisões financeiras.
 - T11 confirmado: legenda opcional de até 500 caracteres Unicode; legenda e ordem ficam imutáveis após publicar. Cancelado permite consulta/remoção própria, sem novos envios ou publicação.
 - O primeiro encerramento de loja/participação inicia os doze meses de calendário do álbum. Pausa não inicia prazo. Pendência protege momentos existentes após o prazo, mas não permite novos; realizar/cancelar libera proteção e aplica o prazo original, sem renová-lo.
 - A retrospectiva futura pode oferecer a seleção desses momentos. Compartilhamento externo requer ação explícita e prévia revisável; nada é publicado automaticamente.
+
+### 3.8. Administração e restrições independentes
+
+T13 usa consultas administrativas com busca de até 80 caracteres Unicode e
+paginação 20/50. Motivo obrigatório de até 500 caracteres Unicode é normalizado
+em NFC; leitura 120/minuto e mutação 10/minuto por conta são independentes.
+A interface e o servidor impedem bloquear o próprio administrador ou conta
+com grant ativo. Grants e recuperação de MFA permanecem no procedimento
+separado. Contratos e estado de verificação em [T13 local](docs/admin-local.md).
+
+Pausa da plataforma conserva análise, complemento e obrigações de tickets e
+álbuns existentes. Retomar uma causa não remove a pausa do lojista nem reabre
+encerramentos. Bloqueio de segurança retira o acesso privado da própria conta,
+preservando dados e o acesso legítimo da outra pessoa. Nenhuma dessas ações
+altera pontos, estoque, tickets ou vínculos.
 
 ## 4. Requisitos não funcionais
 

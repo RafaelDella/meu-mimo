@@ -17,7 +17,7 @@ export function RewardAvailabilityText({ value, storeId }: { value: RewardAvaila
   if (!value) return null;
   return <div><p role="status">{value.eligible ? 'Já pode ser seu' : value.reason === 'INSUFFICIENT_POINTS' ? `Faltam ${points(value.shortfall)} pontos para este mimo.` :
     value.reason === 'SOLD_OUT' ? 'Este mimo está esgotado.' : value.reason === 'ARCHIVED' ? 'Este mimo foi arquivado.' :
-      value.reason === 'UNAVAILABLE' ? 'Este mimo está indisponível.' : value.reason === 'STORE_PAUSED' ? 'Os resgates estão suspensos enquanto a loja está pausada.' :
+      value.reason === 'UNAVAILABLE' ? 'Este mimo está indisponível.' : value.reason === 'STORE_PLATFORM_PAUSED' ? 'Novos resgates estão pausados pela plataforma. Os tickets já emitidos continuam acessíveis.' : value.reason === 'STORE_PAUSED' ? 'Os resgates estão suspensos enquanto a loja está pausada.' :
         value.reason === 'MEMBERSHIP_CLOSED' ? 'Sua participação está encerrada. Seu histórico continua acessível.' : 'Esta loja está encerrada. Os tickets anteriores continuam acessíveis.'}</p>
     {value.reason === 'INSUFFICIENT_POINTS' && <Link className="stores-link" href={`/lojas/${storeId}/atividades`}>Ver atividades para juntar pontos</Link>}</div>;
 }
