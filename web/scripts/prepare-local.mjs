@@ -5,9 +5,12 @@ import pg from 'pg';
 import { assertLocalDatabase, statePath, supabase, taskResources, webRoot } from './local-runtime.mjs';
 import { bindLocalStack } from './bind-local-stack.mjs';
 import { configureAuthCallbacks } from './configure-auth.mjs';
+import { pilotResources } from './pilot/resources.mjs';
+import { ensurePrivateDirectory } from './pilot/custody.mjs';
 
 const resources = taskResources(process.argv[2] ?? 't02');
-mkdirSync(resources.directory, { recursive: true });
+if (resources.task === 't14') await ensurePrivateDirectory(resources.directory);
+else mkdirSync(resources.directory, { recursive: true });
 await bindLocalStack();
 await configureAuthCallbacks();
 const status = JSON.parse(supabase(['status', '-o', 'json']));
@@ -44,8 +47,10 @@ const runtime = {
   APP_ORIGIN: `http://127.0.0.1:${resources.port}`, SUPABASE_URL: status.API_URL,
   SUPABASE_PUBLISHABLE_KEY: status.PUBLISHABLE_KEY ?? status.ANON_KEY,
   DATABASE_URL: urlFor(resources.database, true), AUTH_RATE_LIMIT_SECRET: rateSecret,
-  ...(['t06', 't07', 't08', 't09', 't10', 't11', 't12', 't13'].includes(resources.task) ? { MEDIA_GATEWAY_URL: 'http://127.0.0.1:4311',
+  ...(['t06', 't07', 't08', 't09', 't10', 't11', 't12', 't13', 't14'].includes(resources.task) ? { MEDIA_GATEWAY_URL: 'http://127.0.0.1:4311',
     MEDIA_INTERNAL_SECRET: previous?.runtime.MEDIA_INTERNAL_SECRET ?? randomBytes(32).toString('hex') } : {}),
+  ...(resources.task === 't14' ? { PILOT_MODE: 'integration', PILOT_PROJECT_ID: pilotResources('integration').project,
+    PILOT_DIRECTORY: resources.directory } : {}),
 };
 const integration = {
   T02_PROJECT_ID: 'meumimo-t02', T02_TEST_ORIGIN: runtime.APP_ORIGIN,
@@ -60,6 +65,7 @@ const migration = { integration: urlFor(resources.database), development: urlFor
 writeFileSync(resources.statePath, JSON.stringify({ runtime, integration, migration, runtimePassword: password }, null, 2), { mode: 0o600 });
 writeFileSync(path.join(resources.directory, 'supabase-status.json'), JSON.stringify(status), { mode: 0o600 });
 const developmentRuntime = { ...runtime, APP_ORIGIN: 'http://127.0.0.1:4301', DATABASE_URL: urlFor(resources.development, true) };
+if (resources.task === 't14') developmentRuntime.PILOT_MODE = 'development';
 const localEnv = path.join(webRoot, '.env.local');
 const generatedMarker = '# Gerado por local:prepare; remova esta linha para gerenciar manualmente.\n';
 if (!existsSync(localEnv) || readFileSync(localEnv, 'utf8').startsWith(generatedMarker)) {

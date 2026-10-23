@@ -6,6 +6,7 @@ import { databaseNow, requireMembership } from '../stores/transaction.ts';
 import { pagination } from '../stores/validation.ts';
 import { albumRetention } from './retention.ts';
 import { requireAlbumOrigin } from './access.ts';
+import { visibleMediaAuthor } from '../privacy/suppression.ts';
 
 async function validateOrigin(scope: StoreScope, collectionId: string) {
   const collection = await scope.tx.mediaCollection.findUniqueOrThrow({ where: { id: collectionId } });
@@ -13,7 +14,8 @@ async function validateOrigin(scope: StoreScope, collectionId: string) {
 }
 
 function visibleItems(albumId: string): Prisma.AlbumItemWhereInput {
-  return { albumId, asset: { removedAt: null, state: 'READY', publishedAt: { not: null } } };
+  return { albumId, asset: { removedAt: null, state: 'READY', publishedAt: { not: null }, author: visibleMediaAuthor },
+    publication: { actor: { dataSuppressions: { none: { scope: 'AUTHORED_CONTENT' } } } } };
 }
 
 export async function albumPreview(scope: StoreScope, ticketId: string): Promise<AlbumPreview> {

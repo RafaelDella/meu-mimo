@@ -17,6 +17,8 @@ export async function createFixture(t) {
   const emails = new Set();
   const storeIds = new Set();
   const rateKeys = new Set();
+  const removedAuthIds = new Set();
+  const fixtureRun = randomUUID();
   const newEmail = () => `t02-${randomUUID()}@example.test`;
   const client = () => new BrowserSession(environment);
 
@@ -24,7 +26,8 @@ export async function createFixture(t) {
     const email = newEmail();
     const password = `T02!${randomUUID()}`;
     emails.add(email);
-    const { data, error } = await auth.auth.admin.createUser({ email, password, email_confirm: confirmed });
+    const { data, error } = await auth.auth.admin.createUser({ email, password, email_confirm: confirmed,
+      ...(environment.task === 't14' ? { app_metadata: { local_fixture: 'meumimo-t14', fixture_run: fixtureRun } } : {}) });
     assert.equal(error, null, 'A fixture exige o Auth real da stack local.');
     assert.ok(data.user?.id);
     userIds.add(data.user.id);
@@ -77,6 +80,12 @@ export async function createFixture(t) {
         }
       }
       const profiles = [...userIds];
+      if ((await database.query('SELECT to_regclass($1) AS relation', ['app."DataRightsProtocol"'])).rows[0].relation) {
+        const protocolScope = '"subjectProfileId"=ANY($1::uuid[]) OR "operatorProfileId"=ANY($1::uuid[])';
+        await database.query(`DELETE FROM app."DataSuppression" WHERE "protocolId" IN (SELECT id FROM app."DataRightsProtocol" WHERE ${protocolScope})`, [profiles]);
+        await database.query(`DELETE FROM app."DataRightsEvent" WHERE "protocolId" IN (SELECT id FROM app."DataRightsProtocol" WHERE ${protocolScope})`, [profiles]);
+        await database.query(`DELETE FROM app."DataRightsProtocol" WHERE ${protocolScope}`, [profiles]);
+      }
       const adminAction = await database.query('SELECT to_regclass($1) AS relation', ['app."AdminAction"']);
       if (adminAction.rows[0].relation) await database.query(`DELETE FROM app."AdminAction"
         WHERE "actorProfileId"=ANY($1::uuid[]) OR "targetProfileId"=ANY($1::uuid[]) OR "targetStoreId"=ANY($2::uuid[])`, [profiles, [...storeIds]]);
@@ -129,7 +138,7 @@ export async function createFixture(t) {
       const mediaScope = '"authorProfileId" = ANY($2::uuid[]) OR "collectionId" IN (SELECT id FROM app."MediaCollection" WHERE ' + conversationScope + ')';
       const media = await database.query(`SELECT id FROM app."MediaAsset" WHERE ${mediaScope}`, scopeValues);
       if (media.rowCount) {
-        assert.ok(['t06', 't07', 't08', 't09', 't10', 't11', 't12', 't13'].includes(environment.task), 'Mídia de fixture só pode existir nos domínios reservados T06/T07/T08/T09/T10/T11/T12/T13.');
+        assert.ok(['t06', 't07', 't08', 't09', 't10', 't11', 't12', 't13', 't14'].includes(environment.task), 'Mídia de fixture só pode existir nos domínios reservados T06–T14.');
         const { listAssetObjects, deleteObjects } = await import('../../../src/server/media-worker/storage.ts');
         for (const item of media.rows) await deleteObjects(await listAssetObjects(item.id));
       }
@@ -148,7 +157,7 @@ export async function createFixture(t) {
       if (rateKeys.size) await database.query('DELETE FROM app."AuthRateBucket" WHERE key = ANY($1::text[])', [[...rateKeys]]);
       for (const id of profiles) {
         const { error } = await auth.auth.admin.deleteUser(id);
-        assert.equal(error, null, 'A limpeza deve remover somente usuários criados pela fixture.');
+        assert.ok(!error || (removedAuthIds.has(id) && error.status === 404), 'A limpeza deve remover somente usuários criados pela fixture.');
       }
     } finally {
       await database.end();
@@ -160,6 +169,7 @@ export async function createFixture(t) {
   await database.query('SELECT 1');
   return {
     environment, database, auth, client, createUser, login, createStore, addMembership, newEmail,
+    trackAuthRemoval: id => { assert.ok(userIds.has(id)); removedAuthIds.add(id); },
     trackEmail: email => emails.add(email), trackUser: id => userIds.add(id), trackStore: id => storeIds.add(id), trackRateKey: key => rateKeys.add(key),
   };
 }

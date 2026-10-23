@@ -140,6 +140,9 @@ model Profile {
   preferenceEvents NotificationPreferenceEvent[]
   adminActions AdminAction[] @relation("AdminActor")
   securityActions AdminAction[] @relation("AdminTargetProfile")
+  rightsRequests DataRightsProtocol[] @relation("RightsSubject")
+  operatedRights DataRightsProtocol[] @relation("RightsOperator")
+  dataSuppressions DataSuppression[]
 
   @@schema("app")
 }
@@ -988,5 +991,72 @@ model SecurityAudit {
 
   @@index([createdAt])
   @@index([actorProfileId, createdAt])
+  @@schema("app")
+}
+
+enum DataRightsKind {
+  EXPORT
+  ERASURE
+  @@schema("app")
+}
+
+enum DataRightsCode {
+  REGISTERED
+  EXPORT_READY
+  SUPPRESSION_APPLIED
+  AUTH_REMOVED
+  MEDIA_PURGED
+  PARTIAL
+  EXPIRED
+  @@schema("app")
+}
+
+enum DataSuppressionScope {
+  IDENTITY
+  AUTHORED_CONTENT
+  @@schema("app")
+}
+
+model DataRightsProtocol {
+  id String @id @db.Uuid
+  subjectProfileId String @db.Uuid
+  operatorProfileId String @db.Uuid
+  kind DataRightsKind
+  requestDigest String
+  verifiedAt DateTime @db.Timestamptz(6)
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  expiresAt DateTime? @db.Timestamptz(6)
+  subject Profile @relation("RightsSubject", fields: [subjectProfileId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  operator Profile @relation("RightsOperator", fields: [operatorProfileId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  events DataRightsEvent[]
+  suppressions DataSuppression[]
+
+  @@unique([id, subjectProfileId])
+  @@index([subjectProfileId, createdAt, id])
+  @@schema("app")
+}
+
+model DataRightsEvent {
+  id String @id @db.Uuid
+  protocolId String @db.Uuid
+  sequence Int
+  code DataRightsCode
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  countsJson Json @default("{}")
+  protocol DataRightsProtocol @relation(fields: [protocolId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@unique([protocolId, sequence])
+  @@schema("app")
+}
+
+model DataSuppression {
+  subjectProfileId String @db.Uuid
+  scope DataSuppressionScope
+  protocolId String @db.Uuid
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  subject Profile @relation(fields: [subjectProfileId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  protocol DataRightsProtocol @relation(fields: [protocolId, subjectProfileId], references: [id, subjectProfileId], onDelete: Restrict, onUpdate: Restrict)
+
+  @@id([subjectProfileId, scope])
   @@schema("app")
 }

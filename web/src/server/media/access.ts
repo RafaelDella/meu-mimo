@@ -8,8 +8,9 @@ import { albumRetention } from '../albums/retention.ts';
 import type { StoreScope } from '../stores/transaction.ts';
 import { databaseNow, requireMembership, withStoreTransaction } from '../stores/transaction.ts';
 import { resourceId, unavailable } from '../stores/validation.ts';
+import { suppressionFor } from '../privacy/suppression.ts';
 
-export type MediaScope = StoreScope & { collection: MediaCollection; allowPausedEvidence: boolean;
+export type MediaScope = StoreScope & { collection: MediaCollection; allowPausedEvidence: boolean; actorContentSuppressed: boolean;
   memoryPolicy?: { albumId: string; ticketId: string; authorProfileId: string;
     cancelled: boolean; expired: boolean; hold: boolean } };
 export type MediaAssetScope = MediaScope & { asset: MediaAsset };
@@ -38,7 +39,9 @@ export async function requireMediaCollection(scope: StoreScope, collectionId: st
     allowPausedEvidence = origin?.status === 'CONTESTED' && scope.store.state !== 'CLOSED' &&
       (scope.store.state === 'PAUSED' || scope.store.platformPausedAt !== null);
   }
-  return { ...scope, collection, allowPausedEvidence, memoryPolicy };
+  const suppression = (await suppressionFor(scope.tx, [scope.identity.userId])).get(scope.identity.userId);
+  if (suppression?.identity) unavailable();
+  return { ...scope, collection, allowPausedEvidence, memoryPolicy, actorContentSuppressed: !!suppression?.authoredContent };
 }
 
 export function withMediaCollection<T>(identity: Identity, storeId: string, collectionId: string,
@@ -58,6 +61,8 @@ export function withMediaAsset<T>(identity: Identity, storeId: string, assetId: 
     await scope.tx.$queryRaw`SELECT id FROM app."MediaAsset" WHERE id = ${id}::uuid FOR UPDATE`;
     const asset = await scope.tx.mediaAsset.findUnique({ where: { id } });
     if (!asset || asset.collectionId !== context.collection.id) unavailable();
+    const author = (await suppressionFor(scope.tx, [asset.authorProfileId])).get(asset.authorProfileId);
+    if (author?.identity || author?.authoredContent) unavailable();
     if (context.memoryPolicy && asset.publishedAt && !await scope.tx.albumItem.findFirst({
       where: { assetId: asset.id, albumId: context.memoryPolicy.albumId }, select: { assetId: true },
     })) unavailable();
@@ -67,6 +72,7 @@ export function withMediaAsset<T>(identity: Identity, storeId: string, assetId: 
 
 export function assertMediaUpload(scope: MediaScope, asset?: MediaAsset): void {
   const actor = requireMembership(scope);
+  if (scope.actorContentSuppressed) unavailable();
   if (asset && asset.authorProfileId !== scope.identity.userId) unavailable();
   if ((scope.collection.purpose === 'EVIDENCE' && actor.id !== scope.collection.participantMembershipId) ||
       (scope.collection.purpose === 'MEMORY' && (actor.role !== 'MERCHANT' || !scope.memoryPolicy ||

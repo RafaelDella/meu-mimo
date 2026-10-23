@@ -1,6 +1,8 @@
 import '../only.ts';
 import type { Conversation } from '../../generated/prisma/client.ts';
 import type { CommentView, ConversationView } from '../../contracts/conversations.ts';
+import type { Suppressions } from '../privacy/suppression.ts';
+import { publicAuthor, visibleAuthoredText } from '../privacy/views.ts';
 
 export function conversationView(conversation: Conversation): ConversationView {
   return {
@@ -16,10 +18,10 @@ export const commentSelect = {
   author: { select: { id: true, displayName: true } },
 } as const;
 
-export function commentView(comment: Omit<CommentView, 'createdAt'> & { createdAt: Date }): CommentView {
+export function commentView(comment: Omit<CommentView, 'createdAt'> & { createdAt: Date }, suppressions: Suppressions): CommentView {
   return {
-    id: comment.id, conversationId: comment.conversationId, text: comment.text,
+    id: comment.id, conversationId: comment.conversationId, text: visibleAuthoredText(comment.text, comment.author.id, suppressions),
     createdAt: comment.createdAt.toISOString(),
-    author: { id: comment.author.id, displayName: comment.author.displayName },
+    author: publicAuthor(comment.author, suppressions.get(comment.author.id)),
   };
 }

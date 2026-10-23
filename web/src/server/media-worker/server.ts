@@ -72,8 +72,8 @@ async function handle(request: IncomingMessage, response: ServerResponse): Promi
   }
 }
 
-export async function startMediaServer(): Promise<{ close: () => Promise<void> }> {
-  mediaWorkerConfig();
+export async function startMediaServer(): Promise<{ port: number; close: () => Promise<void> }> {
+  const config = mediaWorkerConfig();
   const server = createServer((request, response) => { void handle(request, response); });
   server.requestTimeout = 30_000;
   server.headersTimeout = 10_000;
@@ -81,9 +81,9 @@ export async function startMediaServer(): Promise<{ close: () => Promise<void> }
   server.keepAliveTimeout = 1_000;
   await new Promise<void>((resolve, reject) => {
     server.once('error', reject);
-    server.listen(4311, '127.0.0.1', () => { server.off('error', reject); resolve(); });
+    server.listen(config.port, '127.0.0.1', () => { server.off('error', reject); resolve(); });
   });
-  return { close: () => new Promise<void>((resolve, reject) => {
+  return { port: config.port, close: () => new Promise<void>((resolve, reject) => {
     server.close(error => { if (error) reject(error); else resolve(); });
     server.closeIdleConnections();
     server.closeAllConnections();

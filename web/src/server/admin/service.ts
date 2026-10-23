@@ -13,6 +13,7 @@ import { adminAccount, adminAccountPage, adminHistoryPage, adminRelationPage, ad
 import { adminPage, parseAdminAction, parseAdminHistory, parseAdminList } from './validation.ts';
 import { actionSelect, adminActionView } from './views.ts';
 import type { ActionRow } from './views.ts';
+import { suppressionFor } from '../privacy/suppression.ts';
 
 export async function readAdminSession(identity: Identity): Promise<AdminContext> {
   await consumeAdminLimit(identity, 'read');
@@ -49,7 +50,7 @@ export async function readAdminHistory(identity: Identity, body: Record<string, 
 }
 
 async function actionResult(tx: StoreTransaction, actorId: string, row: ActionRow): Promise<AdminActionResult> {
-  const operation = adminActionView(row);
+  const operation = adminActionView(row, await suppressionFor(tx, [row.actor.id]));
   const current = operation.target.type === 'ACCOUNT' ? await adminAccount(tx, actorId, operation.target.id) :
     await adminStore(tx, operation.target.id);
   return { operation, current, appliedVersion: operation.version };

@@ -3,6 +3,7 @@ import type { Redemption, RedemptionEvent } from '../../generated/prisma/client.
 import type { TicketEventPage, TicketTransitionBody, TicketTransitionLookup, TicketTransitionMutation } from '../../contracts/redemptions.ts';
 import type { Identity } from '../auth/types.ts';
 import { AppError } from '../errors.ts';
+import { suppressionFor } from '../privacy/suppression.ts';
 import { syncAlbumRetention } from '../albums/retention.ts';
 import { enqueueRedemptionUpdated } from '../outbox/events.ts';
 import { refundRedemption } from '../points/ledger.ts';
@@ -18,7 +19,7 @@ import { ticketEventInclude, ticketEventView, ticketView } from './views.ts';
 async function transitionResult(scope: StoreScope, ticket: Redemption, event: RedemptionEvent): Promise<TicketTransitionMutation> {
   const recorded = await scope.tx.redemptionEvent.findUnique({ where: { id: event.id }, include: ticketEventInclude });
   if (!recorded) unavailable();
-  return { ticket: await ticketView(scope, ticket), event: ticketEventView(recorded), appliedVersion: event.version };
+  return { ticket: await ticketView(scope, ticket), event: ticketEventView(recorded, await suppressionFor(scope.tx, [recorded.actorProfileId])), appliedVersion: event.version };
 }
 
 function requireActionActor(scope: StoreScope, input: TicketTransitionBody) {
@@ -111,6 +112,7 @@ export async function listTicketEvents(identity: Identity, storeId: string, tick
     const total = await scope.tx.redemptionEvent.count({ where });
     const events = await scope.tx.redemptionEvent.findMany({ where, include: ticketEventInclude,
       orderBy: [{ version: 'asc' }, { id: 'asc' }], skip: page.skip, take: page.pageSize });
-    return { items: events.map(ticketEventView), total, page: page.page, pageSize: page.pageSize };
+    const suppressions = await suppressionFor(scope.tx, events.map(row => row.actorProfileId));
+    return { items: events.map(row => ticketEventView(row, suppressions)), total, page: page.page, pageSize: page.pageSize };
   });
 }

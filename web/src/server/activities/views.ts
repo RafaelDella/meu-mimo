@@ -6,6 +6,9 @@ import { requireMembership } from '../stores/transaction.ts';
 import { AppError } from '../errors.ts';
 import { periodAt } from './periods.ts';
 import type { ActivityPeriod } from './periods.ts';
+import { suppressionFor } from '../privacy/suppression.ts';
+import type { Suppressions } from '../privacy/suppression.ts';
+import { visibleAuthoredFields } from '../privacy/views.ts';
 
 export function activityConfiguration(activity: Activity): ActivityFields {
   return { name: activity.name, description: activity.description, category: activity.category,
@@ -32,8 +35,10 @@ export async function activityAvailability(scope: StoreScope, activity: Activity
     endsAt: period.endsAt?.toISOString() ?? null, now: now.toISOString() };
 }
 
-export async function activityView(scope: StoreScope, activity: Activity, now: Date): Promise<ActivityView> {
-  return { ...activityConfiguration(activity), id: activity.id, storeId: activity.storeId, version: activity.version,
+export async function activityView(scope: StoreScope, activity: Activity, now: Date, suppressions?: Suppressions): Promise<ActivityView> {
+  const privacy = suppressions ?? await suppressionFor(scope.tx, [activity.createdByProfileId]);
+  const content = visibleAuthoredFields(activityConfiguration(activity), ['name', 'description', 'category'], activity.createdByProfileId, privacy);
+  return { ...content, id: activity.id, storeId: activity.storeId, version: activity.version,
     createdAt: activity.createdAt.toISOString(), archivedAt: activity.archivedAt?.toISOString() ?? null,
     availability: requireMembership(scope).role === 'PARTICIPANT' ? await activityAvailability(scope, activity, now) : null };
 }

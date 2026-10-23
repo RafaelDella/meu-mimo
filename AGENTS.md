@@ -35,6 +35,10 @@ em `docs/relationship-local.md`. Bancos T12 dev/shadow/integração são separad
 com namespaces próprios; Next 4301/4310 e mídia 4311 continuam em série.
 T13 acrescenta administração por metadados, pausa independente da plataforma e
 bloqueio de segurança; contratos e comandos em `docs/admin-local.md`.
+T14 entrega validação integrada, direitos por autoria, exportação cifrada,
+backup do cluster/Storage e cópia de recuperação isolada. Consulte
+`docs/pilot/{local,acceptance,data-rights,recovery}.md` e o plano T14–T15.
+O supervisor de uso diário e a saúde contínua pertencem ao próximo marco T15.
 O plano da fundação e as dependências estão em
 [M0](docs/superpowers/plans/2026-10-22-m0-fundacao.md).
 
@@ -74,6 +78,13 @@ T13 usa `test:integration:t13`, bancos `meumimo_t13`/dev/shadow e namespaces
 próprios. A cadeia atual tem quinze migrações aplicadas e 38 tabelas com RLS;
 correções são aditivas. A revisão de segurança tem default gerado pelo banco
 no Prisma para preservar o INSERT restrito de Profile.
+T14 usa `test:integration:t14`, bancos `meumimo_t14`/dev/shadow e prefixos
+`t14-integration`/`t14-development`. A cadeia tem dezesseis migrações; não
+reescreva SQL aplicado. QA real usa `test:web:real`, Next4310/mídia4311.
+Restore reserva projeto `meumimo-t14-restore`, API55321/PG55322/Mailpit55324,
+Next4320/mídia4321, rede e volumes novos. `local:restore:check` executa o ensaio;
+`local:restore UUID` só valida a stack. Nunca apagar journal/chaves para
+contornar uma divergência. Limpeza da cópia exige seu UUID de posse.
 T05 usa `test:integration:t05`, domínio `meumimo_t05` e a mesma porta em série;
 o consumidor local tem comando próprio e credencial restrita.
 T06 usa `test:integration:t06`, bancos `meumimo_t06`/dev/shadow e gateway local

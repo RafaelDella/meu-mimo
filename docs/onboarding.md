@@ -161,3 +161,13 @@ Para administrar metadados e aplicar restrições independentes, siga
 usa `meumimo_t13`, shadow e Storage próprios, nas mesmas portas em série.
 Provisionamento do grant continua separado e exige bloqueio do perfil antes
 da concessão; a conta administrativa também confirma TOTP/AAL2 no Auth local.
+
+O recorte atual verificado é [T14 local](pilot/local.md). Seu preparo usa a
+mesma stack persistente e seleciona `meumimo_t14_dev` em `.env.local`; integração
+usa `meumimo_t14` e shadow separado. Next continua recebendo somente runtime
+restrito. Direitos, exportação, captura e recuperação têm comandos operacionais
+próprios, descritos em [direitos](pilot/data-rights.md) e
+[recuperação](pilot/recovery.md). Feche servidores/consumidores próprios antes
+da manutenção; não execute checks que usam o lock de custódia em paralelo.
+O aceite e as pendências de dispositivos/publicação estão em
+[aceite da web](pilot/acceptance.md). O supervisor de T15 ainda não foi entregue.

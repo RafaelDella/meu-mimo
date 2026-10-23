@@ -393,6 +393,33 @@ incluindo URLs e Range de mídia. DTOs administrativos não incluem conteúdo
 ou endereço das relações. Diagnóstico serializa apenas cinco campos permitidos.
 Contratos, comandos e estado de verificação em [T13 local](docs/admin-local.md).
 
+### 3.9. Direitos e recuperação locais em T14
+
+`DataRightsProtocol`, `DataRightsEvent` e `DataSuppression` registram a operação
+manual identificada. Um executor sem login recebe apenas os grants necessários;
+o Next consulta as supressões sob RLS, sem credencial de direitos ou migração.
+A função estreita de exclusão retira sessões/acesso e agenda mídias próprias
+sem proteção. Projeções por autoria ocultam identidade e texto removidos,
+incluindo snapshots, busca, comentários, bilhetes e mídia/Range reautorizados.
+Valores, datas, IDs financeiros e eventos permanecem imutáveis; o resultado é
+parcial enquanto houver originais, obrigações ou cópias retidas.
+
+Exportação usa projeções explícitas JSON/CSV e derivados privados cifrados,
+com revalidação de audiência/retenção na entrega e validade de sete dias.
+O journal externo cifrado e seu checkpoint autenticam todas as intenções de
+supressão e sua geração; perda ou divergência impede abrir a recuperação.
+
+A captura fria inclui todo o cluster PostgreSQL, volumes de Storage e
+configuração/chaves necessárias ao mesmo corte. Componentes por stream e
+manifesto autenticado usam AES-256-GCM; chaves ficam fora do conjunto e a
+custódia Windows restringe a ACL antes de gravar plaintext. A cópia restaura
+em projeto/rede/volumes próprios, gira credenciais, revoga contextos antigos,
+reaplica journal/D08 e verifica migrações, permissões e hashes antes de abrir
+as APIs. A bridge dedicada permite saída; publicações no host usam loopback.
+O `BUILD_ID`, SHA de base, hashes de migrações e imagens identificam a captura.
+Contratos e provas em [direitos](docs/pilot/data-rights.md),
+[recuperação](docs/pilot/recovery.md) e [aceite](docs/pilot/acceptance.md).
+
 ## 4. Modelo conceitual de dados
 
 A tabela descreve o modelo completo proposto. T02/T04/T05/T06/T07/T08/T09 implementam os

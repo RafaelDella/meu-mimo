@@ -8,6 +8,7 @@ import { requireMembership } from '../stores/transaction.ts';
 import { choice, invalidField, pagination, resourceId } from '../stores/validation.ts';
 import { localDate } from '../submissions/validation.ts';
 import { feedItem } from './views.ts';
+import { suppressionFor } from '../privacy/suppression.ts';
 
 export type FeedAddress = { id: string; subjectType: 'SUBMISSION' | 'TICKET'; occurredAt: Date; conversationId: string };
 const submissionStatuses = ['PENDING', 'APPROVED', 'CONTESTED', 'VOIDED'] as const;
@@ -31,8 +32,11 @@ export async function feedPage(scope: StoreScope, query: URLSearchParams): Promi
   // Paginar a união no servidor mantém uma só ordem e um card por origem.
   const projection = Prisma.sql`
     SELECT s.id, 'SUBMISSION'::text AS "subjectType", s."receivedAt" AS "occurredAt", c.id AS "conversationId",
-      s.status::text AS status, s."activityName" AS name, s."participantMembershipId"
+      s.status::text AS status, CASE WHEN EXISTS(SELECT 1 FROM app."DataSuppression" d
+        WHERE d."subjectProfileId"=a."createdByProfileId" AND d.scope='AUTHORED_CONTENT')
+        THEN '[Conteúdo removido]' ELSE s."activityName" END AS name, s."participantMembershipId"
     FROM app."ActivitySubmission" s
+    JOIN app."Activity" a ON a.id=s."activityId"
     JOIN app."Membership" m ON m.id=s."participantMembershipId" AND m."storeId"=s."storeId"
       AND m.role='PARTICIPANT' AND m."accessRevokedAt" IS NULL
     JOIN app."Conversation" c ON c."subjectType"='SUBMISSION' AND c."subjectId"=s.id
@@ -40,8 +44,11 @@ export async function feedPage(scope: StoreScope, query: URLSearchParams): Promi
     WHERE s."storeId"=${scope.store.id}::uuid AND s."receivedAt" IS NOT NULL AND s.status<>'DRAFT'
     UNION ALL
     SELECT t.id, 'TICKET'::text AS "subjectType", t."createdAt" AS "occurredAt", c.id AS "conversationId",
-      t.status::text AS status, t."rewardName" AS name, t."participantMembershipId"
+      t.status::text AS status, CASE WHEN EXISTS(SELECT 1 FROM app."DataSuppression" d
+        WHERE d."subjectProfileId"=r."createdByProfileId" AND d.scope='AUTHORED_CONTENT')
+        THEN '[Conteúdo removido]' ELSE t."rewardName" END AS name, t."participantMembershipId"
     FROM app."Redemption" t
+    JOIN app."Reward" r ON r.id=t."rewardId"
     JOIN app."Membership" m ON m.id=t."participantMembershipId" AND m."storeId"=t."storeId"
       AND m.role='PARTICIPANT' AND m."accessRevokedAt" IS NULL
     JOIN app."Conversation" c ON c."subjectType"='TICKET' AND c."subjectId"=t.id
@@ -59,6 +66,14 @@ export async function feedPage(scope: StoreScope, query: URLSearchParams): Promi
     SELECT id,"subjectType","occurredAt","conversationId" FROM (${projection}) feed WHERE ${filters}
     ORDER BY "occurredAt" DESC,id DESC,"subjectType" DESC LIMIT ${page.pageSize} OFFSET ${page.skip}`);
   const items = [];
-  for (const row of rows) items.push(await feedItem(scope, row));
+  const submissions = await scope.tx.activitySubmission.findMany({ where: { id: { in: rows.filter(row => row.subjectType === 'SUBMISSION').map(row => row.id) } },
+    select: { authorProfileId: true, activity: { select: { createdByProfileId: true } }, participant: { select: { profileId: true } } } });
+  const tickets = await scope.tx.redemption.findMany({ where: { id: { in: rows.filter(row => row.subjectType === 'TICKET').map(row => row.id) } },
+    select: { reward: { select: { createdByProfileId: true } }, participant: { select: { profileId: true } },
+      events: { where: { kind: 'AGREE' }, orderBy: { version: 'desc' }, take: 1, select: { actorProfileId: true } } } });
+  const reactions = await scope.tx.reaction.findMany({ where: { conversationId: { in: rows.map(row => row.conversationId) } }, select: { actorProfileId: true } });
+  const suppressions = await suppressionFor(scope.tx, [...submissions.flatMap(row => [row.authorProfileId, row.activity.createdByProfileId, row.participant.profileId]),
+    ...tickets.flatMap(row => [row.reward.createdByProfileId, row.participant.profileId, ...row.events.map(event => event.actorProfileId)]), ...reactions.map(row => row.actorProfileId)]);
+  for (const row of rows) items.push(await feedItem(scope, row, suppressions));
   return { items, total: totals[0].total, page: page.page, pageSize: page.pageSize };
 }

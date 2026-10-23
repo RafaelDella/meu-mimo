@@ -1,6 +1,26 @@
 import { expect } from '@playwright/test';
 import { detailPath, mockRewards, test } from './helpers';
 
+test('edição envia apenas configuração e controle de concorrência para a API estrita', async ({ page }) => {
+  const allowed = ['name', 'description', 'category', 'sticker', 'cost', 'note', 'instructions', 'available', 'stock',
+    'operationId', 'expectedVersion', 'expectedStockRevision'].sort();
+  const { state } = await mockRewards(page, { merchant: true, handler: async (route, url, current) => {
+    if (route.request().method() !== 'PATCH' || !url.pathname.endsWith(detailPath)) return false;
+    const body = route.request().postDataJSON() as Record<string, unknown>;
+    if (Object.keys(body).some(key => !allowed.includes(key))) {
+      current.bodies.push(body);
+      await route.fulfill({ status: 400, contentType: 'application/json', body: JSON.stringify({ code: 'field_invalid', message: 'Campo não permitido.' }) });
+      return true;
+    }
+    return false;
+  } });
+  await page.goto(`${detailPath}/editar`);
+  await page.getByLabel('Nome do mimo', { exact: true }).fill('Café atualizado');
+  await page.getByRole('button', { name: 'Salvar mimo', exact: true }).click();
+  await expect(page).toHaveURL(detailPath);
+  expect(state.bodies).toHaveLength(1); expect(Object.keys(state.bodies[0]).sort()).toEqual(allowed);
+});
+
 test('edição com nome válido foca categoria longa e depois custo zero, com erros associados', async ({ page }) => {
   const { state } = await mockRewards(page, { merchant: true }); await page.goto(`${detailPath}/editar`);
   const name = page.getByLabel('Nome do mimo', { exact: true }); const category = page.getByLabel('Categoria', { exact: true });

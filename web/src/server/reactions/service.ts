@@ -5,6 +5,7 @@ import type { ReactionEmoji, ReactionMutation, ReactionState } from '../../contr
 import type { Identity } from '../auth/types.ts';
 import { requireConversationAccess } from '../conversations/access.ts';
 import { AppError } from '../errors.ts';
+import { suppressionFor } from '../privacy/suppression.ts';
 import { enqueueReactionChanged } from '../outbox/events.ts';
 import { consumeStoreLimit } from '../stores/limits.ts';
 import type { StoreScope } from '../stores/transaction.ts';
@@ -26,8 +27,9 @@ function reactionInput(body: Record<string, unknown>) {
 }
 
 async function result(scope: StoreScope, conversation: Conversation, event: ReactionEvent): Promise<ReactionMutation> {
+  const hidden = (await suppressionFor(scope.tx, [event.actorProfileId])).get(event.actorProfileId)?.authoredContent;
   return { state: await reactionState(scope, conversation), appliedVersion: event.version,
-    event: { id: event.id, from: event.fromEmoji as ReactionEmoji | null, to: event.toEmoji as ReactionEmoji | null,
+    event: { id: event.id, from: hidden ? null : event.fromEmoji as ReactionEmoji | null, to: hidden ? null : event.toEmoji as ReactionEmoji | null,
       createdAt: event.createdAt.toISOString() } };
 }
 

@@ -3,6 +3,7 @@ import type { AlbumEvent, Redemption, TicketAlbum } from '../../generated/prisma
 import type { AlbumPublicationLookup, AlbumPublicationMutation, TicketAlbumPage } from '../../contracts/albums.ts';
 import type { Identity } from '../auth/types.ts';
 import { AppError } from '../errors.ts';
+import { visibleMediaAuthor } from '../privacy/suppression.ts';
 import { assertMediaUpload, requireMediaCollection } from '../media/access.ts';
 import { publishMedia, registerMediaCollection } from '../media/registration.ts';
 import { enqueueAlbumPublished } from '../outbox/events.ts';
@@ -21,7 +22,8 @@ function changed(): never {
 }
 
 async function result(scope: StoreScope, ticket: Redemption, event: AlbumEvent): Promise<AlbumPublicationMutation> {
-  const items = await scope.tx.albumItem.findMany({ where: { publicationId: event.id },
+  const items = await scope.tx.albumItem.findMany({ where: { publicationId: event.id,
+    asset: { author: visibleMediaAuthor }, publication: { actor: { dataSuppressions: { none: { scope: 'AUTHORED_CONTENT' } } } } },
     orderBy: { position: 'asc' }, select: { assetId: true } });
   return { album: await albumPage(scope, ticket), appliedVersion: event.version,
     publication: { id: event.id, version: event.version, createdAt: event.createdAt.toISOString(),

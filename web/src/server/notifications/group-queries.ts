@@ -5,6 +5,9 @@ import type { Identity } from '../auth/types.ts';
 import type { StoreTransaction } from '../stores/transaction.ts';
 import { unavailable } from '../stores/validation.ts';
 import { notificationAudience, notificationSelect, notificationView } from './queries.ts';
+import { suppressionFor } from '../privacy/suppression.ts';
+import type { Suppressions } from '../privacy/suppression.ts';
+import { visibleAuthoredFields } from '../privacy/views.ts';
 
 export function groupAudience(identity: Identity, storeId?: string): Prisma.NotificationGroupWhereInput {
   return { ...(storeId ? { storeId } : {}), recipient: { profileId: identity.userId, accessRevokedAt: null },
@@ -12,13 +15,13 @@ export function groupAudience(identity: Identity, storeId?: string): Prisma.Noti
 }
 
 export const groupSelect = {
-  id: true, version: true, storeId: true, category: true, lastDeliveredAt: true,
-  store: { select: { name: true } },
+  id: true, version: true, storeId: true, category: true, lastDeliveredAt: true, actorProfileId: true,
+  store: { select: { name: true, createdByProfileId: true } },
   recipient: { select: { notificationPreference: { select: { socialMuted: true, automaticApprovalNotices: true } } } },
 } satisfies Prisma.NotificationGroupSelect;
 type Group = Prisma.NotificationGroupGetPayload<{ select: typeof groupSelect }>;
 
-export async function groupView(tx: StoreTransaction, identity: Identity, group: Group): Promise<NotificationGroupView> {
+export async function groupView(tx: StoreTransaction, identity: Identity, group: Group, suppressions?: Suppressions): Promise<NotificationGroupView> {
   const members = await tx.notification.findMany({ where: { groupId: group.id, ...notificationAudience(identity, group.storeId) },
     select: { ...notificationSelect, event: { select: { ...notificationSelect.event.select,
       submission: { select: { id: true, status: true, approvalMode: true } } } } },
@@ -26,14 +29,16 @@ export async function groupView(tx: StoreTransaction, identity: Identity, group:
   });
   if (!members.length) unavailable();
   const first = members[0]; const latest = members[members.length - 1];
+  const privacy = suppressions ?? await suppressionFor(tx, [group.store.createdByProfileId, ...members.map(row => row.event.actorProfileId)]);
   const preferences = group.recipient.notificationPreference;
   const automatic = latest.event.kind === 'SUBMISSION_RECEIVED' && latest.event.submission?.approvalMode === 'AUTOMATIC';
   const attentionActive = group.category === 'SOCIAL' ? !preferences?.socialMuted :
     !automatic || (preferences?.automaticApprovalNotices ?? true);
-  return { id: group.id, version: group.version, storeId: group.storeId, storeName: group.store.name,
+  return { id: group.id, version: group.version, storeId: group.storeId,
+    storeName: visibleAuthoredFields(group.store, ['name'], group.store.createdByProfileId, privacy).name,
     category: group.category as NotificationCategory, count: members.length,
     unreadCount: members.filter(member => member.readAt === null).length, attentionActive,
-    latest: notificationView(latest), firstOccurredAt: first.event.createdAt.toISOString(),
+    latest: notificationView(latest, privacy), firstOccurredAt: first.event.createdAt.toISOString(),
     lastOccurredAt: latest.event.createdAt.toISOString(), lastDeliveredAt: group.lastDeliveredAt.toISOString() };
 }
 

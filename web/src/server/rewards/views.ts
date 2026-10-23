@@ -3,6 +3,9 @@ import type { Reward } from '../../generated/prisma/client.ts';
 import type { RewardAvailability, RewardFields, RewardView } from '../../contracts/rewards.ts';
 import type { StoreScope } from '../stores/transaction.ts';
 import { requireMembership } from '../stores/transaction.ts';
+import { suppressionFor } from '../privacy/suppression.ts';
+import type { Suppressions } from '../privacy/suppression.ts';
+import { visibleAuthoredFields } from '../privacy/views.ts';
 
 export type RewardBalance = { available: bigint; pending: bigint };
 
@@ -39,9 +42,11 @@ export function rewardAvailability(scope: StoreScope, reward: Reward, balance: R
     resulting: (balance.available - cost).toString(), shortfall: (balance.available < cost ? cost - balance.available : 0n).toString() };
 }
 
-export async function rewardView(scope: StoreScope, reward: Reward, balance?: RewardBalance | null): Promise<RewardView> {
+export async function rewardView(scope: StoreScope, reward: Reward, balance?: RewardBalance | null, suppressions?: Suppressions): Promise<RewardView> {
   const current = balance === undefined ? await rewardBalance(scope) : balance;
-  return { ...rewardConfiguration(reward), id: reward.id, storeId: reward.storeId,
+  const privacy = suppressions ?? await suppressionFor(scope.tx, [reward.createdByProfileId]);
+  const content = visibleAuthoredFields(rewardConfiguration(reward), ['name', 'description', 'category', 'note', 'instructions'], reward.createdByProfileId, privacy);
+  return { ...content, id: reward.id, storeId: reward.storeId,
     version: reward.version, stockRevision: reward.stockRevision, createdAt: reward.createdAt.toISOString(),
     archivedAt: reward.archivedAt?.toISOString() ?? null, availability: current ? rewardAvailability(scope, reward, current) : null };
 }

@@ -6,10 +6,16 @@ import { setTimeout as delay } from 'node:timers/promises';
 import { readState, taskResources, webRoot } from './local-runtime.mjs';
 import { bindLocalStack } from './bind-local-stack.mjs';
 import { mediaEnvironment } from './media-environment.mjs';
+import { runtimeEnvironment } from './pilot/runtime-environment.mjs';
 
 const resources = taskResources(process.argv[2] ?? 't02');
+const focusedTests = process.argv.slice(3);
+if (focusedTests.length && (resources.task !== 't14' || focusedTests.length > 8 ||
+    focusedTests.some(file => !/^tests\/integration\/[a-z0-9/-]+\.test\.mjs$/.test(file)))) {
+  throw new Error('O filtro T14 aceita somente arquivos da suíte de integração local.');
+}
 const state = readState(resources.task);
-const withMedia = ['t06', 't07', 't08', 't09', 't10', 't11', 't12', 't13'].includes(resources.task);
+const withMedia = ['t06', 't07', 't08', 't09', 't10', 't11', 't12', 't13', 't14'].includes(resources.task);
 const mediaEnv = withMedia ? mediaEnvironment('integration', resources.task) : {};
 await bindLocalStack();
 // Depois de religar o DB, o pool do Auth pode descartar uma conexão antiga.
@@ -37,9 +43,7 @@ await new Promise((resolve, reject) => {
 });
 
 // As credenciais administrativas pertencem aos fixtures, nunca ao processo Next.
-const serverEnv = Object.fromEntries(Object.entries(process.env).filter(([key]) =>
-  !/^(T(?:0[2456789]|1[0123])_|SUPABASE_|MEDIA_|FFMPEG_|FFPROBE_|MIGRATION_|SHADOW_)/i.test(key)));
-Object.assign(serverEnv, state.runtime, { NODE_ENV: 'production' });
+const serverEnv = { ...runtimeEnvironment(state.runtime), NODE_ENV: 'production' };
 const log = createWriteStream(path.join(resources.directory, 'next-integration.log'), { mode: 0o600 });
 const server = spawn(process.execPath, [path.join(webRoot, 'node_modules/next/dist/bin/next'),
   'start', '--hostname', '127.0.0.1', '--port', String(port)], {
@@ -86,7 +90,7 @@ try {
   }
   if (!ready) throw new Error('O servidor não ficou pronto; confira next-integration.log.');
   const result = await new Promise((resolve, reject) => {
-    const tests = spawn(process.execPath, ['scripts/run-tests.mjs', 'integration'], {
+    const tests = spawn(process.execPath, focusedTests.length ? ['--conditions=react-server', '--test', '--test-concurrency=1', ...focusedTests] : ['scripts/run-tests.mjs', 'integration'], {
       cwd: webRoot, windowsHide: true, stdio: 'inherit', env: {
         ...process.env, ...state.runtime, ...state.integration, ...mediaEnv,
         ...(withMedia ? { T06_MEDIA_FIXTURES: path.join(resources.directory, 'fixtures') } : {}),

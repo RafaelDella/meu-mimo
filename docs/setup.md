@@ -686,3 +686,48 @@ sem skips por execução completa e repetição focal, sem alegar uma execução
 Comandos em [administração local](admin-local.md), com ocorrências e limites
 no [plano T13](superpowers/plans/2026-10-22-t13-administracao.md). T14–T15
 seguem locais; provedores, publicação e aparelhos físicos permanecem adiados.
+
+## T14 verificada localmente
+
+Vibe Coding Toolkit foi descoberto no cliente e seus prompts de ondas/revisão
+foram aplicados com os agentes existentes. Arquivos tiveram um escritor por
+onda; revisões independentes foram somente leitura. Root integra e executa
+Docker, banco, builds e testes em série. Não houve alteração global de cliente,
+modelo, permissões, hooks ou serviços pagos.
+
+O preparo T14 reutiliza PostgreSQL 17.11/Auth/Storage da stack persistente
+`meumimo-t02` e cria bancos dev/integração/shadow e namespaces próprios. O
+inventário reprodutível confere sete contêineres, imagens, volumes, labels,
+saúde e loopback antes de substituir o snapshot privado. Nesta máquina foram
+observados Docker29.9.2/API1.56/Linux. A ACL privada Windows é aplicada antes
+de gravar dados de custódia; `chmod` sozinho não comprova essa proteção.
+
+Context7 foi consultado para Node24/AES-GCM, DockerAPI e PKCE; parte das fontes
+retornou main, exigindo prova nas versões locais. Kong2.8.1 da imagem local
+exige habilitar o plugin key-auth também no ambiente da cópia. O processo
+temporário Storage trata SIGTERM explicitamente. Uma bridge dedicada com
+publicações em loopback substitui Internal:true no ensaio; saída de rede é
+permitida. Essas adaptações não alteram a configuração da origem.
+
+Direitos, custódia e recuperação estão descritos em [direitos](pilot/data-rights.md)
+e [recuperação](pilot/recovery.md). A [matriz de aceite](pilot/acceptance.md)
+separa baseline, novos testes reais e gates ainda pendentes. Capturas, chaves,
+inventários e relatórios permanecem ignorados pelo Git. T15 local só começa
+após o fechamento e commit de T14.
+
+Conferência final: 362/362 HTTP, 736/736 Chromium na primeira regressão e
+cinquenta amostras de laboratório aprovadas. A ampliação do ciclo encontrou
+metadados de leitura enviados ao editar mimos; a revisão confirmou a mesma
+causa em atividades. Regressões estritas falharam antes da correção. Os dois
+formulários passaram a enumerar os campos editáveis; `npm run check` final
+aprovou 7 testes da base e 37 unitários web, lint/tipos/build, e 144 casos das áreas
+afetadas passaram no novo build. O ciclo real ampliado passou em 5,4 minutos,
+com desktop, duas edições, reposição explícita e publicação parcial/substituição.
+
+O quarto ensaio completo de recuperação passou com o fator TOTP original, desafios e
+sessões antigos negados, novo AAL2, supressão posterior, seis objetos por hash e
+novo ciclo web na cópia. RPO de 77,838 s e RTO de 96,593 s. A investigação consultou também
+o Auth v2.197.0 oficial: segredo TOTP usa Security.DBEncryption, preservada na
+cópia; rotação JWT não exige novo cadastro do fator. Expectativas de status do
+teste foram ajustadas às respostas 403/bad_jwt e 422/mfa_factor_not_found reais, sem aceitar
+identidade ou tokens nesses retornos. Instantes e limites estão na recuperação.

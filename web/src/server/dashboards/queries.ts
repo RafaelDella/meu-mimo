@@ -8,6 +8,8 @@ import { notificationSelect, notificationTarget } from '../notifications/queries
 import type { StoreScope } from '../stores/transaction.ts';
 import { requireMembership } from '../stores/transaction.ts';
 import { pagination } from '../stores/validation.ts';
+import { suppressionFor } from '../privacy/suppression.ts';
+import { publicAuthor } from '../privacy/views.ts';
 
 export const openTicketStatuses = ['WAITING_AGREEMENT', 'AGREED', 'CANCELLATION_REQUESTED'] as const;
 
@@ -41,15 +43,16 @@ export async function dashboardEvents(scope: StoreScope, query: URLSearchParams)
   const total = await scope.tx.notification.count({ where });
   const rows = await scope.tx.notification.findMany({ where, select: { ...notificationSelect,
     event: { select: { ...notificationSelect.event.select,
-      participantMembership: { select: { profile: { select: { displayName: true } } } } } } },
+      participantMembership: { select: { profileId: true, profile: { select: { displayName: true } } } } } } },
   orderBy: [{ event: { createdAt: 'desc' } }, { id: 'desc' }], skip: page.skip, take: page.pageSize });
   const items: DashboardEvent[] = [];
+  const suppressions = await suppressionFor(scope.tx, rows.flatMap(row => [row.event.actorProfileId, row.event.participantMembership.profileId]));
   for (const row of rows) {
     await requireConversationAudience(scope, row.event.participantMembershipId);
     const target = await notificationTarget(row, scope.tx);
     items.push({ id: row.id, kind: row.event.kind, occurredAt: row.event.createdAt.toISOString(),
-      path: target.path ?? `/lojas/${scope.store.id}/mural`, author: row.event.actor,
-      participant: row.event.participantMembership.profile });
+      path: target.path ?? `/lojas/${scope.store.id}/mural`, author: publicAuthor(row.event.actor, suppressions.get(row.event.actorProfileId)),
+      participant: publicAuthor(row.event.participantMembership.profile, suppressions.get(row.event.participantMembership.profileId)) });
   }
   return { items, total, page: page.page, pageSize: page.pageSize };
 }

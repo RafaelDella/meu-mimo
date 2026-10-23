@@ -2,6 +2,7 @@ import '../only.ts';
 import type { CommentPage, CommentView, ConversationView } from '../../contracts/conversations.ts';
 import type { Identity } from '../auth/types.ts';
 import { AppError } from '../errors.ts';
+import { suppressionFor } from '../privacy/suppression.ts';
 import { enqueueCommentCreated } from '../outbox/events.ts';
 import { consumeStoreLimit } from '../stores/limits.ts';
 import type { StoreScope } from '../stores/transaction.ts';
@@ -56,8 +57,9 @@ export async function listComments(
       where, select: commentSelect, orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
       skip: page.skip, take: page.pageSize,
     });
+    const suppressions = await suppressionFor(scope.tx, comments.map(row => row.author.id));
     return {
-      conversation: conversationView(conversation), items: comments.map(commentView),
+      conversation: conversationView(conversation), items: comments.map(row => commentView(row, suppressions)),
       page: page.page, pageSize: page.pageSize, total,
     };
   });
@@ -77,7 +79,7 @@ export async function createComment(
     const existing = await scope.tx.comment.findUnique({ where: { id }, select: { ...commentSelect, authorProfileId: true } });
     if (existing) {
       if (existing.conversationId !== conversation.id || existing.authorProfileId !== identity.userId || existing.text !== text) operationConflict();
-      return commentView(existing);
+      return commentView(existing, await suppressionFor(scope.tx, [existing.author.id]));
     }
     if (conversation.commentsClosedAt) {
       throw new AppError('conversation_read_only', 409, 'Esta conversa está disponível somente para consulta.');
@@ -87,6 +89,6 @@ export async function createComment(
       select: commentSelect,
     });
     await enqueueCommentCreated(scope.tx, comment.id);
-    return commentView(comment);
+    return commentView(comment, await suppressionFor(scope.tx, [comment.author.id]));
   });
 }

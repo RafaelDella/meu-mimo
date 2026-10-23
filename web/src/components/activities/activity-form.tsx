@@ -17,7 +17,12 @@ export function ActivityForm({ initial, busy, locked, onSave, submitLabel, canSu
   const categoryField = useRef<HTMLInputElement>(null);
   const pointsField = useRef<HTMLInputElement>(null);
   const weeklyLimitField = useRef<HTMLInputElement>(null);
-  const [fields, setFields] = useState(initial ?? initialFields);
+  const source = initial ?? initialFields;
+  const [fields, setFields] = useState<ActivityFields>(() => ({
+    name: source.name, description: source.description, category: source.category,
+    sticker: source.sticker, points: source.points, frequency: source.frequency,
+    weeklyLimit: source.weeklyLimit, approvalMode: source.approvalMode,
+  }));
   const [errors, setErrors] = useState<Partial<Record<keyof ActivityFields, string>>>({});
   function set<K extends keyof ActivityFields>(key: K, value: ActivityFields[K]) {
     setFields(previous => ({ ...previous, [key]: value })); setErrors(previous => ({ ...previous, [key]: undefined }));

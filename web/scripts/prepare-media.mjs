@@ -5,9 +5,10 @@ import pg from 'pg';
 import { createClient } from '@supabase/supabase-js';
 import { readState, taskResources, webRoot } from './local-runtime.mjs';
 import { prepareMediaTools } from './media-tools.mjs';
+import { preparePilotInventory } from './pilot/inventory.mjs';
 
 const task = process.argv[2] ?? 't06';
-if (!['t06', 't07', 't08', 't09', 't10', 't11', 't12', 't13'].includes(task)) throw new Error('Use t06, t07, t08, t09, t10, t11, t12 ou t13 para preparar mídia.');
+if (!['t06', 't07', 't08', 't09', 't10', 't11', 't12', 't13', 't14'].includes(task)) throw new Error('Use t06, t07, t08, t09, t10, t11, t12, t13 ou t14 para preparar mídia.');
 execFileSync(process.execPath, ['scripts/prepare-local.mjs', task], { cwd: webRoot, windowsHide: true, stdio: 'inherit' });
 const resources = taskResources(task);
 const state = readState(task);
@@ -29,4 +30,5 @@ finally { await authDatabase.end(); }
 state.media = { bucket, ffmpeg: tools.ffmpeg, ffprobe: tools.ffprobe };
 for (const target of ['integration', 'development']) mkdirSync(path.join(resources.directory, 'temp', target), { recursive: true });
 writeFileSync(resources.statePath, JSON.stringify(state, null, 2), { mode: 0o600 });
+if (task === 't14') process.stdout.write(`${JSON.stringify(await preparePilotInventory())}\n`);
 process.stdout.write(`Mídia ${task.toUpperCase()} preparada: bucket privado, ferramentas locais e segredos separados do Next.\n`);

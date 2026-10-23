@@ -3,6 +3,7 @@ import type { MediaAsset, Prisma } from '../../generated/prisma/client.ts';
 import type { MediaAssetView, MediaFileInput, MediaPage } from '../../contracts/media.ts';
 import type { Identity } from '../auth/types.ts';
 import { AppError } from '../errors.ts';
+import { visibleMediaAuthor } from '../privacy/suppression.ts';
 import { recordAlbumRemoval } from '../albums/removal.ts';
 import { consumeStoreLimit } from '../stores/limits.ts';
 import { databaseNow } from '../stores/transaction.ts';
@@ -26,7 +27,7 @@ export async function listMedia(identity: Identity, storeId: string, collectionI
     if (scope.memoryPolicy?.expired && !scope.memoryPolicy.hold) {
       return { collection: mediaCollectionView(scope), items: [], total: 0, page: page.page, pageSize: page.pageSize };
     }
-    const where: Prisma.MediaAssetWhereInput = { collectionId: scope.collection.id, removedAt: null,
+    const where: Prisma.MediaAssetWhereInput = { collectionId: scope.collection.id, removedAt: null, author: visibleMediaAuthor,
       state: { notIn: ['REMOVING', 'REMOVED'] },
       OR: [{ authorProfileId: identity.userId }, { publishedAt: { not: null },
         ...(scope.memoryPolicy ? { albumItem: { albumId: scope.memoryPolicy.albumId } } : {}) }] };

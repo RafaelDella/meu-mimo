@@ -6,6 +6,7 @@ import { periodAt } from '../activities/periods.ts';
 import { digest, positiveInteger } from '../activities/validation.ts';
 import { registerConversation } from '../conversations/service.ts';
 import { AppError } from '../errors.ts';
+import { suppressionFor } from '../privacy/suppression.ts';
 import { enqueueRedemptionIssued } from '../outbox/events.ts';
 import { availablePoints } from '../points/ledger.ts';
 import { movementRange, targetParticipant } from '../points/queries.ts';
@@ -117,9 +118,13 @@ export async function listTickets(identity: Identity, storeId: string, query = n
       ...(membershipId ? { participantMembershipId: membershipId } : {}), ...(status ? { status } : {}),
       ...(from || to ? { createdAt: await movementRange(scope, from, to) } : {}) };
     const total = await scope.tx.redemption.count({ where });
-    const rows = await scope.tx.redemption.findMany({ where, orderBy: [{ createdAt: 'desc' }, { id: 'desc' }], skip: page.skip, take: page.pageSize });
+    const rows = await scope.tx.redemption.findMany({ where, include: { reward: { select: { createdByProfileId: true } },
+      participant: { select: { profileId: true } }, events: { distinct: ['actorProfileId'], select: { actorProfileId: true } } },
+      orderBy: [{ createdAt: 'desc' }, { id: 'desc' }], skip: page.skip, take: page.pageSize });
     const items: TicketView[] = [];
-    for (const row of rows) items.push(await ticketView(scope, row));
+    const suppressions = await suppressionFor(scope.tx, rows.flatMap(row => [row.reward.createdByProfileId, row.participant.profileId,
+      ...row.events.map(event => event.actorProfileId)]));
+    for (const row of rows) items.push(await ticketView(scope, row, suppressions));
     return { items, total, page: page.page, pageSize: page.pageSize };
   });
 }

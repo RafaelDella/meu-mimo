@@ -17,7 +17,7 @@ try {
     if (result.failed) process.exitCode = 1;
   } else {
     server = await startMediaServer();
-    process.stdout.write('Processo de mídia local em 127.0.0.1:4311.\n');
+    process.stdout.write(`Processo de mídia local em 127.0.0.1:${server.port}.\n`);
     while (!shutdown.signal.aborted) {
       if (mode !== '--manual') { await processMediaBatch(); await cleanupMediaBatch(); }
       await delay(1000, undefined, { signal: shutdown.signal }).catch(() => {});

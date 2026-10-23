@@ -2,6 +2,7 @@ import '../only.ts';
 import type { NotificationGroupPage, NotificationGroupView, NotificationTarget } from '../../contracts/notifications.ts';
 import type { Identity } from '../auth/types.ts';
 import { getDb } from '../db/client.ts';
+import { suppressionFor } from '../privacy/suppression.ts';
 import { consumeStoreLimit } from '../stores/limits.ts';
 import { databaseNow, withIdentityTransaction, withStoreTransaction } from '../stores/transaction.ts';
 import { choice, invalidField, pagination, resourceId, unavailable } from '../stores/validation.ts';
@@ -19,7 +20,10 @@ export async function listNotificationGroups(identity: Identity, query = new URL
     const rows = await tx.notificationGroup.findMany({ where, select: groupSelect,
       orderBy: [{ lastDeliveredAt: 'desc' }, { id: 'desc' }], skip: page.skip, take: page.pageSize });
     const items: NotificationGroupView[] = [];
-    for (const row of rows) items.push(await groupView(tx, identity, row));
+    const authors = await tx.notification.findMany({ where: { groupId: { in: rows.map(row => row.id) }, ...notificationAudience(identity, storeId) },
+      select: { event: { select: { actorProfileId: true } } } });
+    const suppressions = await suppressionFor(tx, [...rows.map(row => row.store.createdByProfileId), ...authors.map(row => row.event.actorProfileId)]);
+    for (const row of rows) items.push(await groupView(tx, identity, row, suppressions));
     return { items, total, page: page.page, pageSize: page.pageSize, attentionUnreadCount: await attentionUnreadCount(tx, identity, storeId) };
   });
 }

@@ -38,6 +38,14 @@ ao campo; resposta pendente oferece recuperação pela mesma operação após o
 prazo de espera. A árvore privada fica oculta durante revalidação do acesso.
 Estado da verificação e comandos em [T13 local](docs/admin-local.md).
 
+T14 aplica supressão por autoria nas respostas privadas: “Conta removida” e
+“[Conteúdo removido]” substituem identidade/texto suprimidos, sem alterar valores
+financeiros históricos. Arquivos removidos deixam de abrir, inclusive por URL
+anterior ou Range. Conteúdo legítimo da outra pessoa permanece disponível.
+Direitos usam procedimento operacional separado, sem acrescentar uma interface
+administrativa de leitura das relações. O aceite real da web e as limitações
+de celular/desempenho ficam em [aceite local](docs/pilot/acceptance.md).
+
 Este documento reúne a direção visual existente, a experiência aprovada como referência no protótipo e a proposta de produto. As decisões confirmadas pelo idealizador estão na seção 5; os comportamentos operacionais propostos para completar os fluxos estão identificados ao longo do documento. A seção 21 registra a consolidação do protótipo com esta especificação; `requisitos.md` complementa as regras de implementação.
 
 ## 1. Conceito e sensação

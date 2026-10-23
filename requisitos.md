@@ -126,6 +126,24 @@ encerramentos. Bloqueio de segurança retira o acesso privado da própria conta,
 preservando dados e o acesso legítimo da outra pessoa. Nenhuma dessas ações
 altera pontos, estoque, tickets ou vínculos.
 
+### 3.9. Direitos e operação local
+
+O recorte T14–T15 confirmado prioriza a web com PostgreSQL persistente local.
+Exportação/exclusão exige identificação manual da pessoa e protocolo próprio;
+o CLI de prova aceita somente contas sintéticas rastreadas. Remover autoria
+oculta texto e identidade daquela pessoa, retira acesso à mídia e preserva o
+conteúdo legítimo da outra autora. Não altera saldo, estoque ou tickets.
+O resultado de exclusão é parcial quando originais imutáveis, pendências ou
+backups permanecem; não anunciar eliminação física completa.
+
+Exportações têm validade de sete dias. Backups têm retenção máxima de trinta
+dias, intervalo operacional de doze horas, RPO de 24h e RTO de 8h como metas
+do ensaio local. A restauração reaplica supressões posteriores ao corte antes
+de abrir a cópia. Metas e execução observada são registradas separadamente em
+[aceite](docs/pilot/acceptance.md) e [recuperação](docs/pilot/recovery.md).
+Publicação, custos, canal público de suporte e homologação em aparelhos reais
+permanecem adiados pelo idealizador.
+
 ## 4. Requisitos não funcionais
 
 | ID | Prioridade | Requisito e verificação |
@@ -221,12 +239,12 @@ As recomendações abaixo foram preparadas pelo orquestrador com análise indepe
 | D04 · limites | Confirmados: nomes até 80 caracteres, apresentação 280, descrições 1.000, paginação padrão 20/máximo 50 e ordenação estável. Comentários T05 e legenda simples/imutável T07 até 500 caracteres Unicode. Pontos por atividade inteiros de 1 a 1.000.000. Confirmados em T08: motivos e texto de complemento até 500 caracteres Unicode; uma resposta por solicitação, texto ou foto opcional com ao menos um. Confirmados em T09: custo inteiro de 1 a 1.000.000; estoque inteiro de 0 a 1.000.000 ou ilimitado, uma unidade por ticket; categoria até 80, recadinho até 500 e instruções até 1.000 caracteres Unicode; ilustrações locais selecionáveis. Confirmados em T10: combinado e motivos até 500 caracteres Unicode; data civil opcional, revisões auditadas e realização direta nos estados abertos. Confirmado em T11: legenda opcional do álbum até 500 caracteres Unicode, imutável após publicação. Confirmado em T12: bilhete obrigatório de até 2.000 caracteres Unicode, versões e leitura exata; implementação verificada localmente em T12. | Idealizador; T04–T12 conforme recurso |
 | D04 · requisições | Confirmados: recuperação 3 pedidos/hora/destinatário e login 5 tentativas/minuto/conta+origem; T04 leitura 120/minuto e mutação 30/minuto por conta, com espera explícita. T06: 20 autorizações de arquivo/minuto/conta; partes usam limite de transporte separado. | Idealizador; T02/T04/T06 |
 | D05 · correções | Confirmada em T08: contestação mantém crédito existente; anulação estorna uma vez o crédito vigente e admite saldo negativo. Reabrir volta à análise sem movimentar; só nova aprovação recompõe. Motivos CONTEST/VOID/REOPEN obrigatórios. Análise/complemento permitidos durante pausa; encerramento mantém consulta/replay autorizado. Snapshot e ocorrência preservados. Tickets preservados e novos resgates sem saldo suficiente bloqueados serão integrados em T09. | Idealizador; T08/T09 |
-| D06 · tickets/estoque | Confirmada em T09: decrementar estoque na emissão. Cancelamento antes da realização devolve pontos uma vez; reposição de item limitado exige escolha explícita do lojista, desligada por padrão. Pedido em análise impede realizar; recusa motivada restaura estado anterior. Emissão pertence a T09; transições/devolução a T10. Disputa após realização usa procedimento operacional a definir em T14. | Idealizador; T09–T10 e procedimento em T14 |
+| D06 · tickets/estoque | Confirmada em T09: decrementar estoque na emissão. Cancelamento antes da realização devolve pontos uma vez; reposição de item limitado exige escolha explícita do lojista, desligada por padrão. Pedido em análise impede realizar; recusa motivada restaura estado anterior. Emissão pertence a T09; transições/devolução a T10. Disputa após realização segue o [procedimento manual](docs/pilot/data-rights.md), preservando estado terminal e financeiro; canal público adiado. | Idealizador; T09–T10 e procedimento T14 |
 | D07 · mídia | Confirmada em T06: uma foto opcional por envio/versão de evidência; complemento preserva anteriores no histórico do mesmo registro. Álbum até 20 itens, até 10 por lote. Foto até 10 MB (10.000.000 bytes), JPEG/PNG/WebP; HEIC/HEIF rejeitados enquanto não comprovados. Entrega JPEG até 2.048 px e miniatura de 480 px, com orientação aplicada e sem EXIF/GPS. | Idealizador; implementação/prova local T06, integração T07/T08/T11 |
 | D07 · vídeo | Confirmado em T06: até 100 MB (100.000.000 bytes)/60 s; entrada MP4/MOV e saída MP4/H.264/AAC quando houver áudio, até 1080p. Objetos/miniaturas privados; URL da aplicação de cinco minutos vinculada à sessão, com reautorização em cada leitura/retomada. Processo local separado aprovado; publicação parcial é integrada em T11. Prova sintética local não comprova Android/iPhone reais. | Idealizador; T06/T11; aparelhos/infraestrutura publicada ainda pendentes |
 | D08 · retenção | Confirmada em T06: órfãos após 24h sem atividade; originais removidos até 24h após processamento; evidência por 180 dias desde a publicação, sem expurgo durante análise/contestação; álbum durante relação ativa e até 12 meses de calendário após encerramento. A origem informa proteção/encerramento na mesma transação; sem domínio integrado, proteção conservadora. Histórico estruturado até 24 meses após encerramento e resolução de pendências; backups até 30 dias; operação completa em T14. | Idealizador; T06/T11/T14 |
 | D08 · direitos e pendências | Confirmada em T06: procedimento manual identificável de exportação/exclusão antes do piloto, em T14; não apagar pendências automaticamente. Ocultar mídia removida imediatamente e expurgar conforme política; exclusão não muda pontos/ticket. T14 define anonimização e reaplicação de exclusões ao restaurar. Prazos são decisões de produto, sem apresentação como exigência legal. | Idealizador; T14 e integração da proteção pela origem |
-| D09 · operação | Duas versões estáveis mais recentes no piloto de Chrome Android/Safari iPhone, com versões exatas registradas e Android intermediário real. Proposta: RPO de 24h e RTO de 8h para banco/arquivos, a comprovar por restauração. Orçamento, disponibilidade, provedor de publicação e canal de suporte ainda sem decisão; nenhum custo autorizado. | Idealizador; T14/T15 |
+| D09 · operação | Confirmadas metas locais de RPO de 24h e RTO de 8h para banco/arquivos; [ensaio sintético](docs/pilot/recovery.md) registrou 77,838s/96,593s nesta máquina. Homologação nas duas versões estáveis mais recentes de Chrome Android/Safari iPhone e Android intermediário real permanece adiada. Orçamento, disponibilidade remota, provedor e canal público de suporte continuam sem decisão; nenhum custo autorizado. | Idealizador; T14/T15 |
 | D10 · retrospectiva | Periodicidade, elegibilidade, corte, regeneração e compartilhamento continuam para evolução. Capturar os dados históricos necessários desde o MVP. | Idealizador; E04, sem bloqueio de T01 |
 
 Os limites devem ser validados nos testes do pacote responsável e podem ser ajustados antes da decisão. Nenhum valor desta tabela altera os dados ou as regras da demonstração.

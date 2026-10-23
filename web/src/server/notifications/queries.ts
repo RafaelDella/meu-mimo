@@ -4,12 +4,14 @@ import type { Identity } from '../auth/types.ts';
 import type { NotificationTarget, NotificationView } from '../../contracts/notifications.ts';
 import type { StoreTransaction } from '../stores/transaction.ts';
 import { unavailable } from '../stores/validation.ts';
+import type { Suppressions } from '../privacy/suppression.ts';
+import { publicAuthor, visibleAuthoredFields } from '../privacy/views.ts';
 
 export const notificationSelect = {
   id: true, createdAt: true, readAt: true,
   event: { select: {
-    kind: true, storeId: true, participantMembershipId: true, createdAt: true,
-    actor: { select: { displayName: true } }, store: { select: { name: true } },
+    kind: true, storeId: true, participantMembershipId: true, createdAt: true, actorProfileId: true,
+    actor: { select: { displayName: true } }, store: { select: { name: true, createdByProfileId: true } },
     comment: { select: { conversation: { select: { id: true, subjectType: true, subjectId: true } } } },
     submission: { select: { id: true, status: true } },
     reviewEvent: { select: { id: true } },
@@ -52,12 +54,14 @@ export function notificationAudience(identity: Identity, storeId?: string): Pris
   } };
 }
 
-export function notificationView(notification: SelectedNotification): NotificationView {
+export function notificationView(notification: SelectedNotification, suppressions: Suppressions): NotificationView {
+  const store = notification.event.store;
   return {
     id: notification.id, kind: notification.event.kind, storeId: notification.event.storeId,
-    storeName: notification.event.store.name, createdAt: notification.createdAt.toISOString(),
+    storeName: visibleAuthoredFields(store, ['name'], store.createdByProfileId, suppressions).name,
+    createdAt: notification.createdAt.toISOString(),
     occurredAt: notification.event.createdAt.toISOString(), readAt: notification.readAt?.toISOString() ?? null,
-    actor: { displayName: notification.event.actor.displayName },
+    actor: publicAuthor(notification.event.actor, suppressions.get(notification.event.actorProfileId)),
   };
 }
 

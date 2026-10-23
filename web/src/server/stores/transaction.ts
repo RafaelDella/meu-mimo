@@ -3,6 +3,7 @@ import type { Membership, Prisma, Store } from '../../generated/prisma/client.ts
 import type { Identity } from '../auth/types.ts';
 import { getDb } from '../db/client.ts';
 import { AppError } from '../errors.ts';
+import { suppressionFor } from '../privacy/suppression.ts';
 import { resourceId, unavailable } from './validation.ts';
 
 export type StoreTransaction = Prisma.TransactionClient;
@@ -24,6 +25,9 @@ export async function assertIdentityInTransaction(tx: StoreTransaction, identity
     : await tx.$queryRaw<{ suspendedAt: Date | null }[]>`
       SELECT "suspendedAt" FROM app."Profile" WHERE id = ${identity.userId}::uuid FOR SHARE`;
   if (!profiles.length) throw new AppError('session_invalid', 401, 'Entre novamente na sua conta.');
+  if ((await suppressionFor(tx, [identity.userId])).get(identity.userId)?.identity) {
+    throw new AppError('session_invalid', 401, 'Sua sessão não está disponível. Entre novamente.');
+  }
   if (profiles[0].suspendedAt) throw new AppError('account_suspended', 403, 'O acesso desta conta está suspenso.');
   await tx.$queryRaw`
     SELECT id FROM app."AuthSession"

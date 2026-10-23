@@ -9,6 +9,8 @@ import { choice, invalidField, operationConflict, pagination } from '../stores/v
 import { localDate } from '../submissions/validation.ts';
 import { movementRange, targetParticipant } from './queries.ts';
 import { pointsBalance } from './balance.ts';
+import { suppressionFor } from '../privacy/suppression.ts';
+import { publicAuthor, visibleAuthoredText } from '../privacy/views.ts';
 
 /** Somente a origem recebida chama o crédito, dentro da própria transação. */
 export async function creditSubmission(scope: StoreScope, submissionId: string, now: Date): Promise<void> {
@@ -50,19 +52,25 @@ export async function listPointsEntries(identity: Identity, storeId: string, que
       ...(from || to ? { createdAt: await movementRange(scope, from, to) } : {}) };
     const total = await scope.tx.pointsEntry.count({ where });
     const rows = await scope.tx.pointsEntry.findMany({ where,
-      include: { actor: { select: { displayName: true } }, submission: { select: { activityName: true } },
-        redemption: { select: { rewardName: true } },
-        participant: { select: { profile: { select: { displayName: true } } } } },
+      include: { actor: { select: { displayName: true } },
+        submission: { select: { activityName: true, activity: { select: { createdByProfileId: true } } } },
+        redemption: { select: { rewardName: true, reward: { select: { createdByProfileId: true } } } },
+        participant: { select: { profileId: true, profile: { select: { displayName: true } } } } },
       orderBy: [{ createdAt: 'desc' }, { id: 'desc' }], skip: page.skip, take: page.pageSize });
-    return { items: rows.map(row => ({ id: row.id, storeId: row.storeId, participantMembershipId: row.participantMembershipId,
+    const suppressions = await suppressionFor(scope.tx, rows.flatMap(row => [row.actorProfileId, row.participant.profileId,
+      ...(row.submission ? [row.submission.activity.createdByProfileId] : []), ...(row.redemption ? [row.redemption.reward.createdByProfileId] : [])]));
+    return { items: rows.map(row => {
+      const activityName = row.submission ? visibleAuthoredText(row.submission.activityName!, row.submission.activity.createdByProfileId, suppressions) : null;
+      const rewardName = row.redemption ? visibleAuthoredText(row.redemption.rewardName, row.redemption.reward.createdByProfileId, suppressions) : null;
+      return { id: row.id, storeId: row.storeId, participantMembershipId: row.participantMembershipId,
       submissionId: row.submissionId, kind: row.kind as PointsKind, amount: row.amount.toString(), createdAt: row.createdAt.toISOString(),
-      actor: row.actor, participant: row.participant.profile, activityName: row.submission?.activityName ?? null,
-      redemptionId: row.redemptionId, rewardName: row.redemption?.rewardName ?? null,
-      origin: row.redemptionId ? { type: 'REDEMPTION' as const, id: row.redemptionId, name: row.redemption!.rewardName } :
-        { type: 'SUBMISSION' as const, id: row.submissionId!, name: row.submission!.activityName! },
+      actor: publicAuthor(row.actor, suppressions.get(row.actorProfileId)), participant: publicAuthor(row.participant.profile, suppressions.get(row.participant.profileId)), activityName,
+      redemptionId: row.redemptionId, rewardName,
+      origin: row.redemptionId ? { type: 'REDEMPTION' as const, id: row.redemptionId, name: rewardName! } :
+        { type: 'SUBMISSION' as const, id: row.submissionId!, name: activityName! },
       reviewEventId: row.reviewEventId, compensatesEntryId: row.compensatesEntryId,
       path: row.redemptionId ? `/lojas/${row.storeId}/tickets/${row.redemptionId}` :
-        `/lojas/${row.storeId}/registros/${row.submissionId}${row.reviewEventId ? `?evento=${row.reviewEventId}` : ''}` })),
+        `/lojas/${row.storeId}/registros/${row.submissionId}${row.reviewEventId ? `?evento=${row.reviewEventId}` : ''}` }; }),
     total, page: page.page, pageSize: page.pageSize };
   });
 }

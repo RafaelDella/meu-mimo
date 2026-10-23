@@ -20,7 +20,11 @@ export function RewardForm({ initial = emptyReward, busy, locked, canSubmit = tr
   const noteField = useRef<HTMLTextAreaElement>(null);
   const instructionsField = useRef<HTMLTextAreaElement>(null);
   const stockField = useRef<HTMLInputElement>(null);
-  const [fields, setFields] = useState<RewardFields>({ ...initial });
+  const [fields, setFields] = useState<RewardFields>(() => ({
+    name: initial.name, description: initial.description, category: initial.category,
+    sticker: initial.sticker, cost: initial.cost, note: initial.note,
+    instructions: initial.instructions, available: initial.available, stock: initial.stock,
+  }));
   const [errors, setErrors] = useState<Partial<Record<keyof RewardFields, string>>>({});
   const [preview, setPreview] = useState(false);
   function set<K extends keyof RewardFields>(key: K, value: RewardFields[K]) {

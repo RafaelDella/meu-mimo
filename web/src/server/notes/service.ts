@@ -5,6 +5,7 @@ import type { NoteCurrent, NoteLookup, NoteMutation, NoteVersion, ParticipantNot
 import type { Identity } from '../auth/types.ts';
 import { requireConversationAudience } from '../conversations/access.ts';
 import { AppError } from '../errors.ts';
+import { suppressionFor } from '../privacy/suppression.ts';
 import { enqueueNoteSent } from '../outbox/events.ts';
 import { consumeStoreLimit } from '../stores/limits.ts';
 import type { StoreScope } from '../stores/transaction.ts';
@@ -17,7 +18,7 @@ async function result(scope: StoreScope, version: StoredNoteVersion): Promise<No
   const current = await noteCurrent(scope, version.participantMembershipId);
   const applied = await scope.tx.noteVersion.findUniqueOrThrow({ where: { id: version.id }, select: noteVersionSelect });
   if (!current.current) unavailable();
-  return { applied: noteVersionView(applied), current: current.current, appliedVersion: version.version };
+  return { applied: noteVersionView(applied, await suppressionFor(scope.tx, [applied.actorProfileId])), current: current.current, appliedVersion: version.version };
 }
 
 export async function readOwnNote(identity: Identity, storeId: string): Promise<ParticipantNoteCurrent> {
@@ -94,7 +95,10 @@ async function accessibleVersion(scope: StoreScope, versionId: string) {
 
 export async function readNoteVersion(identity: Identity, storeId: string, versionId: string): Promise<NoteVersion> {
   await consumeStoreLimit(identity, 'read');
-  return withStoreTransaction(identity, storeId, async scope => noteVersionView(await accessibleVersion(scope, versionId)));
+  return withStoreTransaction(identity, storeId, async scope => {
+    const version = await accessibleVersion(scope, versionId);
+    return noteVersionView(version, await suppressionFor(scope.tx, [version.actorProfileId]));
+  });
 }
 
 export async function markNoteVersionRead(identity: Identity, storeId: string, versionId: string): Promise<{ versionId: string; readAt: string }> {

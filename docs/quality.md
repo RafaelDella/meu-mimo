@@ -267,3 +267,34 @@ Resultados e limitações ficam no
 [plano T13](superpowers/plans/2026-10-22-t13-administracao.md);
 comandos em [administração local](admin-local.md). Provas de UI com respostas
 controladas não substituem as provas HTTP com Auth/PostgreSQL/Storage reais.
+
+## Verificação de T14
+
+O [aceite integrado](pilot/acceptance.md) distingue HTTP, SQL, UI controlada,
+navegador com serviços reais e laboratório. `test:web:real` usa formulários,
+Auth/PostgreSQL/Storage e consumidores reais; não intercepta APIs privadas.
+Conferências por SELECT não substituem a ação feita pela UI. Fixtures sintéticas
+têm IDs próprios e limpeza limitada à sua autoria; relatórios e traces ficam
+privados. Aguardar a cota real não autoriza limpar os buckets para acelerar QA.
+
+Direitos precisam provar autoria da projeção, exclusão parcial explícita,
+exportação sem segredos/conteúdo alheio e nova autorização de bytes/Range.
+Recuperação exige cluster/Storage do mesmo corte, componentes autenticados,
+journal externo completo e reaplicado, contextos antigos negados e um novo
+ciclo pela web da cópia. `STACK_VERIFIED` isolado não comprova o RTO da aplicação.
+Teste de componente faltante/adulterado restaura e reconfirma o backup original.
+
+Execute builds, serviços, ensaios e testes que usam a custódia em série.
+`npm run check` também testa o lock real de manutenção e não pode concorrer com
+backup/restore. Desempenho precisa de cinco amostras por cenário/cache e perfil
+registrado, sem outros checks disputando a máquina. Latência de interação de
+laboratório não é INP nem p75 de tráfego real. Câmera/aparelhos/leitores reais e
+publicação conservam suas pendências explícitas.
+
+Formulários de edição precisam projetar os campos editáveis ao receber um DTO
+de leitura. A anotação TypeScript não remove metadados presentes no objeto em
+runtime. T14 reproduziu PATCHs de mimo e atividade recusados por campos extras;
+os dois formulários foram corrigidos com projeção explícita. As regressões de
+navegador agora usam um contrato estrito para esse salvamento, e o ciclo real
+percorre as duas edições. Mocks que aceitam qualquer corpo não comprovam que o
+formulário consegue salvar na API real.

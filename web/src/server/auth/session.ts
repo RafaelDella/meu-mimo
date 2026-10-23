@@ -4,6 +4,8 @@ import { createAuthClient } from './client.ts';
 import type { AuthClient } from './client.ts';
 import type { Identity } from './types.ts';
 import { readAuthSession } from './sessions.ts';
+import { getDb } from '../db/client.ts';
+import { suppressionFor } from '../privacy/suppression.ts';
 
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -23,6 +25,9 @@ export async function readVerifiedIdentity(client: AuthClient): Promise<Identity
   }
   if (!userData.user.email_confirmed_at) {
     throw new AppError('email_unverified', 403, 'Confirme seu e-mail para continuar.');
+  }
+  if ((await suppressionFor(getDb(), [claims.sub])).get(claims.sub)?.identity) {
+    throw new AppError('session_invalid', 401, 'Entre na sua conta para continuar.');
   }
   return {
     userId: claims.sub,
