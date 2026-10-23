@@ -1,0 +1,29 @@
+.area { container: relation-feed / inline-size; gap: 1rem; }
+.area > h2 { margin: 0; }
+.area :where(p, label, select, input, fieldset, h3, a) { min-width: 0; overflow-wrap: anywhere; }
+.context { margin: 0; color: var(--text-muted); font-size: .875rem; }
+.filters { container: feed-filters / inline-size; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 11.5rem), 1fr)); align-items: end; gap: .875rem; padding: .75rem; border: 1px solid var(--border); border-radius: 1rem; background: var(--surface-soft); }
+.filters :where(select, input) { width: 100%; min-width: 0; }
+.filters > button { justify-self: start; }
+.periodError { grid-column: 1 / -1; margin: 0; color: var(--error-text); }
+.people { display: grid; gap: .875rem; grid-column: 1 / -1; min-width: 0; margin: 0; padding: .75rem; border: 1px solid var(--border-control); border-radius: .875rem; }
+.people legend { font-weight: 600; }
+.personSearch { min-width: 0; }
+.personSearch > p { margin: .375rem 0 0; font-size: .75rem; }
+.personSearch > p:empty { display: none; }
+.people > p, .people > nav { grid-column: 1 / -1; }
+.people > button { justify-self: start; }
+.toolbar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: .75rem; min-width: 0; }
+.toolbar > p { margin: 0; font-weight: 600; }
+.toolbar > label { flex: 0 1 12rem; }
+.toolbar select { width: 100%; min-width: 0; }
+.card { display: grid; gap: .75rem; padding: 1.125rem; }
+.card > :where(p, h3), .statusLine p { margin: 0; }
+.metadata { font-size: .875rem; }
+.statusLine { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem 1rem; }
+.statusLine p { font-size: .875rem; }
+.statusLine :global(.ui-status) { max-width: 100%; white-space: normal; }
+@container feed-filters (min-width: 38rem) {
+  .people { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: start; }
+  .people > button { margin-top: 1.875rem; }
+}

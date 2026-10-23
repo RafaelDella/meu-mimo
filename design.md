@@ -157,6 +157,45 @@ nem alteração das regras de pontos, bilhetes, permissões ou persistência.
 
 Plano e evidências: [organização desktop](docs/superpowers/plans/2026-10-23-desktop-lojinha-atividades.md).
 
+### 3.3. Organização desktop de Meus mimos e dos tickets
+
+Na continuação autorizada em 23/10/2026, Meus mimos prioriza os vales e os
+filtros. Contador e potinho compacto ficam no apoio, depois da lista na ordem
+do documento; o contador continua independente dos filtros. A introdução
+mantém o vale com laço em escala menor no desktop. Os filtros distribuem-se
+em linha quando couberem e preservam a seleção de pessoa para o lojista.
+
+O detalhe apresenta nome, código, situação e custo num resumo compacto. Os
+próximos passos e o combinado antecedem os textos completos da ocasião. A
+coluna principal conserva esses textos, o álbum e a conversa; saldo atual e
+histórico ficam no apoio. Custos e saldos da emissão continuam identificados
+separadamente do saldo disponível atual. Situações usam texto e badge.
+
+As duas composições usam colunas somente a partir de 50rem no seu contêiner;
+com menos espaço ou texto ampliado, empilham sem duplicar conteúdo. Não há
+barra fixa cobrindo foco, nem alteração de transições, devolução, audiência ou
+persistência. Plano e evidências: [Meus mimos e tickets no desktop](docs/superpowers/plans/2026-10-23-desktop-mimos-tickets.md).
+
+### 3.4. Organização desktop do Extrato e do Mural
+
+Na continuação solicitada em 23/10/2026, o Extrato prioriza os filtros e os
+movimentos agrupados por dia. Valores assinados e origem ficam em destaque;
+autoria, horário e vínculos de compensação permanecem completos. Com pelo
+menos 50rem disponíveis no contêiner, saldo compacto, consulta de tickets e
+orientações ficam na coluna de apoio, depois dos movimentos na ordem do
+documento. O saldo é atual, independente do período. O lojista precisa aplicar
+uma participação para consultá-lo; não há saldo agregado da loja.
+
+O Mural mantém uma sequência única. Filtros ficam numa superfície delimitada,
+com busca de pessoas em linha quando houver espaço e itens por página junto
+à lista. Nome, situação textual com badge e ações de origem/conversa antecedem
+resumo e mídia. Texto, prévias, reações e conversa continuam disponíveis.
+
+Ambas as telas associam o erro de período à data final e levam o foco até
+ela. Em celular ou com texto ampliado, os controles e colunas se empilham.
+Paleta, gatinho, papelaria e tipografia permanecem; não há novo contrato,
+persistência ou regra financeira. Plano e evidências: [Extrato e Mural no desktop](docs/superpowers/plans/2026-10-23-desktop-extrato-mural.md).
+
 ## 4. Regras de uso e validação
 
 ### Biblioteca compartilhada de ilustrações

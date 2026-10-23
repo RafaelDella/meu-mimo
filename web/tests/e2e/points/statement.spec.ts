@@ -64,6 +64,7 @@ test('sticker não cobre saldo extenso positivo ou negativo com texto ampliado',
     await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });
     const summary = page.getByRole('region', { name: 'Seu potinho de pontos', exact: true });
     await expect(summary.getByText(new Intl.NumberFormat('pt-BR').format(BigInt(balance)), { exact: true })).toBeVisible();
+    await summary.scrollIntoViewIfNeeded();
     const sticker = summary.locator('img');
     await expect.poll(() => sticker.evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth > 0)).toBe(true);
     const imageBox = (await sticker.boundingBox())!;

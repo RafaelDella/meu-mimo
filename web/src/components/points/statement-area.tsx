@@ -36,6 +36,7 @@ function StatementContent({ store, query: initialQuery }: { store: StoreView; qu
   const id = useId();
   const router = useRouter();
   const title = useRef<HTMLHeadingElement>(null);
+  const endDate = useRef<HTMLInputElement>(null);
   const initial = new URLSearchParams(initialQuery);
   const [filters, setFilters] = useState({ kind: initial.get('kind') ?? '', from: initial.get('from') ?? '', to: initial.get('to') ?? '', membershipId: initial.get('membershipId') ?? '' });
   const [invalid, setInvalid] = useState(false);
@@ -59,7 +60,7 @@ function StatementContent({ store, query: initialQuery }: { store: StoreView; qu
   }
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (filters.from && filters.to && filters.from > filters.to) { setInvalid(true); return; }
+    if (filters.from && filters.to && filters.from > filters.to) { setInvalid(true); endDate.current?.focus(); return; }
     setInvalid(false); navigate(1);
   }
   const groups = new Map<string, PointsEntryView[]>();
@@ -71,24 +72,21 @@ function StatementContent({ store, query: initialQuery }: { store: StoreView; qu
   return <section className={styles.area} aria-labelledby={`${id}-title`}>
     {store.role === 'PARTICIPANT' && <RewardTabs store={store} active="statement" />}
     <h2 id={`${id}-title`} tabIndex={-1} ref={title}>Extrato de pontos</h2>
-    {store.role === 'PARTICIPANT' && <RewardCounter store={store} />}
-    <p>Loja: {store.name || 'Sua lojinha'}. Datas e horários em {store.timezone}.</p>
-    {store.role === 'MERCHANT' && !membershipId ? <p>Movimentos de todas as pessoas desta loja. Selecione uma participação para consultar o saldo individual.</p> :
-      <StatementBalance storeId={store.id} storeName={store.name || 'Sua lojinha'} membershipId={membershipId} onUnavailable={unavailable} />}
-    <form className="stores-form" onSubmit={submit}>
+    <p className={styles.context}>Loja: {store.name || 'Sua lojinha'}. Datas e horários em {store.timezone}.</p>
+    <div className={styles.layout}><div className={styles.main}>
+    <form className={styles.filters} aria-label="Filtros do extrato" onSubmit={submit}>
       {store.role === 'MERCHANT' && <StatementPeople storeId={store.id} value={filters.membershipId} onChange={value => setFilters(current => ({ ...current, membershipId: value }))} onUnavailable={unavailable} />}
       <label className="stores-field">Tipo de movimento<select className="ui-input" value={filters.kind} onChange={event => setFilters(current => ({ ...current, kind: event.target.value }))}>
         <option value="">Todos os movimentos</option>{Object.entries(kinds).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
-      <Input label="Movimentos desde a data" type="date" value={filters.from} onChange={event => setFilters(current => ({ ...current, from: event.target.value }))} />
-      <Input label="Movimentos até a data" type="date" value={filters.to} onChange={event => setFilters(current => ({ ...current, to: event.target.value }))} />
-      {invalid && <p role="alert">A data final precisa ser igual ou posterior à inicial.</p>}<Button type="submit">Filtrar extrato</Button>
+      <Input label="Movimentos desde a data" name="from" type="date" value={filters.from} onChange={event => setFilters(current => ({ ...current, from: event.target.value }))} />
+      <Input ref={endDate} label="Movimentos até a data" name="to" type="date" aria-invalid={invalid || undefined} aria-describedby={invalid ? `${id}-period-error` : undefined} value={filters.to} onChange={event => { setInvalid(false); setFilters(current => ({ ...current, to: event.target.value })); }} />
+      {invalid && <p id={`${id}-period-error`} className={styles.periodError} role="alert">A data final precisa ser igual ou posterior à inicial.</p>}<Button type="submit">Filtrar extrato</Button>
     </form>
-    <p>Ganhos por atividade, estornos, recomposições, resgates e devoluções são movimentos distintos. Devoluções não são ganhos por atividade. Pontos em análise ainda não integram o saldo disponível.</p>
     {loading && <p role="status">Consultando movimentos…</p>}
     {error ? <div role="alert"><p>{storeError(error)}</p><Button variant="secondary" onClick={reload}>Consultar extrato novamente</Button></div> : null}
     {data && <>{!data.items.length && <p>Nenhum movimento encontrado com estes filtros.</p>}
-      {[...groups].map(([date, items]) => <section key={date} className="stores-card"><h3>{date.split('-').reverse().join('/')}</h3>
-        <ol className={styles.movements}>{items.map(entry => <li key={entry.id}><h4>{signedPoints(entry.amount)} pontos · {originName(entry)}</h4>
+      {[...groups].map(([date, items]) => <section key={date} className={`stores-card ${styles.day}`}><h3>{date.split('-').reverse().join('/')}</h3>
+        <ol role="list" className={styles.movements}>{items.map(entry => <li key={entry.id}><h4><span className={BigInt(entry.amount) < 0n ? styles.debit : styles.credit}>{signedPoints(entry.amount)} pontos</span> · {originName(entry)}</h4>
           <p>{kinds[entry.kind]} · {store.role === 'MERCHANT' ? `${entry.participant.displayName || 'Pessoa participante'} · ` : ''}{entry.actor.displayName || 'Pessoa da relação'}</p>
           <p><time dateTime={entry.createdAt}>{localTime(entry.createdAt, store.timezone)}</time></p>
           {entry.compensatesEntryId && <p>{entry.kind === 'REDEMPTION_REFUND' ? 'Esta devolução compensa o débito original deste resgate.' : 'Este ajuste compensa um movimento anterior da mesma conquista.'}</p>}
@@ -96,6 +94,12 @@ function StatementContent({ store, query: initialQuery }: { store: StoreView; qu
       <Pagination page={data.page} pageSize={data.pageSize} total={data.total} onPage={next => navigate(next, { kind: applied.get('kind') ?? '', from: applied.get('from') ?? '', to: applied.get('to') ?? '', membershipId })} />
     </>}
     <Link className="stores-link" href={`/lojas/${store.id}/atividades`}>Voltar às atividades e ao potinho</Link>
+    </div><aside className={styles.support} aria-label="Saldo e orientações do extrato">
+      {store.role === 'MERCHANT' && !membershipId ? <div className="stores-card"><h3>Saldo por pessoa</h3><p>Movimentos de todas as pessoas desta loja. Selecione uma participação para consultar o saldo individual.</p></div> :
+        <div><p className={styles.balanceHint}>Saldo atual, independente do período filtrado.</p><StatementBalance storeId={store.id} storeName={store.name || 'Sua lojinha'} membershipId={membershipId} onUnavailable={unavailable} /></div>}
+      {store.role === 'PARTICIPANT' && <div className="stores-card"><RewardCounter store={store} /></div>}
+      <section className={`stores-card ${styles.guide}`} aria-label="Entenda os movimentos"><h3>Entenda os movimentos</h3><p>Ganhos por atividade, estornos, recomposições, resgates e devoluções são movimentos distintos. Devoluções não são ganhos por atividade. Pontos em análise ainda não integram o saldo disponível.</p></section>
+    </aside></div>
   </section>;
 }
 export function StatementArea(props: { store: StoreView; query: string }) {

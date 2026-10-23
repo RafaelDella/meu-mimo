@@ -7,4 +7,65 @@
 .choice input { flex: 0 0 auto; width: 1.25rem; height: 1.25rem; }
 .events { padding-left: 1.25rem; }
 .events li { margin-block: 1rem; overflow-wrap: anywhere; }
+.listPage { container: tickets-page / inline-size; min-width: 0; }
+.listLayout, .listContent, .support, .detailPage, .detailLayout, .detailMain { display: grid; gap: 1.25rem; min-width: 0; align-items: start; }
+.listContent { gap: 0; }
+.listContent > h2 { margin-bottom: .5rem; }
+.filterHint { margin: 0 0 1rem; color: var(--text-muted); font-size: .875rem; }
+.filters { container: ticket-filters / inline-size; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr)); align-items: end; gap: .875rem; min-width: 0; padding: .75rem; margin-bottom: 1rem; border: 1px solid var(--border); border-radius: 1rem; background: var(--surface-soft); }
+.filters > * { min-width: 0; }
+.filters :where(input, select) { width: 100%; min-width: 0; }
+.filters :global(.ui-field-error:empty) { display: none; }
+.filters > button { justify-self: start; }
+.filters > fieldset { display: grid; align-items: end; gap: .875rem; grid-column: 1 / -1; margin: 0; min-width: 0; padding: .875rem; border: 1px solid var(--border-control); border-radius: .875rem; }
+.filters legend { font-weight: 600; }
+.periodError { grid-column: 1 / -1; margin: 0; color: var(--error-text); }
+.ticketGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 16rem), 1fr)); gap: 1rem; min-width: 0; }
+.listCard { display: flex; flex-direction: column; align-items: start; gap: .5rem; padding: 1rem; }
+.listCard > * { max-width: 100%; }
+.listCard > div:first-child { width: 100%; }
+.listCard > p, .listCard > h3, .listCard > div:first-child > p { margin: 0; }
+.listCard > h3 { width: 100%; padding-bottom: .75rem; }
+.listCard :global(.ui-status) { max-width: 100%; white-space: normal; }
+.openTicket { font-weight: 600; }
+.cost { font-weight: 600; font-variant-numeric: tabular-nums; }
+.issued { color: var(--text-muted); font-size: .875rem; }
+.counter { padding: 1rem; }
+.counter p { margin-block: 0 1rem; }
+.counter p:last-child { margin-bottom: 0; }
+.support > *, .support :where(section, dl, div, p) { min-width: 0; }
+.support :global(.stores-card) { padding: 1rem; }
+.support :global(.stores-pagination) { gap: .375rem; margin-block: 1rem 0; }
+.support :global(.stores-pagination) span { flex-basis: 100%; }
+.detailPage { container: ticket-detail / inline-size; }
+.detailPage > a { justify-self: start; }
+.summary { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.summaryCopy { flex: 1 1 15rem; min-width: 0; }
+.summaryCopy > h2 { margin-block: .5rem 1rem; }
+.summaryCopy > p:last-child { margin-bottom: 0; }
+.summaryArt { flex: 0 0 5rem; min-width: 0; }
+.summaryArt img { width: 100%; height: auto; }
+.statusLine { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem 1.25rem; }
+.statusLine :global(.ui-status) { max-width: 100%; white-space: normal; }
+.statusLine p { margin: 0; }
+.receipt { background: var(--cream); border-style: dashed; }
+.receipt h4 { margin-block: 1.5rem .5rem; font-size: 1rem; }
+.detailMain :global(.stores-details) div { min-width: 0; }
+.detailMain :global(.stores-details) dd { overflow-wrap: anywhere; }
+@container tickets-page (min-width: 50rem) {
+  .listLayout { grid-template-columns: minmax(0, 1fr) 17rem; gap: 1.5rem; }
+}
+@container ticket-filters (min-width: 32rem) {
+  .filters > fieldset { grid-template-columns: minmax(0, 1fr) auto; }
+  .filters > fieldset :global(.stores-field) { grid-column: 1 / -1; }
+}
+@container ticket-filters (min-width: 38rem) {
+  .filters > fieldset { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); }
+  .filters > fieldset :global(.stores-field) { grid-column: auto; }
+}
+@container ticket-detail (min-width: 50rem) {
+  .detailLayout { grid-template-columns: minmax(0, 1fr) 18rem; gap: 1.5rem; }
+  .summaryArt { flex-basis: 6rem; }
+}
+@media (max-width: 30rem) { .summary { flex-wrap: wrap; } .summaryArt { flex-basis: 4rem; } }
 @media (prefers-reduced-motion: reduce) { .area *, .form * { animation: none !important; transition: none !important; } }

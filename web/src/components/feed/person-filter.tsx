@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Pagination } from '@/components/stores/store-controls';
 import { useRelationshipResource } from '@/components/notifications/use-relationship-resource';
 import styles from '@/components/notifications/relationship.module.css';
+import feedStyles from './feed.module.css';
 
 export function PersonFilter({ storeId, value, onChange }: { storeId: string; value: string; onChange(value: string): void }) {
   const [draft, setDraft] = useState(''); const [query, setQuery] = useState(''); const [page, setPage] = useState(1); const [selectedLabel, setSelectedLabel] = useState('Pessoa selecionada');
@@ -17,11 +18,11 @@ export function PersonFilter({ storeId, value, onChange }: { storeId: string; va
     if (count > 80) { setError('Use até 80 caracteres Unicode para buscar uma pessoa.'); input.current?.focus(); return; }
     setError(''); setQuery(draft.trim()); setPage(1);
   }
-  return <fieldset className={styles.stack}><legend>Filtrar pessoa do mural</legend>
-    <label className={styles.field}>Buscar pessoa no mural<input ref={input} className="ui-input" type="search" value={draft} aria-invalid={count > 80 || undefined} aria-describedby={id} onChange={event => setDraft(event.target.value)} onKeyDown={event => { if (event.key === 'Enter') { event.preventDefault(); search(); } }} /></label>
-    <p id={id} className={count > 80 ? styles.error : styles.muted}>{count} de 80 caracteres Unicode na busca.</p><p role="alert">{error}</p>
-    <Button variant="secondary" onClick={search}>Buscar pessoas do mural</Button>
-    <label className={styles.field}>Pessoa<select className="ui-input" value={value} onChange={event => {
+  return <fieldset className={feedStyles.people}><legend>Filtrar pessoa do mural</legend><div className={feedStyles.personSearch}>
+    <label className={styles.field}>Buscar pessoa no mural<input ref={input} className="ui-input" name="personSearch" type="search" autoComplete="off" value={draft} aria-invalid={count > 80 || undefined} aria-describedby={id} onChange={event => setDraft(event.target.value)} onKeyDown={event => { if (event.key === 'Enter') { event.preventDefault(); search(); } }} /></label>
+    <p id={id} className={count > 80 ? styles.error : styles.muted}>{count} de 80 caracteres Unicode na busca.</p><p role="alert">{error}</p></div>
+    <Button variant="secondary" aria-label="Buscar pessoas do mural" onClick={search}>Buscar pessoas</Button>
+    <label className={styles.field}>Pessoa<select className="ui-input" name="participantMembershipId" value={value} onChange={event => {
       const id = event.target.value; setSelectedLabel(people.find(person => person.id === id)?.profile.displayName || 'Pessoa participante'); onChange(id);
     }}><option value="">Todas as pessoas</option>{value && !people.some(person => person.id === value) && <option value={value}>{selectedLabel}</option>}
       {people.map(person => <option key={person.id} value={person.id}>{person.profile.displayName || 'Pessoa participante'}</option>)}</select></label>

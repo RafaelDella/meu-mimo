@@ -15,7 +15,7 @@ export function StatementBalance({ storeId, storeName, membershipId, onUnavailab
   if (denied) return null;
   return <>{loading && <p role="status">Consultando o saldo desta participação…</p>}
     {error ? <div role="alert"><p>{storeError(error)}</p><Button variant="secondary" onClick={reload}>Consultar saldo novamente</Button></div> : null}
-    {data && <><PointsSummary storeName={storeName} available={data.available} pending={data.pending} />
+    {data && <><PointsSummary compact storeName={storeName} available={data.available} pending={data.pending} />
       {BigInt(data.available) < 0n && <p role="status">Este saldo está negativo por ajustes registrados no extrato. Os tickets já emitidos continuam válidos. Novos resgates dependerão de saldo suficiente.</p>}</>}
   </>;
 }
