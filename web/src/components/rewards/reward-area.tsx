@@ -24,9 +24,9 @@ export function RewardTabs({ store, active }: { store: StoreView; active: 'catal
 export function RewardArea({ store, accountKey, route }: { store: StoreView; accountKey: string; route: RewardRoute }) {
   const list = route.view === 'catalog' || route.view === 'tickets';
   return <RewardAccess><div className={styles.area}>
-    {list && <>{store.role === 'PARTICIPANT' && route.view === 'tickets' && <MimoIntro kind="ticket"><p className="mimo-eyebrow">Carinhos que viram momentos</p><h2>Meus mimos</h2><p>Guarde seus vales e combine os próximos momentos de vocês.</p></MimoIntro>}
+    {list && <>{store.role === 'PARTICIPANT' && route.view === 'tickets' && <MimoIntro kind="ticket" compact><p className="mimo-eyebrow">Carinhos que viram momentos</p><h2>Meus mimos</h2><p>Guarde seus vales e combine os próximos momentos de vocês.</p></MimoIntro>}
       {(store.role === 'MERCHANT' || route.view === 'tickets') && <RewardTabs store={store} active={route.view === 'catalog' ? 'catalog' : 'tickets'} />}
-      {store.role === 'PARTICIPANT' && <RewardBalance store={store} />}<RewardCounter store={store} showTotal={route.view === 'tickets'} /></>}
+      {route.view !== 'tickets' && <>{store.role === 'PARTICIPANT' && <RewardBalance store={store} />}<RewardCounter store={store} /></>}</>}
     {route.view === 'catalog' ? <RewardCatalog store={store} query={route.query} /> : route.view === 'new' ? <RewardEditor store={store} /> :
       route.view === 'edit' ? <RewardEditor store={store} rewardId={route.rewardId} /> : route.view === 'detail' ? <RewardDetail store={store} rewardId={route.rewardId} operationId={route.operationId} /> :
         route.view === 'tickets' ? <TicketList store={store} query={route.query} /> : <TicketDetail store={store} accountKey={accountKey} ticketId={route.ticketId} returnTo={route.returnTo} />}

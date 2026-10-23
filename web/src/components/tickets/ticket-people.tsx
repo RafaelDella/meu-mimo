@@ -19,7 +19,7 @@ export function TicketPeople({ storeId, value, onChange }: { storeId: string; va
   if (denied) return null;
   const people = data?.items.filter(item => item.role === 'PARTICIPANT') ?? [];
   return <fieldset><legend>Pessoa participante</legend><Input label="Buscar pessoa nos resgates" type="search" value={draft} maxLength={80} onChange={event => setDraft(event.target.value)} />
-    <Button variant="secondary" onClick={() => { setQ(draft.trim()); setPage(1); }}>Buscar pessoas nos resgates</Button>
+    <Button variant="secondary" aria-label="Buscar pessoas nos resgates" onClick={() => { setQ(draft.trim()); setPage(1); }}>Buscar pessoas</Button>
     {loading && <p role="status">Buscando pessoas…</p>}{error ? <div role="alert"><p>{storeError(error)}</p><Button variant="secondary" onClick={reload}>Consultar pessoas novamente</Button></div> : null}
     <label className="stores-field">Pessoa dos resgates<select className="ui-input" value={value} onChange={event => {
       setSelected(people.find(person => person.id === event.target.value)?.profile.displayName || 'Pessoa participante'); onChange(event.target.value);
