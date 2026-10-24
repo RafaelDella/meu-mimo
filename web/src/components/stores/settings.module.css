@@ -1,0 +1,19 @@
+.area { container: store-settings / inline-size; min-width: 0; }
+.area > h2 { margin-bottom: .5rem; }
+.intro { margin-block: 0 1rem; color: var(--text-muted); font-size: .875rem; }
+.layout, .support { display: grid; gap: 1rem; min-width: 0; align-items: start; }
+.details, .state, .closure { padding: 1rem; min-width: 0; overflow-wrap: anywhere; }
+.details h3, .state h3, .closure h3 { margin-block: 0 .875rem; font-size: 1.25rem; }
+.details :global(.stores-form) { margin-block: 0; max-width: none; }
+.details :where(input, textarea) { width: 100%; min-width: 0; }
+.details :global(.ui-field-error:empty) { display: none; }
+.state, .closure { font-size: .875rem; }
+.state :global(.ui-status) { max-width: 100%; white-space: normal; }
+.state :global(.stores-actions) { margin-bottom: 0; }
+.closure { border-style: dashed; background: var(--surface-paper); }
+.closure > button { color: var(--text-muted); border-color: var(--border); font-size: .875rem; font-weight: 400; }
+.support :global(.ui-dialog) { font-size: 1rem; }
+.readonly { display: grid; gap: 1rem; margin-bottom: 0; }
+.readonly dt { font-weight: 600; margin-bottom: .375rem; }
+.readonly dd { margin: 0; white-space: pre-wrap; }
+@container store-settings (min-width: 50rem) { .layout { grid-template-columns: minmax(0, 1fr) 18rem; gap: 1.5rem; } }

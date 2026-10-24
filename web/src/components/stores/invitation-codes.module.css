@@ -25,3 +25,36 @@
 .policySummary p:last-child { margin-bottom: 0; }
 .generated { margin-block: 1rem; padding-block: 1rem; border-block: 1px dashed var(--border-control); }
 .generated h3:focus { outline: 3px solid var(--focus); outline-offset: 4px; }
+.area { container: invitations-area / inline-size; min-width: 0; }
+.area > h2 { margin-bottom: .5rem; }
+.intro { margin-block: 0 1rem; font-size: .875rem; color: var(--text-muted); }
+.managementLayout, .consultation, .invitationList { display: grid; min-width: 0; gap: 1rem; align-items: start; }
+.creation, .invitationCard, .area .generated { padding: 1rem; }
+.creation h3, .listTitle, .generated h3 { margin-block: 0 .875rem; font-size: 1.25rem; }
+.policyForm { display: grid; gap: .875rem; min-width: 0; }
+.policyForm > p:first-child { margin: 0; font-size: .875rem; color: var(--text-muted); }
+.policyForm > button { justify-self: start; }
+.policyForm :where(input, select) { width: 100%; min-width: 0; }
+.policyForm :where(label, .policySummary) { font-size: .875rem; }
+.policyForm :global(.ui-field-error:empty) { display: none; }
+.policyForm > :global(.stores-feedback:empty), .policyForm > :global(.stores-error:empty) { margin: 0; }
+.policy legend { margin-bottom: .75rem; font-weight: 600; font-size: .875rem; }
+.policyForm .policyGrid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr)); gap: .75rem; }
+.policyForm .policySummary { font-size: .875rem; }
+.area .generated { margin: 0; border: 1px solid var(--border-control); }
+.cardHeader { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .5rem; min-width: 0; }
+.cardHeader h3 { margin: 0; font-size: 1.125rem; }
+.cardHeader :global(.ui-status) { max-width: 100%; white-space: normal; }
+.invitationCard .metadata, .generated .metadata { font-size: .875rem; margin-block: .875rem; }
+.invitationCard .metadata dd { font-variant-numeric: tabular-nums; }
+.policyHint { font-size: .875rem; }
+.invitationCard { overflow-wrap: anywhere; }
+.invitationCard > button[aria-disabled="true"] { background: var(--surface-soft); color: var(--text-muted); border-color: var(--border-control); cursor: default; }
+.revocation { margin-top: .875rem; padding-top: .75rem; border-top: 1px dashed var(--border); }
+.revocation > button { color: var(--text-muted); border-color: var(--border); font-size: .875rem; font-weight: 400; }
+.revocation :global(.ui-dialog) { font-size: 1rem; }
+@container invitations-area (min-width: 50rem) {
+  .managementLayout { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 1.5rem; }
+  .invitationCard .visor { font-size: 1.25rem; }
+  .generated .visor { font-size: 1.5rem; }
+}

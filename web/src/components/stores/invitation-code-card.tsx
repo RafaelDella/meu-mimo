@@ -1,10 +1,11 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useId, useRef, useState } from 'react';
 import type { CodeInvitationView, InvitationCredential, ManagedInvitation } from '@/contracts/invitations';
 import { displayInvitationCode } from '@/lib/invitation-code';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { StatusBadge } from '@/components/ui/status-badge';
 import { ConfirmAction, Feedback } from './store-controls';
 import { StoreRequestError, storeRequest, useStoreAction } from './store-api';
 import { InvitationCodeDisplay } from './invitation-code-display';
@@ -79,6 +80,7 @@ export function InvitationCodeCard({ invitation, storeId, storeName, timezone, o
 }) {
   const action = useStoreAction();
   const [credential, setCredential] = useState<InvitationCredential | null>(null);
+  const credentialId = useId();
   const [uncertain, setUncertain] = useState(false);
   const codeInvitation = 'kind' in invitation;
   const status = invitationStatus(invitation);
@@ -93,20 +95,21 @@ export function InvitationCodeCard({ invitation, storeId, storeName, timezone, o
     }, () => { setCredential(null); close(); onUpdate(); });
   }
   const revocable = !invitation.revokedAt && (codeInvitation || status === 'Pendente');
-  return <article className="stores-card"><h3>Convite {invitation.id.slice(0, 8)}</h3><p className="stores-state">{status}</p>
+  return <article className={`stores-card ${styles.invitationCard}`}><div className={styles.cardHeader}><h3>Convite {invitation.id.slice(0, 8)}</h3>
+    <StatusBadge tone={status === 'Disponível' || status === 'Aceito' ? 'success' : status === 'Pendente' || status === 'Pausado' ? 'pending' : 'info'} text={status} /></div>
     {codeInvitation ? <InvitationPolicyDetails invitation={invitation} timezone={timezone} /> :
       <p>Validade: <time dateTime={invitation.expiresAt}>{new Date(invitation.expiresAt).toLocaleString('pt-BR', { timeZone: timezone })}</time> · {timezone}</p>}
-    {codeInvitation && <p className="stores-muted">Prazo e limite permanecem os mesmos. Para mudá-los, revogue e gere outro convite.</p>}
+    {codeInvitation && <p className={`stores-muted ${styles.policyHint}`}>Prazo e limite permanecem os mesmos. Para mudá-los, revogue e gere outro convite.</p>}
     <Feedback {...action} />
-    {codeInvitation && !credential && <Button variant="secondary" disabled={action.busy} onClick={reveal}>Revelar código</Button>}
-    {credential && <><InvitationCredentialActions credential={credential} storeName={storeName} />
-      <Button variant="secondary" onClick={() => setCredential(null)}>Ocultar código</Button></>}
-    {revocable && <ConfirmAction label="Revogar convite" title="Revogar este convite?"
+    {codeInvitation && <Button variant="secondary" aria-disabled={action.busy} aria-expanded={!!credential} aria-controls={credential ? credentialId : undefined}
+      onClick={() => { if (action.busy) return; if (credential) setCredential(null); else reveal(); }}>{credential ? 'Ocultar código' : 'Revelar código'}</Button>}
+    {credential && <div id={credentialId}><InvitationCredentialActions credential={credential} storeName={storeName} /></div>}
+    {(revocable || action.error) && <div className={styles.revocation}>{revocable && <ConfirmAction label="Revogar convite" title="Revogar este convite?"
       description={codeInvitation ? 'Este código e seu link deixam de aceitar novas entradas. Quem já participa continua na lojinha.' :
         'Quem receber este link não poderá mais usá-lo para entrar na loja. Você pode gerar outro convite.'}
       confirmLabel="Confirmar revogação" busy={action.busy} error={action.error} confirmDisabled={uncertain} onConfirm={revoke}>
       {uncertain && <Button variant="secondary" onClick={onUpdate}>Consultar estado do convite</Button>}
     </ConfirmAction>}
-    {action.error && <Button variant="secondary" onClick={onUpdate}>Consultar estado do convite</Button>}
+    {action.error && <Button variant="secondary" onClick={onUpdate}>Consultar estado do convite</Button>}</div>}
   </article>;
 }

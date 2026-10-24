@@ -113,26 +113,26 @@ export function InvitationPolicyForm({ store, onCreated }: {
     });
   }
 
-  return <form noValidate onSubmit={event => { event.preventDefault(); if (!action.busy && !waitSeconds) generate(); }}>
+  return <form className={styles.policyForm} noValidate onSubmit={event => { event.preventDefault(); if (!action.busy && !waitSeconds) generate(); }}>
     <p>Compartilhe um código ou um link para convidar alguém. Cada nova pessoa que entrar consome um uso; acessar novamente não consome.</p>
     <fieldset className={styles.policy} disabled={locked}>
       <legend>Configuração do próximo convite</legend>
       <div className={styles.policyGrid}>
         <label className="stores-field" htmlFor={`${id}-expiration`}>Validade do convite
-          <select id={`${id}-expiration`} className="ui-input" value={expirationMode} onChange={event => { setExpirationMode(event.target.value as ExpirationMode); clearDate(); }}>
+          <select id={`${id}-expiration`} name="expiration" className="ui-input" value={expirationMode} onChange={event => { setExpirationMode(event.target.value as ExpirationMode); clearDate(); }}>
             <option value="AFTER_DAYS">Sete dias</option><option value="NEVER">Sem vencimento</option><option value="AT">Data e hora personalizadas</option>
           </select>
         </label>
         <label className="stores-field" htmlFor={`${id}-uses`}>Limite de participantes
-          <select id={`${id}-uses`} className="ui-input" value={usesMode} onChange={event => { setUsesMode(event.target.value); setLimitError(''); }}>
+          <select id={`${id}-uses`} name="usesMode" className="ui-input" value={usesMode} onChange={event => { setUsesMode(event.target.value); setLimitError(''); }}>
             <option value="LIMITED">Definir um limite</option><option value="UNLIMITED">Ilimitados</option>
           </select>
         </label>
-        {usesMode === 'LIMITED' && <Input ref={limitField} label="Máximo de novas participações" inputMode="numeric" value={maxUses} maxLength={7}
+        {usesMode === 'LIMITED' && <Input ref={limitField} label="Máximo de novas participações" name="maxUses" autoComplete="off" inputMode="numeric" value={maxUses} maxLength={7}
           hint="De 1 a 1.000.000 novas pessoas." error={limitError} onChange={event => { setMaxUses(event.target.value); setLimitError(''); }} />}
       </div>
       {expirationMode === 'AT' && <div className={styles.date}>
-        <Input ref={dateField} label="Data e hora de vencimento" type="datetime-local" step={60} value={localDateTime}
+        <Input ref={dateField} label="Data e hora de vencimento" name="expiresAt" autoComplete="off" type="datetime-local" step={60} value={localDateTime}
           hint={`Fuso da loja: ${timezone}. Confira antes de gerar.`} error={dateError}
           onChange={event => { setLocalDateTime(event.target.value); clearDate(); }} />
         <Button variant="secondary" onClick={checkDate}>Conferir data e hora</Button>
