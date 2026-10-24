@@ -26,7 +26,7 @@ export function personView(person: Omit<PersonView, 'closedAt'> & { closedAt: Da
 
 export function invitationView(invitation: Invitation): InvitationView {
   return {
-    id: invitation.id, expiresAt: invitation.expiresAt.toISOString(),
+    id: invitation.id, expiresAt: invitation.expiresAt!.toISOString(),
     revokedAt: invitation.revokedAt?.toISOString() ?? null,
     acceptedAt: invitation.acceptedAt?.toISOString() ?? null,
   };

@@ -14,7 +14,13 @@ const definitions = [
   ['Membership', `SELECT m.id::text AS _cursor,m.id,m."storeId",m."profileId",m.role,m."createdAt",m."closedAt",m."accessRevokedAt"
     FROM app."Membership" m WHERE m."profileId"=$1`, {}],
   ['Invitation', `SELECT i.id::text AS _cursor,i.id,i."storeId",i."createdByProfileId",i."createdAt",i."expiresAt",i."revokedAt",i."acceptedAt",
-    i."acceptedByProfileId",i."acceptedMembershipId" FROM app."Invitation" i WHERE i."createdByProfileId"=$1 OR i."acceptedByProfileId"=$1`, {}],
+    i."acceptedByProfileId",i."acceptedMembershipId",i.kind,i."maxUses",
+    CASE WHEN i."createdByProfileId"=$1 THEN i."useCount" END AS "useCount"
+    FROM app."Invitation" i WHERE i."createdByProfileId"=$1 OR i."acceptedByProfileId"=$1
+    OR EXISTS(SELECT 1 FROM app."InvitationUse" own WHERE own."invitationId"=i.id AND own."profileId"=$1)`, {}],
+  ['InvitationUse', `SELECT u.id::text AS _cursor,u.id,u."invitationId",u."storeId",u."profileId",u."membershipId",u."createdAt"
+    FROM app."InvitationUse" u WHERE u."profileId"=$1 OR EXISTS(SELECT 1 FROM app."Membership" owner
+      WHERE owner."profileId"=$1 AND owner."storeId"=u."storeId" AND owner.role='MERCHANT' AND owner."accessRevokedAt" IS NULL)`, {}],
   ['AdminGrant', `SELECT g."profileId"::text AS _cursor,g."profileId",g."grantedAt",g."revokedAt" FROM app."AdminGrant" g WHERE g."profileId"=$1`, {}],
   ['Store', `SELECT s.id::text AS _cursor,s.id,s."createdByProfileId",s.name,s.presentation,s.timezone,s.state,s."createdAt",s."closedAt"
     FROM app."Store" s WHERE ${storeAudience('s.id')}`, { name: 'createdByProfileId', presentation: 'createdByProfileId' }],
@@ -155,6 +161,12 @@ export async function exportFingerprint(database, subjectId) {
   return (await database.query(`SELECT md5(jsonb_build_object(
     'profile',(SELECT jsonb_build_array("suspendedAt","securityVersion") FROM app."Profile" WHERE id=$1),
     'memberships',(SELECT jsonb_agg(jsonb_build_array(id,"storeId",role,"closedAt","accessRevokedAt") ORDER BY id) FROM app."Membership" WHERE "profileId"=$1),
+    'invitationUses',(SELECT jsonb_agg(jsonb_build_array(u.id,u."invitationId",u."membershipId",u."createdAt") ORDER BY u.id)
+      FROM app."InvitationUse" u WHERE u."profileId"=$1 OR EXISTS(SELECT 1 FROM app."Membership" owner
+        WHERE owner."profileId"=$1 AND owner."storeId"=u."storeId" AND owner.role='MERCHANT' AND owner."accessRevokedAt" IS NULL)),
+    'invitations',(SELECT jsonb_agg(jsonb_build_array(i.id,i."expiresAt",i."maxUses",i."revokedAt",i."useCount") ORDER BY i.id)
+      FROM app."Invitation" i WHERE i."createdByProfileId"=$1 OR i."acceptedByProfileId"=$1
+        OR EXISTS(SELECT 1 FROM app."InvitationUse" u WHERE u."invitationId"=i.id AND u."profileId"=$1)),
     'audiences',(SELECT jsonb_agg(jsonb_build_array(m.id,m."storeId",m.role,m."closedAt",m."accessRevokedAt") ORDER BY m.id)
       FROM app."Membership" m WHERE ${storeAudience('m."storeId"')}),
     'origins',(SELECT jsonb_agg(jsonb_build_array(t.id,r.status,store."closedAt",participant."closedAt",

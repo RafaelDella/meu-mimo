@@ -16,7 +16,8 @@ test('ciclo web real reconcilia crédito, resgate, saldo negativo, devolução e
     const bia = await personPage(browser, people[2]); contexts.push(bia.context);
     const paceOwner = () => waitForDomainBudget(f.database, people[0].id);
     const storeId = await createStore(owner.page, f.trackStore);
-    await invite(owner.page, ana.page, storeId); await invite(owner.page, bia.page, storeId);
+    await invite(owner.page, ana.page, storeId, 'code'); await invite(owner.page, bia.page, storeId);
+    expect((await f.database.query('SELECT count(*)::int n FROM app."InvitationUse" WHERE "storeId"=$1', [storeId])).rows[0].n).toBe(2);
     await noHorizontalOverflow(owner.page); await noHorizontalOverflow(ana.page); await noHorizontalOverflow(bia.page);
     const activityId = await createActivity(owner.page, storeId);
     await paceOwner(); await owner.page.goto(`/lojas/${storeId}/atividades/${activityId}/editar`);

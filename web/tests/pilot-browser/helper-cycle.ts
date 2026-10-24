@@ -75,11 +75,12 @@ export async function editRewardAndVerifySnapshot(database: Pool, owner: Page, p
   await participant.goto(`/lojas/${storeId}/tickets/${ticketId}`);
   for (let attempt = 0; attempt < 2; attempt++) {
     const ticket = participant.getByRole('article', { name: 'Seu vale mimo', exact: true });
+    const occasion = participant.getByRole('region', { name: 'Conteúdo da ocasião', exact: true });
     await expect(ticket.getByRole('heading', { name: reward.name, exact: true })).toBeFocused();
     await expect(ticket.getByText('10 pontos · Uma unidade', { exact: true })).toBeVisible();
-    await expect(ticket.getByText(reward.note, { exact: true })).toBeVisible();
+    await expect(occasion.getByText(reward.note, { exact: true })).toBeVisible();
     await expect(ticket.getByText(changed.name, { exact: true })).toHaveCount(0);
-    await expect(ticket.getByText(changed.note, { exact: true })).toHaveCount(0);
+    await expect(occasion.getByText(changed.note, { exact: true })).toHaveCount(0);
     await noHorizontalOverflow(participant);
     if (!attempt) await participant.reload();
   }

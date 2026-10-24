@@ -1,5 +1,28 @@
 # Recuperação local de T14
 
+Convites CODE acrescentados em 23/10/2026 entram no backup com seu histórico
+InvitationUse, também conferido pelos fingerprints. A cópia recebe outra chave
+de contexto; antes de abrir a aplicação, seus códigos copiados são revogados
+explicitamente, conservando participantes e usos. Gerar novo convite na cópia
+é uma operação nova; a credencial anterior não é trocada silenciosamente.
+Essa revogação não atinge a origem e não modifica links legados nem o financeiro.
+O ensaio inclui um CODE disponível com dois ingressos reais para comprovar a regra. Evidências atuais no
+[plano de convites](../superpowers/plans/2026-10-23-convites-por-codigo.md).
+
+O ensaio de 23/10/2026 passou com WEB_RECOVERY_VERIFIED e limpeza por posse.
+O backup `42c7d717-30ef-4331-907f-a032458b9ed7` preservou os fingerprints e
+revogou o CODE da fixture somente na cópia. A massa inicial tinha zero usos;
+a repetição exige dois ingressos reais para validar o histórico preenchido.
+A web recuperada também completou seu ciclo real. O intervalo entre a
+declaração simulada e a web verificada foi 146,596 segundos nessa máquina.
+
+A repetição com dados preenchidos passou com o backup
+`a3a3e1ee-395d-42db-b878-d7e41cab03c0`: dois InvitationUse e useCount=2
+preservados, CODE ativo na origem e explicitamente revogado na cópia. Foram
+concluídos seis passos, novo ciclo web e limpeza por posse, com
+WEB_RECOVERY_VERIFIED. O intervalo medido foi 130,284 segundos; os tempos
+descrevem a carga sintética local, sem projeção para uma infraestrutura pública.
+
 O backup de T14 captura a frio o cluster PostgreSQL inteiro, o Storage e os
 arquivos externos necessários à mesma stack. Ele serve para recuperação local
 com as imagens registradas na captura. O modo `development` ou `integration`

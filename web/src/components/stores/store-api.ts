@@ -5,15 +5,25 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 export class StoreRequestError extends Error {
   code: string;
   status: number;
-  constructor(code: string, status: number, message: string) {
+  retryAfter?: number;
+  constructor(code: string, status: number, message: string, retryAfter?: number) {
     super(message);
     this.name = 'StoreRequestError';
     this.code = code;
     this.status = status;
+    this.retryAfter = retryAfter;
   }
 }
 
-export async function storeRequest<T>(path: string, method = 'GET', body?: object, signal?: AbortSignal): Promise<T> {
+function retryAfterSeconds(value: string | null): number | undefined {
+  if (!value) return undefined;
+  if (/^\d+$/.test(value)) return Number.isFinite(Number(value)) ? Number(value) : undefined;
+  const deadline = Date.parse(value);
+  return Number.isFinite(deadline) ? Math.max(0, Math.ceil((deadline - Date.now()) / 1000)) : undefined;
+}
+
+export async function storeRequest<T>(path: string, method = 'GET', body?: object, signal?: AbortSignal,
+  options?: { notifyChange?: boolean }): Promise<T> {
   const response = await fetch(path, {
     method, signal, cache: 'no-store', credentials: 'same-origin',
     ...(body ? { headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) } : {}),
@@ -23,9 +33,10 @@ export async function storeRequest<T>(path: string, method = 'GET', body?: objec
   if (!response.ok) {
     const failure = value && typeof value === 'object' ? value as Record<string, unknown> : {};
     throw new StoreRequestError(typeof failure.code === 'string' ? failure.code : 'request_failed', response.status,
-      typeof failure.message === 'string' ? failure.message : 'Não foi possível continuar agora.');
+      typeof failure.message === 'string' ? failure.message : 'Não foi possível continuar agora.',
+      retryAfterSeconds(response.headers.get('Retry-After')));
   }
-  if (typeof window !== 'undefined' && ['POST', 'PATCH', 'PUT', 'DELETE'].includes(method.toUpperCase()) &&
+  if (options?.notifyChange !== false && typeof window !== 'undefined' && ['POST', 'PATCH', 'PUT', 'DELETE'].includes(method.toUpperCase()) &&
       !/\/(?:lida|acesso|partes|concluir)(?:\?|$)/.test(path)) {
     window.dispatchEvent(new Event('meumimo:relationship-changed'));
   }

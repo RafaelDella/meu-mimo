@@ -5,7 +5,7 @@ import { operationConflict, resourceId, unavailable } from '../stores/validation
 
 type EventInput = Pick<Prisma.OutboxEventUncheckedCreateInput,
   'key' | 'kind' | 'storeId' | 'participantMembershipId' | 'actorProfileId' |
-  'recipientMembershipId' | 'invitationId' | 'commentId' | 'submissionId' | 'reviewEventId' | 'redemptionId' | 'redemptionEventId' | 'albumEventId' | 'noteVersionId' | 'reactionEventId'>;
+  'recipientMembershipId' | 'invitationId' | 'invitationUseId' | 'commentId' | 'submissionId' | 'reviewEventId' | 'redemptionId' | 'redemptionEventId' | 'albumEventId' | 'noteVersionId' | 'reactionEventId'>;
 
 async function persistEvent(tx: StoreTransaction, input: EventInput): Promise<void> {
   // A unicidade também cobre duas transações que chegaram aqui ao mesmo tempo.
@@ -15,6 +15,7 @@ async function persistEvent(tx: StoreTransaction, input: EventInput): Promise<vo
       existing.participantMembershipId !== input.participantMembershipId ||
       existing.actorProfileId !== input.actorProfileId || existing.recipientMembershipId !== input.recipientMembershipId ||
       existing.invitationId !== (input.invitationId ?? null) || existing.commentId !== (input.commentId ?? null) ||
+      existing.invitationUseId !== (input.invitationUseId ?? null) ||
       existing.submissionId !== (input.submissionId ?? null) ||
       existing.reviewEventId !== (input.reviewEventId ?? null) ||
       existing.redemptionId !== (input.redemptionId ?? null) ||
@@ -48,6 +49,19 @@ export async function enqueueInvitationAccepted(tx: StoreTransaction, invitation
     key: `invitation.accepted:${id}`, kind: 'INVITATION_ACCEPTED', storeId: invitation.storeId,
     participantMembershipId: participant.id, actorProfileId: participant.profileId,
     recipientMembershipId: merchant.id, invitationId: id, commentId: null,
+  });
+}
+
+/** Cada ingresso pelo mesmo convite tem sua origem e audiência próprias. */
+export async function enqueueInvitationUseAccepted(tx: StoreTransaction, useId: string): Promise<void> {
+  const use = await tx.invitationUse.findUnique({ where: { id: resourceId(useId) } });
+  if (!use) unavailable();
+  const { participant, merchant } = await audience(tx, use.storeId, use.membershipId);
+  if (participant.profileId !== use.profileId) unavailable();
+  await persistEvent(tx, {
+    key: `invitation.use.accepted:${use.id}`, kind: 'INVITATION_ACCEPTED', storeId: use.storeId,
+    participantMembershipId: use.membershipId, actorProfileId: use.profileId,
+    recipientMembershipId: merchant.id, invitationId: use.invitationId, invitationUseId: use.id,
   });
 }
 

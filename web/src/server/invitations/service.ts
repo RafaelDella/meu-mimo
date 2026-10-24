@@ -1,20 +1,20 @@
 import '../only.ts';
-import type { Invitation } from '../../generated/prisma/client.ts';
-import type { InvitationResult, InvitationView, PageResult } from '../../contracts/stores.ts';
+import type { CodeInvitationCreated, ManagedInvitation } from '../../contracts/invitations.ts';
+import type { InvitationView, PageResult } from '../../contracts/stores.ts';
 import type { Identity } from '../auth/types.ts';
-import { getDb } from '../db/client.ts';
 import { getServerEnv } from '../env.ts';
 import { AppError } from '../errors.ts';
 import { consumeStoreLimit } from '../stores/limits.ts';
-import {
-  assertStoreWritable, databaseNow, requireMerchant, storeAudit, withStoreTransaction,
-} from '../stores/transaction.ts';
+import { assertStoreWritable, databaseNow, requireMerchant, storeAudit, withStoreTransaction } from '../stores/transaction.ts';
 import { allowedFields, operationConflict, operationId, pagination, resourceId, unavailable } from '../stores/validation.ts';
 import { invitationView } from '../stores/views.ts';
-import { invitationHash, invitationInvalid, invitationToken, matchesInvitationHash } from './token.ts';
-import { enqueueInvitationAccepted } from '../outbox/events.ts';
+import { createCodeInvitation } from './management.ts';
+import { codeInvitationView } from './policy.ts';
+import { invitationHash, invitationToken, matchesInvitationHash } from './token.ts';
 
-export async function listInvitations(identity: Identity, storeId: string, query = new URLSearchParams()): Promise<PageResult<InvitationView>> {
+export { acceptInvitation, acceptInvitationCode } from './acceptance.ts';
+
+export async function listInvitations(identity: Identity, storeId: string, query = new URLSearchParams()): Promise<PageResult<ManagedInvitation>> {
   const page = pagination(query);
   await consumeStoreLimit(identity, 'read');
   return withStoreTransaction(identity, storeId, async scope => {
@@ -24,13 +24,14 @@ export async function listInvitations(identity: Identity, storeId: string, query
     const rows = await scope.tx.invitation.findMany({
       where, orderBy: [{ createdAt: 'desc' }, { id: 'desc' }], skip: page.skip, take: page.pageSize,
     });
-    return { items: rows.map(invitationView), page: page.page, pageSize: page.pageSize, total };
+    const now = await databaseNow(scope.tx);
+    return { items: rows.map(row => row.kind === 'CODE' ? codeInvitationView(row, scope.store, now) : invitationView(row)),
+      page: page.page, pageSize: page.pageSize, total };
   });
 }
 
-export async function createInvitation(
-  identity: Identity, storeId: string, body: Record<string, unknown>,
-): Promise<InvitationView & { url: string }> {
+export async function createInvitation(identity: Identity, storeId: string, body: Record<string, unknown>): Promise<(InvitationView & { url: string }) | CodeInvitationCreated> {
+  if (body.kind === 'CODE') return createCodeInvitation(identity, storeId, body);
   allowedFields(body, ['operationId']);
   const id = operationId(body);
   await consumeStoreLimit(identity, 'write');
@@ -42,8 +43,7 @@ export async function createInvitation(
     const url = `${getServerEnv().appOrigin}/convites/${token}`;
     const existing = await scope.tx.invitation.findUnique({ where: { id } });
     if (existing) {
-      if (existing.storeId !== scope.store.id || existing.createdByProfileId !== identity.userId ||
-          !matchesInvitationHash(token, existing.tokenHash)) operationConflict();
+      if (existing.storeId !== scope.store.id || existing.createdByProfileId !== identity.userId || existing.kind !== 'LEGACY_LINK' || !matchesInvitationHash(token, existing.tokenHash)) operationConflict();
       return { ...invitationView(existing), url };
     }
     assertStoreWritable(scope);
@@ -57,7 +57,7 @@ export async function createInvitation(
   });
 }
 
-export async function revokeInvitation(identity: Identity, storeId: string, invitationId: string): Promise<InvitationView> {
+export async function revokeInvitation(identity: Identity, storeId: string, invitationId: string): Promise<ManagedInvitation> {
   const id = resourceId(invitationId);
   await consumeStoreLimit(identity, 'write');
   return withStoreTransaction(identity, storeId, async scope => {
@@ -65,55 +65,11 @@ export async function revokeInvitation(identity: Identity, storeId: string, invi
     await scope.tx.$queryRaw`SELECT id FROM app."Invitation" WHERE id = ${id}::uuid AND "storeId" = ${scope.store.id}::uuid FOR UPDATE`;
     const invitation = await scope.tx.invitation.findFirst({ where: { id, storeId: scope.store.id } });
     if (!invitation) unavailable();
-    if (invitation.revokedAt) return invitationView(invitation);
-    if (invitation.acceptedAt) throw new AppError('invitation_accepted', 409, 'Este convite já foi aceito. A participação pode ser gerenciada em Pessoas.');
-    const result = await scope.tx.invitation.update({ where: { id }, data: { revokedAt: await databaseNow(scope.tx) } });
-    await storeAudit(scope, 'invitation.revoked', id);
-    return invitationView(result);
-  });
-}
-
-function assertPending(invitation: Invitation, now: Date): void {
-  if (invitation.revokedAt) throw new AppError('invitation_revoked', 409, 'Este convite foi revogado. Peça um novo link a quem convidou.');
-  if (invitation.acceptedAt) throw new AppError('invitation_accepted', 409, 'Este convite já foi aceito por outra conta.');
-  if (invitation.expiresAt.getTime() <= now.getTime()) {
-    throw new AppError('invitation_expired', 409, 'Este convite expirou. Peça um novo link a quem convidou.');
-  }
-}
-
-export async function acceptInvitation(identity: Identity, token: string): Promise<InvitationResult> {
-  const tokenHash = invitationHash(token);
-  await consumeStoreLimit(identity, 'write');
-  const address = await getDb().invitation.findUnique({ where: { tokenHash }, select: { id: true, storeId: true } });
-  if (!address) invitationInvalid();
-  return withStoreTransaction(identity, address.storeId, async scope => {
-    await scope.tx.$queryRaw`SELECT id FROM app."Invitation" WHERE id = ${address.id}::uuid FOR UPDATE`;
-    const invitation = await scope.tx.invitation.findFirst({
-      where: { id: address.id, storeId: scope.store.id, tokenHash },
-    });
-    if (!invitation) invitationInvalid();
-    const existing = scope.membership;
-    if (existing) {
-      if (existing.accessRevokedAt) unavailable();
-      if (existing.closedAt) throw new AppError('membership_closed', 409, 'Esta participação foi encerrada. Abra a lojinha pela área de histórico.');
-      // O acesso já pertence ao vínculo: não consumir outro convite nem criar papel novo.
-      return { storeId: scope.store.id, membershipId: existing.id, role: existing.role };
-    }
-    if (scope.store.state === 'CLOSED') throw new AppError('store_closed', 409, 'Esta lojinha foi encerrada e não recebe novas participações.');
-    if (scope.store.platformPausedAt) {
-      throw new AppError('store_platform_paused', 409, 'Novas ações desta lojinha estão pausadas pela plataforma.');
-    }
-    if (scope.store.state === 'PAUSED') throw new AppError('store_paused', 409, 'Esta lojinha está pausada. Aguarde a retomada para aceitar.');
+    if (invitation.revokedAt) return invitation.kind === 'CODE' ? codeInvitationView(invitation, scope.store, await databaseNow(scope.tx)) : invitationView(invitation);
+    if (invitation.kind === 'LEGACY_LINK' && invitation.acceptedAt) throw new AppError('invitation_accepted', 409, 'Este convite já foi aceito. A participação pode ser gerenciada em Pessoas.');
     const now = await databaseNow(scope.tx);
-    assertPending(invitation, now);
-    const membership = await scope.tx.membership.create({ data: {
-      storeId: scope.store.id, profileId: identity.userId, role: 'PARTICIPANT',
-    } });
-    await scope.tx.invitation.update({ where: { id: invitation.id }, data: {
-      acceptedAt: now, acceptedByProfileId: identity.userId, acceptedMembershipId: membership.id,
-    } });
-    await storeAudit(scope, 'invitation.accepted', invitation.id);
-    await enqueueInvitationAccepted(scope.tx, invitation.id);
-    return { storeId: scope.store.id, membershipId: membership.id, role: membership.role };
+    const result = await scope.tx.invitation.update({ where: { id }, data: { revokedAt: now } });
+    await storeAudit(scope, 'invitation.revoked', id);
+    return result.kind === 'CODE' ? codeInvitationView(result, scope.store, now) : invitationView(result);
   });
 }

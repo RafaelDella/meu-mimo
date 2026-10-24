@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { notifySessionChanged } from '@/app/conta/account-api';
 import type { AccountSession } from '@/app/conta/account-api';
 import type { InvitationPreview, InvitationResult, ProfileView, StoreView } from '@/contracts/stores';
+import type { CodeInvitationPreview } from '@/contracts/invitations';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Feedback } from './store-controls';
@@ -13,16 +14,18 @@ import { useCurrentSession } from './use-current-session';
 import { MimoIntro, MimoMasthead } from '@/components/ui/mimo-page';
 import { MimoIcon } from '@/components/ui/mimo-icon';
 
-const explanations: Record<InvitationPreview['status'], string> = {
+type Preview = InvitationPreview | CodeInvitationPreview;
+const explanations: Record<Preview['status'], string> = {
   PENDING: 'Aceite para entrar nesta lojinha e celebrar suas conquistas.',
   EXPIRED: 'Este convite expirou. Peça um novo link a quem convidou você.',
   REVOKED: 'Este convite foi revogado. Peça um novo link a quem convidou você.',
   ACCEPTED: 'Este convite já foi aceito. Se foi você, entre na mesma conta para abrir a loja.',
   PAUSED: 'Esta loja está pausada. O convite não pode ser aceito enquanto ela estiver assim.',
   CLOSED: 'Esta loja foi encerrada e não recebe novas participações.',
+  EXHAUSTED: 'Este convite atingiu o limite de usos. Peça um novo convite a quem convidou você.',
 };
 
-function InvitationAccount({ token, preview, session }: { token: string; preview: InvitationPreview; session: AccountSession }) {
+function InvitationAccount({ token, preview, session }: { token: string; preview: Preview; session: AccountSession }) {
   const router = useRouter();
   const profile = useResource<ProfileView>('/api/perfil');
   const access = useResource<StoreView>(`/api/lojas/${preview.store.id}`);
@@ -66,7 +69,7 @@ function InvitationAccount({ token, preview, session }: { token: string; preview
 }
 
 export function InvitationScreen({ token }: { token: string }) {
-  const preview = useResource<InvitationPreview>(`/api/convites/${encodeURIComponent(token)}`);
+  const preview = useResource<Preview>(`/api/convites/${encodeURIComponent(token)}`);
   const session = useCurrentSession();
   const destination = `/convites/${encodeURIComponent(token)}`;
   const guest = session.error instanceof StoreRequestError && session.error.status === 401;

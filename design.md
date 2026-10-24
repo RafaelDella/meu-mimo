@@ -689,6 +689,26 @@ Rascunhos ficam privados para quem envia; só a confirmação da origem os publi
 
 ### 16.2. Convites
 
+Evolução aprovada em 23/10/2026: novos convites têm código gerado pelo sistema,
+com dez caracteres e **Visor segmentado**, em dois grupos de cinco. Cada convite
+tem validade e cota próprias; padrão sete dias/uma nova participação, com opções
+sem vencimento e usos ilimitados independentes. Data/hora usa o fuso da loja,
+com escolha explícita quando o horário se repete. Política é escolhida antes
+de gerar; depois, revogar e gerar outro substitui a configuração.
+
+Em Minhas lojas, **Buscar loja ou código** preserva nomes/filtros e resolve o
+código exato apenas ao enviar. Confirmação identifica lojinha, remetente e conta
+atual, com **Agora não** e **Participar da lojinha**. Nenhum uso é consumido
+ao buscar, visualizar, recusar ou abrir uma participação existente. Revogar após
+usos impede novas entradas sem expulsar quem já participa. Preservar estados
+de esgotamento, pausa, bloqueio e expiração durante a confirmação.
+
+O aspecto de autenticador é visual: um campo acessível, com colagem, teclado e
+leitor de tela, e dez casas de apresentação. Não há rotação de 30 segundos ou
+mudança no login. Abaixo, as regras históricas de T04 continuam valendo aos
+links legados; contratos detalhados no
+[desenho](docs/superpowers/specs/2026-10-23-convites-por-codigo-design.md).
+
 - O link serve para entrar na loja após autenticação e aceite; não transforma a loja em conteúdo público.
 - Confirmado em D03: link revogável, válido por sete dias e consumido pelo primeiro aceite autenticado, sem vínculo prévio a e-mail. O lojista pode gerar novos convites para quantas pessoas desejar. Repetir o aceite não duplica a participação.
 - Antes do aceite, mostrar quem está convidando e permitir trocar a conta conectada.

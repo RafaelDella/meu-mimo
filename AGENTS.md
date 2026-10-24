@@ -44,6 +44,14 @@ T15 acrescenta supervisor local, saúde e backup programado. Comandos
 O plano da fundação e as dependências estão em
 [M0](docs/superpowers/plans/2026-10-22-m0-fundacao.md).
 
+Convites por código evoluem T04 com política configurável e histórico de usos,
+preservando links legados. O Visor segmentado e o plano foram aprovados em
+23/10/2026; contratos, estado e evidências no
+[plano de convites](docs/superpowers/plans/2026-10-23-convites-por-codigo.md).
+A cadeia atual acrescenta a migração `20261023010000_invitation_codes`; não
+reescrever SQL já aplicado. Validação usa os bancos/namespaces T14 e as mesmas
+portas em série. Revogação de códigos na recuperação afeta somente a cópia.
+
 Na raiz:
 
 ```sh

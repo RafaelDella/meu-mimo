@@ -43,11 +43,26 @@ export async function createStore(page: Page, track: (id: string) => void) {
   await expect(page).toHaveURL(/\/lojas\/[a-f0-9-]{36}$/);
   const storeId = idFrom(page, 'lojas'); track(storeId); return storeId;
 }
-export async function invite(owner: Page, person: Page, storeId: string) {
+export async function invite(owner: Page, person: Page, storeId: string, via: 'link' | 'code' = 'link') {
   await owner.goto(`/lojas/${storeId}/convites`);
   await owner.getByRole('button', { name: 'Gerar convite', exact: true }).click();
-  const link = await owner.getByLabel('Link do convite', { exact: true }).inputValue();
-  await person.goto(link); await person.getByRole('button', { name: 'Aceitar convite', exact: true }).click();
+  if (via === 'code') {
+    const visor = owner.getByRole('group', { name: /^Código de convite: / });
+    await expect(visor).toBeVisible();
+    const code = (await visor.getAttribute('aria-label'))!.replace('Código de convite: ', '');
+    expect(code).toMatch(/^[23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{5}-[23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{5}$/);
+    await person.goto('/lojas');
+    const search = person.getByRole('searchbox', { name: 'Buscar loja ou código', exact: true });
+    await search.fill(code.toLowerCase()); await search.press('Enter');
+    const dialog = person.getByRole('dialog', { name: 'Quer fazer parte desta lojinha?', exact: true });
+    await expect(dialog).toBeVisible();
+    await dialog.getByRole('button', { name: 'Agora não', exact: true }).click();
+    await expect(search).toBeFocused(); await search.press('Enter');
+    await dialog.getByRole('button', { name: 'Participar da lojinha', exact: true }).click();
+  } else {
+    const link = await owner.getByLabel('Link do convite', { exact: true }).inputValue();
+    await person.goto(link); await person.getByRole('button', { name: 'Aceitar convite', exact: true }).click();
+  }
   await expect(person).toHaveURL(`/lojas/${storeId}`);
 }
 export async function createActivity(owner: Page, storeId: string, points = 15) {

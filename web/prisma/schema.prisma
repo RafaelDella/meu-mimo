@@ -206,6 +206,7 @@ model Membership {
   store           Store          @relation(fields: [storeId], references: [id], onDelete: Restrict)
   profile         Profile        @relation(fields: [profileId], references: [id], onDelete: Restrict)
   acceptedInvitations Invitation[]
+  invitationUses InvitationUse[]
   participantConversations Conversation[]
   mediaCollections MediaCollection[]
   participantEvents OutboxEvent[] @relation("EventParticipant")
@@ -225,6 +226,7 @@ model Membership {
   @@unique([storeId, profileId])
   @@unique([id, storeId])
   @@unique([id, profileId])
+  @@unique([id, storeId, profileId])
   @@index([profileId, accessRevokedAt])
   @@index([storeId, accessRevokedAt])
   @@schema("app")
@@ -236,7 +238,13 @@ model Invitation {
   createdByProfileId   String @db.Uuid
   tokenHash            String @unique
   createdAt            DateTime @default(now()) @db.Timestamptz(6)
-  expiresAt            DateTime @db.Timestamptz(6)
+  expiresAt            DateTime? @db.Timestamptz(6)
+  kind                 String @default("LEGACY_LINK")
+  codeHash             String? @unique
+  codeNonce            Int?
+  creationDigest       String?
+  maxUses              Int? @default(1)
+  useCount             Int @default(0)
   revokedAt            DateTime? @db.Timestamptz(6)
   acceptedAt           DateTime? @db.Timestamptz(6)
   acceptedByProfileId  String? @db.Uuid
@@ -246,8 +254,25 @@ model Invitation {
   acceptor             Profile? @relation("InvitationAcceptor", fields: [acceptedByProfileId], references: [id], onDelete: Restrict)
   acceptedMembership   Membership? @relation(fields: [acceptedMembershipId], references: [id], onDelete: Restrict)
   outboxEvents OutboxEvent[]
+  uses InvitationUse[]
 
+  @@unique([id, storeId])
   @@index([storeId, createdAt, id])
+  @@schema("app")
+}
+
+model InvitationUse {
+  id           String @id @default(uuid()) @db.Uuid
+  invitationId String @db.Uuid
+  storeId      String @db.Uuid
+  profileId    String @db.Uuid
+  membershipId String @unique @db.Uuid
+  createdAt    DateTime @default(now()) @db.Timestamptz(6)
+  invitation   Invitation @relation(fields: [invitationId, storeId], references: [id, storeId], onDelete: Restrict)
+  membership   Membership @relation(fields: [membershipId, storeId, profileId], references: [id, storeId, profileId], onDelete: Restrict)
+  outboxEvent OutboxEvent?
+
+  @@index([invitationId, createdAt, id])
   @@schema("app")
 }
 
@@ -308,6 +333,7 @@ model OutboxEvent {
   actorProfileId String @db.Uuid
   recipientMembershipId String @db.Uuid
   invitationId String? @db.Uuid
+  invitationUseId String? @unique @db.Uuid
   commentId String? @db.Uuid
   submissionId String? @db.Uuid
   reviewEventId String? @db.Uuid
@@ -326,6 +352,7 @@ model OutboxEvent {
   actor Profile @relation(fields: [actorProfileId], references: [id], onDelete: Restrict)
   recipientMembership Membership @relation("EventRecipient", fields: [recipientMembershipId], references: [id], onDelete: Restrict)
   invitation Invitation? @relation(fields: [invitationId], references: [id], onDelete: Restrict)
+  invitationUse InvitationUse? @relation(fields: [invitationUseId], references: [id], onDelete: Restrict)
   comment Comment? @relation(fields: [commentId], references: [id], onDelete: Restrict)
   submission ActivitySubmission? @relation(fields: [submissionId], references: [id], onDelete: Restrict)
   reviewEvent SubmissionReviewEvent? @relation(fields: [reviewEventId], references: [id], onDelete: Restrict)

@@ -1,7 +1,7 @@
 import { expect, test as base } from '@playwright/test';
 import type { Page, Route } from '@playwright/test';
 import type { InvitationPreview, PersonView, StoreView } from '../../../src/contracts/stores';
-import { mockRelationshipDefaults } from './relationship-defaults';
+import { legacyStoreSearch, mockRelationshipDefaults } from './relationship-defaults';
 
 export const test = base.extend<{ storeHealth: void }>({
   storeHealth: [async ({ page }, use) => {
@@ -56,6 +56,8 @@ export async function mockApi(page: Page, handler?: Handler) {
   await page.route('**/api/**', async route => {
     const url = new URL(route.request().url());
     if (handler && await handler(route, url, state)) return;
+    const legacy = legacyStoreSearch(route, url);
+    if (legacy && handler && await handler(legacy.route, legacy.url, state)) return;
     if (await mockRelationshipDefaults(route, url, state.stores, state.displayName)) return;
     const method = route.request().method();
     if (url.pathname === '/api/auth/session') {
@@ -72,12 +74,14 @@ export async function mockApi(page: Page, handler?: Handler) {
     } else if (url.pathname === '/api/auth/logout') {
       state.loggedIn = false;
       await json(route, { message: 'Você saiu da sua conta.' });
-    } else if (url.pathname === '/api/lojas' && method === 'GET') {
-      const role = url.searchParams.get('role');
-      const query = url.searchParams.get('q')?.toLowerCase() ?? '';
+    } else if ((url.pathname === '/api/lojas' && method === 'GET') || legacy) {
+      const params = legacy?.url.searchParams ?? url.searchParams;
+      const role = params.get('role');
+      const query = params.get('q')?.toLowerCase() ?? '';
       const items = state.stores.filter(item => (!role || item.role === role) &&
         (!query || item.name?.toLowerCase().includes(query)));
-      await json(route, { items, page: 1, pageSize: 20, total: items.length });
+      const stores = { items, page: 1, pageSize: 20, total: items.length };
+      await json(route, legacy ? { stores, invitation: null } : stores);
     } else if (/^\/api\/lojas\/[^/]+$/.test(url.pathname)) {
       const segments = url.pathname.split('/');
       const result = state.stores.find(item => item.id === segments[segments.length - 1]);

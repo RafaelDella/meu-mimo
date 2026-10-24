@@ -4,7 +4,7 @@ import { expectStatus } from '../../tests/integration/helpers/http-client.mjs';
 import { json, rebaseSourceURL } from './recovery-fixture-context.mjs';
 
 const tables = ['PointsEntry', 'Redemption', 'RedemptionEvent', 'SubmissionReviewEvent', 'Reward', 'RewardEvent',
-  'Activity', 'ActivityEvent', 'ActivitySubmission', 'SubmissionEvent', 'AlbumEvent', 'TicketAlbum', 'OutboxEvent'];
+  'Activity', 'ActivityEvent', 'ActivitySubmission', 'SubmissionEvent', 'AlbumEvent', 'TicketAlbum', 'OutboxEvent', 'InvitationUse'];
 const sha256 = bytes => createHash('sha256').update(bytes).digest('hex');
 export const base = state => `/api/lojas/${state.store.id}`;
 export const submissionPath = (state, name) => `${base(state)}/registros/${state.records[name].id}`;
