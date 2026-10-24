@@ -17,6 +17,7 @@ test('cadastro e recuperação de senha atravessam UI, Mailpit, Auth e banco rea
     const signup = page.waitForResponse(response => response.url().endsWith('/api/auth/signup') && response.request().method() === 'POST');
     await page.locator('form').getByRole('button', { name: 'Criar conta', exact: true }).click();
     expect((await signup).status()).toBe(202);
+    await expect(page.getByRole('heading', { name: 'Confira seu e-mail' })).toBeFocused();
     await expect(page.getByText('Se os dados estiverem corretos, confira seu e-mail.', { exact: true })).toBeVisible();
     await expect(page.getByText('Você está na sua conta', { exact: true })).toHaveCount(0);
     expect((await page.request.get('/api/auth/session')).status()).toBe(401);

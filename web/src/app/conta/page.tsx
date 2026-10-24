@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { AccountPanel } from './account-panel';
-import { MimoIntro, MimoMasthead } from '@/components/ui/mimo-page';
+import { MimoMasthead, MimoSticker } from '@/components/ui/mimo-page';
+import { MimoIcon } from '@/components/ui/mimo-icon';
 
 export const metadata: Metadata = {
   title: 'Sua conta · Meu Mimo',
@@ -13,12 +14,22 @@ export default function AccountPage() {
       <MimoMasthead />
       <div className="account-layout">
       <header className="account-header">
-        <MimoIntro kind="kitten">
-        <p className="mimo-eyebrow">Um cantinho só de vocês</p>
-        <h1>Seu cantinho de carinho</h1>
-        <p>Entre na sua conta para continuar os pequenos gestos de vocês.</p>
-        </MimoIntro>
-        <p className="account-little-note">Pequenas conquistas, grandes carinhos.</p>
+        <div className="account-welcome-copy">
+          <p className="mimo-eyebrow">Um cantinho só de vocês</p>
+          <h1>Seu cantinho de carinho</h1>
+          <p>Pequenas conquistas, mimos especiais e mais motivos para celebrar juntos.</p>
+        </div>
+        <div className="account-collage" aria-hidden="true">
+          <div className="account-photo"><MimoSticker kind="kitten" /><span>feito para vocês <MimoIcon name="heart" /></span></div>
+          <MimoSticker kind="gift" className="account-gift" />
+          <MimoSticker kind="envelope" className="account-envelope" />
+          <MimoIcon name="sparkle" className="account-sparkle" />
+        </div>
+        <ul className="account-perks" aria-label="No Meu Mimo">
+          <li><MimoIcon name="activities" />Celebrem conquistas</li>
+          <li><MimoIcon name="gift" />Troquem carinho</li>
+          <li><MimoIcon name="people" />Do jeitinho de vocês</li>
+        </ul>
       </header>
       <AccountPanel />
       </div>
