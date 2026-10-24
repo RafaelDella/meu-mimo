@@ -236,6 +236,21 @@ as regras dos códigos e a entrada do participante são preservados. Não há
 mudança em contratos, dados ou serviços. Plano e evidências:
 [Convites e Configurações no desktop](docs/superpowers/plans/2026-10-23-desktop-convites-configuracoes.md).
 
+### 3.7. Entrada, cadastro e recuperação de conta
+
+A revisão de 24/10/2026 organiza o acesso em Entrar e Criar conta, com títulos
+e orientação próprios. Recuperar senha fica junto do campo de senha. A opção
+de mostrar/ocultar preserva autocomplete e o uso de gerenciadores de senha.
+Cadastro explica a confirmação por e-mail antes do envio. O resultado apresenta
+o endereço informado e próximos passos, com linguagem neutra e correção do e-mail.
+
+No desktop, apresentação e formulário ocupam colunas; gato, envelope e presente
+existentes compõem uma colagem de papelaria. No celular, a apresentação é compacta.
+Ícones e stickers são decorativos, com controles nomeados e foco visível.
+Revalidação, destinos internos, perfil, notificações, MFA e recuperação restrita
+continuam com o Auth real. Plano, auditoria e evidências:
+[Acesso à conta](docs/superpowers/plans/2026-10-24-acesso-conta.md).
+
 ## 4. Regras de uso e validação
 
 ### Biblioteca compartilhada de ilustrações
