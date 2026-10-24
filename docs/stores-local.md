@@ -62,3 +62,28 @@ domínio, na mesma transação, e integrar a consulta real de análises pendente
 Com esse marcador, mudança de fuso e encerramento ficam bloqueados; esta última
 proteção só poderá ser substituída quando as dependências reais existirem.
 Mídia, bilhete, notificações e tela completa da lojinha seguem suas tarefas.
+
+## Convites por código — evolução de 23/10/2026
+
+O [desenho aprovado](superpowers/specs/2026-10-23-convites-por-codigo-design.md)
+e o [plano](superpowers/plans/2026-10-23-convites-por-codigo.md) acrescentam CODE
+sem reescrever os links T04. A interface nova envia `kind: CODE`, validade e
+maxUses; o corpo legado com somente operationId conserva o contrato original.
+Dez caracteres gerados, exibidos em dois grupos, identificam cada convite.
+Usos contam novas participações; consultas, repetição e proprietário não gastam
+cota. Sem vencimento e ilimitado usam null e são opções independentes.
+
+A busca autenticada usa POST `/api/lojas/buscar`; código não entra em query
+string ou localStorage. Resolução/aceite curto compartilham 10 tentativas por
+minuto por conta e devolvem 429/Retry-After. Gestão e mutações conservam os
+limites anteriores. Compartilhar o link longo continua possível; nenhuma
+mensagem é enviada automaticamente.
+
+Migração aditiva `20261023010000_invitation_codes`, com histórico de usos e
+FKs/guardas/RLS, deve ser aplicada somente aos ambientes locais autorizados.
+Esta evolução usa T14 dev/shadow/integração existentes e Next4310/mídia4311 em
+série; não iniciar suítes T04/T14 juntas. Chave não é rotacionada na origem.
+A cópia de recuperação usa chave nova e revoga CODE copiados explicitamente,
+preservando vínculos/usos; exige gerar outro convite na cópia.
+Evidências e estado de validação ficam no plano, sem confundir aceite do desenho
+com aprovação dos checks da implementação.

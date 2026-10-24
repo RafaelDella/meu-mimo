@@ -21,10 +21,10 @@ test('conta oferece rótulos, teclado e alvos de toque em celular', async ({ pag
   const errors: string[] = [];
   page.on('pageerror', error => errors.push(error.message));
   await guest(page);
-  await expect(page.getByRole('heading', { name: 'Vamos começar?' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Entre no seu cantinho' })).toBeVisible();
   const email = page.getByRole('textbox', { name: 'E-mail', exact: true });
   const password = page.getByLabel('Senha', { exact: true });
-  await page.getByRole('button', { name: 'Recuperar senha', exact: true }).focus();
+  await page.getByRole('navigation', { name: 'Acesso à conta' }).getByRole('button', { name: 'Criar conta', exact: true }).focus();
   await page.keyboard.press('Tab');
   await expect(email).toBeFocused();
   await page.keyboard.press('Tab');
@@ -52,6 +52,7 @@ test('conta mantém orientação e erro acessíveis nos três formulários', asy
   await expect(page.getByLabel('Senha', { exact: true })).toHaveAttribute('minlength', '8');
   await expect(page.getByText('Use pelo menos oito caracteres.')).toBeVisible();
   await page.screenshot({ path: test.info().outputPath('account-signup.png'), fullPage: true });
+  await page.getByRole('navigation', { name: 'Acesso à conta' }).getByRole('button', { name: 'Entrar', exact: true }).click();
   await page.getByRole('button', { name: 'Recuperar senha', exact: true }).click();
   await expect(page.getByLabel('Senha', { exact: true })).toHaveCount(0);
   await page.screenshot({ path: test.info().outputPath('account-recovery.png'), fullPage: true });

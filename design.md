@@ -218,6 +218,39 @@ As colunas respondem ao espaço disponível, empilhando no celular e com texto
 ampliado. A Lojinha do participante e os contratos permanecem como antes.
 Plano e evidências: [Resumo e Pessoas no desktop](docs/superpowers/plans/2026-10-23-desktop-resumo-pessoas.md).
 
+### 3.6. Organização desktop de Convites e Configurações
+
+Na continuação solicitada em 23/10/2026, Convites aproxima criação e consulta
+em colunas quando houver espaço. O convite recém-gerado ocupa o início da
+consulta, com código, link e compartilhamento antes do histórico. Cartões
+identificam situação, validade e usos; a revogação fica separada das opções de
+compartilhar. Revelar e ocultar usam o mesmo controle para preservar o foco.
+
+Configurações apresenta identidade e edição na área principal, estado no
+apoio e encerramento definitivo em cartão próprio. Uma loja encerrada mostra
+nome, apresentação e fuso somente para consulta. Confirmações, mensagens,
+recuperação após falha e permissões existentes permanecem completas.
+
+As colunas empilham com espaço reduzido ou texto ampliado. O Visor segmentado,
+as regras dos códigos e a entrada do participante são preservados. Não há
+mudança em contratos, dados ou serviços. Plano e evidências:
+[Convites e Configurações no desktop](docs/superpowers/plans/2026-10-23-desktop-convites-configuracoes.md).
+
+### 3.7. Entrada, cadastro e recuperação de conta
+
+A revisão de 24/10/2026 organiza o acesso em Entrar e Criar conta, com títulos
+e orientação próprios. Recuperar senha fica junto do campo de senha. A opção
+de mostrar/ocultar preserva autocomplete e o uso de gerenciadores de senha.
+Cadastro explica a confirmação por e-mail antes do envio. O resultado apresenta
+o endereço informado e próximos passos, com linguagem neutra e correção do e-mail.
+
+No desktop, apresentação e formulário ocupam colunas; gato, envelope e presente
+existentes compõem uma colagem de papelaria. No celular, a apresentação é compacta.
+Ícones e stickers são decorativos, com controles nomeados e foco visível.
+Revalidação, destinos internos, perfil, notificações, MFA e recuperação restrita
+continuam com o Auth real. Plano, auditoria e evidências:
+[Acesso à conta](docs/superpowers/plans/2026-10-24-acesso-conta.md).
+
 ## 4. Regras de uso e validação
 
 ### Biblioteca compartilhada de ilustrações
@@ -688,6 +721,26 @@ Rascunhos ficam privados para quem envia; só a confirmação da origem os publi
 | Configuração e convites da loja | Não | Sim | Não |
 
 ### 16.2. Convites
+
+Evolução aprovada em 23/10/2026: novos convites têm código gerado pelo sistema,
+com dez caracteres e **Visor segmentado**, em dois grupos de cinco. Cada convite
+tem validade e cota próprias; padrão sete dias/uma nova participação, com opções
+sem vencimento e usos ilimitados independentes. Data/hora usa o fuso da loja,
+com escolha explícita quando o horário se repete. Política é escolhida antes
+de gerar; depois, revogar e gerar outro substitui a configuração.
+
+Em Minhas lojas, **Buscar loja ou código** preserva nomes/filtros e resolve o
+código exato apenas ao enviar. Confirmação identifica lojinha, remetente e conta
+atual, com **Agora não** e **Participar da lojinha**. Nenhum uso é consumido
+ao buscar, visualizar, recusar ou abrir uma participação existente. Revogar após
+usos impede novas entradas sem expulsar quem já participa. Preservar estados
+de esgotamento, pausa, bloqueio e expiração durante a confirmação.
+
+O aspecto de autenticador é visual: um campo acessível, com colagem, teclado e
+leitor de tela, e dez casas de apresentação. Não há rotação de 30 segundos ou
+mudança no login. Abaixo, as regras históricas de T04 continuam valendo aos
+links legados; contratos detalhados no
+[desenho](docs/superpowers/specs/2026-10-23-convites-por-codigo-design.md).
 
 - O link serve para entrar na loja após autenticação e aceite; não transforma a loja em conteúdo público.
 - Confirmado em D03: link revogável, válido por sete dias e consumido pelo primeiro aceite autenticado, sem vínculo prévio a e-mail. O lojista pode gerar novos convites para quantas pessoas desejar. Repetir o aceite não duplica a participação.

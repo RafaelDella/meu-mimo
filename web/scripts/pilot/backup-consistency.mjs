@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 
-const tables = ['PointsEntry', 'Redemption', 'RedemptionEvent', 'SubmissionReviewEvent', 'Reward', 'ActivitySubmission', 'SubmissionEvent', 'AlbumEvent', 'OutboxEvent'];
+const tables = ['PointsEntry', 'Redemption', 'RedemptionEvent', 'SubmissionReviewEvent', 'Reward', 'ActivitySubmission', 'SubmissionEvent', 'AlbumEvent', 'OutboxEvent', 'InvitationUse'];
 export async function financialFingerprints(client) {
   const result = {};
   for (const table of tables) {

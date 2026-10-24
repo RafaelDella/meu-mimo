@@ -771,3 +771,23 @@ Workers conservam as contagens de itens falhos/retries numa rodada concluída;
 somente exceção propagada da rodada sinaliza falha operacional. A quarta parada
 CLI mostrou ainda uma corrida entre a leitura de DRAINING e a saída do manager;
 a confirmação passou a reler o estado final e a identidade dos filhos.
+
+## Convites por código — 23/10/2026
+
+Desenho aprovado com Visor segmentado e execução local autorizada em seguida.
+Brainstorming, writing-plans, verificação, depuração e revisão foram descobertos
+no cliente; a divisão de escritores usa agentes nativos e revisão independente
+somente leitura. Não foram instaladas subskills, serviços ou dependências novas.
+Context7 foi consultado sem código privado; misturou trechos Prisma v6/v7, então
+os tipos Prisma 7.10.1 e os guias do Next.js 16.4.2 instalados foram conferidos.
+
+A prova da migração 18 passou em banco descartável antes da aplicação nos bancos
+T14 dev/integração. O check completo passou com sete testes de domínio,
+64 nativos, lint/tipos/build. A integração T14 passou 383/383; E2E de lojas e
+relação passaram 104/104 e 138/138. O ciclo web real passou com entrada por
+código, recusa/aceite e usos conferidos no banco. As evidências de recuperação
+e os limites estão no [plano](superpowers/plans/2026-10-23-convites-por-codigo.md).
+A restauração preenchida passou com dois usos reais preservados e revogação
+do código somente na cópia; scripts finais da massa passaram lint e revisão.
+As janelas de build/testes foram coordenadas com a continuação de UX desktop
+no mesmo checkout; seus arquivos e evidências foram preservados.

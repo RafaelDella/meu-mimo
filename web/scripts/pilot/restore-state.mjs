@@ -19,7 +19,11 @@ async function verifyRestoredPermissions(client) {
     (SELECT count(*) FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid JOIN pg_namespace n ON n.oid=c.relnamespace
       WHERE n.nspname='app' AND t.tgenabled='D')::int AS disabled`);
   if (guards.rows[0].unprotected || guards.rows[0].disabled) throw new Error('RLS ou triggers da cópia estão incompletos.');
-  for (const table of ['PointsEntry', 'RedemptionEvent', 'SubmissionReviewEvent', 'DataRightsProtocol', 'DataRightsEvent', 'DataSuppression']) {
+  for (const table of ['PointsEntry', 'RedemptionEvent', 'SubmissionReviewEvent', 'InvitationUse', 'DataRightsProtocol', 'DataRightsEvent', 'DataSuppression']) {
+    if (table === 'InvitationUse') {
+      const found = await client.query('SELECT to_regclass($1) IS NOT NULL AS present', ['app."InvitationUse"']);
+      if (!found.rows[0].present) continue; // Backups anteriores à migração dos códigos.
+    }
     const access = await client.query(`SELECT has_table_privilege('meumimo_runtime',$1,$2) AS allowed`,
       [`app."${table}"`, table.startsWith('Data') ? 'INSERT,UPDATE,DELETE' : 'UPDATE,DELETE']);
     if (access.rows[0].allowed) throw new Error('Runtime da cópia altera registros protegidos.');
@@ -84,6 +88,12 @@ export async function prepareRestoredDatabase(context, journal) {
           to_regclass('app."DataRightsProtocol"') AS rights, to_regclass('app."MediaAsset"') AS media`);
         if (tables.rows[0].sessions) await client.query(`UPDATE app."AuthSession" SET "revokedAt"=clock_timestamp() WHERE "revokedAt" IS NULL`);
         if (tables.rows[0].grants) await client.query(`UPDATE app."AdminGrant" SET "revokedAt"=clock_timestamp() WHERE "revokedAt" IS NULL`);
+        const hasCodes = await client.query(`SELECT 1 FROM information_schema.columns
+          WHERE table_schema='app' AND table_name='Invitation' AND column_name='codeHash'`);
+        // A cópia recebe outra chave de contexto; credenciais derivadas anteriores
+        // não podem ser reemitidas silenciosamente com um valor diferente.
+        if (hasCodes.rowCount) await client.query(`UPDATE app."Invitation" SET "revokedAt"=clock_timestamp()
+          WHERE kind='CODE' AND "revokedAt" IS NULL`);
         if (tables.rows[0].rights) {
           const sourceDatabase = datname === target.database ? source : datname === `${target.database}_captured` ? target.database : datname;
           const result = await applyJournal({ client, database: datname, sourceDatabase, entries: journal.entries, mode: 'restore' });

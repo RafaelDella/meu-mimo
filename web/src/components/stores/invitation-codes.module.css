@@ -1,0 +1,60 @@
+.display { display: grid; gap: .75rem; min-width: 0; margin-block: 1rem; }
+.caption { color: var(--text-muted); font-size: .875rem; font-weight: 600; }
+.visor { display: flex; flex-wrap: wrap; align-items: center; gap: .375rem; width: fit-content; max-width: 100%; font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: clamp(.875rem, 4vw, 1.75rem); font-weight: 700; line-height: 1.2; user-select: text; }
+.codeGroup { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: .125rem; }
+.cell { display: inline-grid; place-items: center; min-width: 1em; padding: .45em .1em; border: 1px solid var(--border-control); border-radius: .35rem; background: var(--surface-paper); color: var(--text); box-shadow: 0 2px 0 var(--border); }
+.separator { color: var(--text-muted); }
+.policy { display: grid; gap: 1rem; min-width: 0; margin: 0; padding: 0; border: 0; }
+.policy:disabled { opacity: .8; }
+.policyGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); gap: 1rem; align-items: start; }
+.date { display: grid; gap: .75rem; min-width: 0; }
+.date :global(.ui-button) { justify-self: start; }
+.occurrences { display: grid; gap: .5rem; min-width: 0; padding: .75rem; border: 1px solid var(--border-control); border-radius: .75rem; }
+.occurrences legend { padding-inline: .25rem; }
+.radio { display: flex; align-items: center; gap: .5rem; min-height: 44px; }
+.radio input { width: 1.25rem; height: 1.25rem; flex-shrink: 0; accent-color: var(--action); }
+.radio input:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+.credentials { display: grid; gap: .75rem; min-width: 0; margin-top: 1rem; }
+.credentials :global(.stores-actions) { margin-block: 0; }
+.metadata { display: grid; gap: .75rem; margin-block: 1rem; }
+.metadata div { display: grid; gap: .25rem; }
+.metadata dt { font-weight: 600; }
+.metadata dd { margin: 0; overflow-wrap: anywhere; }
+.policySummary { padding: .75rem; border: 1px solid var(--border); border-radius: .75rem; background: var(--surface-paper); }
+.policySummary p { margin-block: 0 .5rem; }
+.policySummary p:last-child { margin-bottom: 0; }
+.generated { margin-block: 1rem; padding-block: 1rem; border-block: 1px dashed var(--border-control); }
+.generated h3:focus { outline: 3px solid var(--focus); outline-offset: 4px; }
+.area { container: invitations-area / inline-size; min-width: 0; }
+.area > h2 { margin-bottom: .5rem; }
+.intro { margin-block: 0 1rem; font-size: .875rem; color: var(--text-muted); }
+.managementLayout, .consultation, .invitationList { display: grid; min-width: 0; gap: 1rem; align-items: start; }
+.creation, .invitationCard, .area .generated { padding: 1rem; }
+.creation h3, .listTitle, .generated h3 { margin-block: 0 .875rem; font-size: 1.25rem; }
+.policyForm { display: grid; gap: .875rem; min-width: 0; }
+.policyForm > p:first-child { margin: 0; font-size: .875rem; color: var(--text-muted); }
+.policyForm > button { justify-self: start; }
+.policyForm :where(input, select) { width: 100%; min-width: 0; }
+.policyForm :where(label, .policySummary) { font-size: .875rem; }
+.policyForm :global(.ui-field-error:empty) { display: none; }
+.policyForm > :global(.stores-feedback:empty), .policyForm > :global(.stores-error:empty) { margin: 0; }
+.policy legend { margin-bottom: .75rem; font-weight: 600; font-size: .875rem; }
+.policyForm .policyGrid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr)); gap: .75rem; }
+.policyForm .policySummary { font-size: .875rem; }
+.area .generated { margin: 0; border: 1px solid var(--border-control); }
+.cardHeader { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .5rem; min-width: 0; }
+.cardHeader h3 { margin: 0; font-size: 1.125rem; }
+.cardHeader :global(.ui-status) { max-width: 100%; white-space: normal; }
+.invitationCard .metadata, .generated .metadata { font-size: .875rem; margin-block: .875rem; }
+.invitationCard .metadata dd { font-variant-numeric: tabular-nums; }
+.policyHint { font-size: .875rem; }
+.invitationCard { overflow-wrap: anywhere; }
+.invitationCard > button[aria-disabled="true"] { background: var(--surface-soft); color: var(--text-muted); border-color: var(--border-control); cursor: default; }
+.revocation { margin-top: .875rem; padding-top: .75rem; border-top: 1px dashed var(--border); }
+.revocation > button { color: var(--text-muted); border-color: var(--border); font-size: .875rem; font-weight: 400; }
+.revocation :global(.ui-dialog) { font-size: 1rem; }
+@container invitations-area (min-width: 50rem) {
+  .managementLayout { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 1.5rem; }
+  .invitationCard .visor { font-size: 1.25rem; }
+  .generated .visor { font-size: 1.5rem; }
+}

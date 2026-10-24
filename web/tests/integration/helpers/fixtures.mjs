@@ -101,6 +101,8 @@ export async function createFixture(t, { target = 'integration' } = {}) {
         rateKeys.add(createHmac('sha256', process.env.AUTH_RATE_LIMIT_SECRET)
           .update('meumimo:t04:domain-rate:v1\0').update(kind).update('\0').update(profile).digest('hex'));
       }
+      for (const profile of profiles) rateKeys.add(createHmac('sha256', process.env.AUTH_RATE_LIMIT_SECRET)
+        .update('meumimo:invitation-code-rate:v1\0').update(profile).digest('hex'));
       for (const profile of profiles) for (const kind of ['reserve', 'part']) {
         rateKeys.add(createHmac('sha256', process.env.AUTH_RATE_LIMIT_SECRET)
           .update(`media-${kind}\0${profile}`).digest('hex'));
@@ -154,7 +156,18 @@ export async function createFixture(t, { target = 'integration' } = {}) {
       await database.query(`DELETE FROM app."MediaAsset" WHERE ${mediaScope}`, scopeValues);
       await database.query(`DELETE FROM app."MediaCollection" WHERE ${conversationScope}`, scopeValues);
       await database.query('DELETE FROM app."StoreAudit" WHERE "actorProfileId" = ANY($1::uuid[]) OR "storeId" = ANY($2::uuid[])', [profiles, [...storeIds]]);
-      await database.query('DELETE FROM app."Invitation" WHERE "createdByProfileId" = ANY($1::uuid[]) OR "acceptedByProfileId" = ANY($1::uuid[]) OR "storeId" = ANY($2::uuid[])', [profiles, [...storeIds]]);
+      const invitations = await database.connect();
+      try {
+        await invitations.query('BEGIN');
+        if ((await invitations.query(`SELECT to_regclass('app."InvitationUse"') AS relation`)).rows[0].relation) {
+          await invitations.query(`DELETE FROM app."InvitationUse" WHERE "invitationId" IN
+            (SELECT id FROM app."Invitation" WHERE "createdByProfileId"=ANY($1::uuid[])
+              OR "acceptedByProfileId"=ANY($1::uuid[]) OR "storeId"=ANY($2::uuid[]))`, [profiles, [...storeIds]]);
+        }
+        await invitations.query('DELETE FROM app."Invitation" WHERE "createdByProfileId" = ANY($1::uuid[]) OR "acceptedByProfileId" = ANY($1::uuid[]) OR "storeId" = ANY($2::uuid[])', [profiles, [...storeIds]]);
+        await invitations.query('COMMIT');
+      } catch (error) { await invitations.query('ROLLBACK'); throw error; }
+      finally { invitations.release(); }
       await database.query('DELETE FROM app."SecurityAudit" WHERE "actorProfileId" = ANY($1::uuid[])', [profiles]);
       await database.query('DELETE FROM app."AuthSession" WHERE "profileId" = ANY($1::uuid[])', [profiles]);
       await database.query('DELETE FROM app."AdminGrant" WHERE "profileId" = ANY($1::uuid[])', [profiles]);

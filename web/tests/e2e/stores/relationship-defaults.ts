@@ -2,6 +2,41 @@ import type { Route } from '@playwright/test';
 import type { StoreView } from '../../../src/contracts/stores';
 import type { PointsBalance } from '../../../src/contracts/activities';
 
+/** Somente os cenários controlados antigos podem reaproveitar seu handler GET. */
+export function legacyStoreSearch(route: Route, original: URL) {
+  if (original.pathname !== '/api/lojas/buscar' || route.request().method() !== 'POST') return null;
+  const input = route.request().postDataJSON() as Record<string, unknown>;
+  const url = new URL('/api/lojas', original);
+  for (const key of ['q', 'role', 'state', 'page', 'pageSize']) {
+    if (input[key] !== undefined) url.searchParams.set(key, String(input[key]));
+  }
+  const request = new Proxy(route.request(), {
+    get(target, property) {
+      if (property === 'method') return () => 'GET';
+      if (property === 'url') return () => url.href;
+      const value = Reflect.get(target, property, target);
+      return typeof value === 'function' ? value.bind(target) : value;
+    },
+  });
+  const adapted = new Proxy(route, {
+    get(target, property) {
+      if (property === 'request') return () => request;
+      if (property === 'fulfill') return async (options: Parameters<Route['fulfill']>[0] = {}) => {
+        if (typeof options.body === 'string') {
+          const value: unknown = JSON.parse(options.body);
+          if (value && typeof value === 'object' && 'items' in value) {
+            return target.fulfill({ ...options, body: JSON.stringify({ stores: value, invitation: null }) });
+          }
+        }
+        return target.fulfill(options);
+      };
+      const value = Reflect.get(target, property, target);
+      return typeof value === 'function' ? value.bind(target) : value;
+    },
+  });
+  return { route: adapted, url };
+}
+
 export function emptyPoints(store: StoreView): PointsBalance {
   return { storeId: store.id, participantMembershipId: store.membershipId, available: '0', pending: '0',
     today: { localDate: '2026-10-22', timezone: store.timezone, submitted: 0, approved: 0, credited: '0', adjusted: '0' } };

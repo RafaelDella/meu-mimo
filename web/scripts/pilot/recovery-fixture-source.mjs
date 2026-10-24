@@ -8,7 +8,7 @@ import { openRightsProtocol, applyRights } from './rights.mjs';
 import { sourceEnvironment, saveFixture, loadFixture, withDatabases, session, json, pendingRecovery,
   disconnectRuntime, uuid, assertFixtureOwnership, fixturePath } from './recovery-fixture-context.mjs';
 import { custodyRoot, readPrivateJson, writePrivateJson, withMaintenanceLock } from './custody.mjs';
-import { financialSnapshot, assertFinancial, snapshotMedia, assertMedia, denyMedia, assertPrivateViews,
+import { base, financialSnapshot, assertFinancial, snapshotMedia, assertMedia, denyMedia, assertPrivateViews,
   assertRawOriginals } from './recovery-fixture-evidence.mjs';
 import { prepareRecoveryMfa, assertRecoveryMfa } from './recovery-fixture-mfa.mjs';
 
@@ -69,6 +69,28 @@ export async function prepareFixture() {
     const owner = await f.auth.auth.admin.getUserById(f.owner.id); assert.equal(owner.error, null);
     state.fixtureRun = owner.data.user?.app_metadata?.fixture_run; assert.ok(uuid(state.fixtureRun));
     state.store = f.store; state.people = {};
+    const codeResponse = await f.owner.client.post(`${base(state)}/convites`, {
+      operationId: randomUUID(), kind: 'CODE', expiration: { kind: 'NEVER' }, maxUses: null,
+    });
+    expectStatus(codeResponse, 201);
+    const codeInvitation = await codeResponse.json();
+    state.codeInvitationId = codeInvitation.id;
+    // A base histórica cria vínculos diretamente. Nesta prova, substituímos
+    // apenas esses dois vínculos sintéticos ainda vazios por ingressos reais.
+    for (const [name, membership] of [['ana', f.participation], ['bia', f.otherParticipation]]) {
+      const removed = await f.database.query(`DELETE FROM app."Membership"
+        WHERE id=$1 AND "storeId"=$2 AND "profileId"=$3 AND role='PARTICIPANT' RETURNING id`,
+      [membership.id, f.store.id, f[name].id]);
+      assert.equal(removed.rowCount, 1);
+      const accepted = await f[name].client.post('/api/convites/aceitar-codigo', { code: codeInvitation.code });
+      expectStatus(accepted, 200);
+      const joined = await accepted.json();
+      assert.equal(joined.storeId, f.store.id);
+      assert.equal(joined.role, 'PARTICIPANT');
+      Object.assign(membership, { id: joined.membershipId });
+    }
+    assert.equal((await f.database.query('SELECT count(*)::int n FROM app."InvitationUse" WHERE "invitationId"=$1',
+      [codeInvitation.id])).rows[0].n, 2);
     state.memberships = { owner: f.merchant, ana: f.participation, bia: f.otherParticipation };
     for (const name of ['owner', 'ana', 'bia']) {
       const person = f[name]; state.people[name] = { id: person.id, email: person.email, password: person.password, cookies: [...person.client.cookies] };
@@ -100,6 +122,7 @@ export async function prepareFixture() {
     assert.equal(state.sessions.owner, state.mfa.sessionId); await saveFixture(state);
     for (const name of ['ana', 'bia']) state.records[name].media = await snapshotMedia(f.owner.client, state, name);
     state.financial = await financialSnapshot(f.database, state); await assertFinancial(f.database, state);
+    assert.equal(state.financial.fingerprints.InvitationUse.count, 2);
     await assertRawOriginals(f.database, state); await assertPrivateViews(state, f.owner.client, f.bia.client);
     state.pkce = await withDatabases('integration', async context => {
       await assertFixtureOwnership(context, state);
@@ -108,7 +131,7 @@ export async function prepareFixture() {
     });
     state.phase = 'PREPARED'; state.preparedAt = new Date().toISOString(); await saveFixture(state);
     return { code: 'RECOVERY_FIXTURE_PREPARED', counts: { users: 3, stores: 1, photos: 2, ledger: 3, tickets: 1,
-      pendingPkce: 1, verifiedMfaFactors: 1, pendingMfaChallenges: 1 } };
+      pendingPkce: 1, verifiedMfaFactors: 1, pendingMfaChallenges: 1, codeInvitations: 1 } };
   } catch (error) {
     let cleanupFailure;
     try { cleanupAttempted = true; await hooksInReverse(hooks); cleaned = true; }
@@ -134,6 +157,8 @@ export async function sourceAfter() {
     assert.equal(ownerIdentity.sessionId, state.mfa.sessionId); assert.equal(ownerIdentity.assuranceLevel, 'aal2');
     await assertRecoveryMfa(context.authDatabase, state);
     await assertPrivateViews(state, owner, bia); await assertRawOriginals(context.database, state);
+    const code = (await context.database.query('SELECT "revokedAt","useCount" FROM app."Invitation" WHERE id=$1', [state.codeInvitationId])).rows[0];
+    assert.equal(code.revokedAt, null); assert.equal(code.useCount, 2);
     await assertMedia(owner, state, 'ana'); await assertMedia(bia, state, 'bia');
     const rows = await assertFinancial(context.database, state);
     assert.equal((await context.database.query('SELECT 1 FROM app."AdminGrant" WHERE "profileId"=$1 AND "revokedAt" IS NULL', [state.people.owner.id])).rowCount, 1);

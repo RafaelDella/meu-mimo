@@ -63,6 +63,14 @@ export async function verifyRestore() {
     assert.deepEqual(await rightsCount(), beforeReplay); await assertFinancial(database, state);
     await login(environment, state.people.ana, 401);
     const owner = await login(environment, state.people.owner);
+    assert.ok(state.codeInvitationId, 'A prova exige um convite por código copiado.');
+    const copiedInvitation = (await database.query('SELECT kind,"revokedAt","useCount" FROM app."Invitation" WHERE id=$1', [state.codeInvitationId])).rows[0];
+    assert.equal(copiedInvitation?.kind, 'CODE');
+    assert.ok(copiedInvitation.revokedAt, 'A cópia deve revogar explicitamente os códigos derivados da chave anterior.');
+    assert.equal(copiedInvitation.useCount, 2);
+    assert.equal(state.financial.fingerprints.InvitationUse.count, 2);
+    assert.equal((await database.query('SELECT count(*)::int n FROM app."InvitationUse" WHERE "invitationId"=$1',
+      [state.codeInvitationId])).rows[0].n, 2);
     const mfaCounts = await verifyRecoveryMfa(context, state, owner);
     const bia = await login(environment, state.people.bia);
     await errorCode(await owner.get('/api/admin/session'), 403, 'admin_forbidden');
@@ -86,8 +94,8 @@ export async function verifyRestore() {
     // Fresh authentication may create only new session/audit rows, never outbox/ledger mutations.
     await assertFinancial(database, state);
     return { code: 'RECOVERY_APPLICATION_VERIFIED', counts: { oldSessionsRevoked: 3, oldPkceRejected: 1,
-      oldRefreshRejected: 1, suppressedSubjects: 1, journalReplays: 2, preservedIdentities: 2, preservedPhotos: 1,
-      financialRows, ...mfaCounts } };
+      oldRefreshRejected: 1, suppressedSubjects: 1, journalReplays: 2, preservedIdentities: 2, preservedPhotos: 1, revokedCodeInvitations: 1,
+      preservedInvitationUses: 2, financialRows, ...mfaCounts } };
   });
   state.phase = 'RESTORE_VERIFIED'; state.restoreVerifiedAt = new Date().toISOString(); await saveFixture(state); return result;
 }

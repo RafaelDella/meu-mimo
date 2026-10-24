@@ -83,6 +83,17 @@ marcar `Store.domainStartedAt` atomicamente na primeira operação, bloquear fus
 consultar pendências reais antes de encerrar; até essa integração o marcador
 impede encerramento por segurança. Não há contadores fictícios de pendências.
 
+Evolução de convites aprovada em 23/10/2026: `Invitation` separa política CODE
+de link legado; `InvitationUse` registra cada ingresso com vínculo/perfil/loja
+e contador conferido no commit. Código HMAC tem dez símbolos e digest de
+consulta separado; token longo continua abrindo a mesma política. Busca POST
+combina nomes autorizados com resolução exata, sem código na URL. Aceite comum
+revalida estados e cria vínculo/uso/auditoria/outbox atomicamente; evento CODE
+é único por uso. Links legados mantêm DTOs, prazo e primeiro aceite originais.
+RLS/grants e exportação seguem a audiência existente; restore revoga códigos
+copiados ao trocar a chave. Contratos e fases no
+[plano](docs/superpowers/plans/2026-10-23-convites-por-codigo.md).
+
 ### 1.3. Conversas e novidades em T05
 
 O desenho de T05 e comentários privados/imutáveis de até500 caracteres Unicode

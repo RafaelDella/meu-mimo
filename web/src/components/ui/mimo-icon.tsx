@@ -1,8 +1,12 @@
 import type { SVGProps } from 'react';
 
-export type MimoIconName = 'bow' | 'heart' | 'sparkle' | 'home' | 'activities' | 'gift' | 'people';
+export type MimoIconName = 'bow' | 'heart' | 'sparkle' | 'home' | 'activities' | 'gift' | 'people' | 'mail' | 'lock' | 'eye' | 'arrow';
 
 const paths: Record<MimoIconName, string> = {
+  mail: 'M3 5h18v14H3Zm0 0 9 8 9-8',
+  lock: 'M5 10h14v11H5Zm3 0V7a4 4 0 0 1 8 0v3m-4 5v2',
+  eye: 'M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Zm13 0a3 3 0 1 0-6 0 3 3 0 0 0 6 0Z',
+  arrow: 'M4 12h16m-6-6 6 6-6 6',
   bow: 'M11 10C4-1-2 4 2 9c2 3 6 2 9 1Zm2 0c7-11 13-6 9-1-2 3-6 2-9 1ZM10 12l-4 8 5-2 1-6m2 0 4 8-5-2-1-6',
   heart: 'M20.8 4.8a5.5 5.5 0 0 0-7.8 0L12 5.9l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.4a5.5 5.5 0 0 0 0-7.8Z',
   sparkle: 'm12 2 2.8 7.2L22 12l-7.2 2.8L12 22l-2.8-7.2L2 12l7.2-2.8L12 2Z',

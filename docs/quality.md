@@ -148,6 +148,18 @@ de intenção usa UUID sem persistir textos privados. Evidências e limites no
 
 ## Revisão de segurança reutilizável
 
+Convites por código acrescentam prova de evolução/backfill de InvitationUse,
+contador conferido ao commit, referências de outbox por ingresso e permissões
+restritas. O [plano de convites](superpowers/plans/2026-10-23-convites-por-codigo.md)
+concentra as evidências atuais: testes puros de formato/HMAC, HTTP real de
+gestão/DST/concorrência/isolamento e E2E de configuração/busca/diálogo/sessão.
+Mocks do navegador verificam estados da interface; a autorização/cota é provada
+separadamente no PostgreSQL/Auth locais. A execução passou 383 testes de
+integração T14, 104 E2E de lojas e 138 de relação. O build final compartilhado
+passou check completo e mais 210 E2E, incluindo os três arquivos de códigos.
+O ciclo web real e o restore também passaram, com usos preservados e códigos
+copiados revogados. Relatórios privados permanecem fora do Git.
+
 Fonte e invocação: leia a seção Prompt de
 [13-security-review.md na revisão adotada](https://github.com/soumatheusgomes/vibe-coding-toolkit/blob/790a895304e0c08b70a5b215c9d334f1c86b816c/docs/prompts/13-security-review.md)
 e solicite revisão somente leitura do intervalo Git ou dos arquivos explicitados,
