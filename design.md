@@ -218,6 +218,24 @@ As colunas respondem ao espaço disponível, empilhando no celular e com texto
 ampliado. A Lojinha do participante e os contratos permanecem como antes.
 Plano e evidências: [Resumo e Pessoas no desktop](docs/superpowers/plans/2026-10-23-desktop-resumo-pessoas.md).
 
+### 3.6. Organização desktop de Convites e Configurações
+
+Na continuação solicitada em 23/10/2026, Convites aproxima criação e consulta
+em colunas quando houver espaço. O convite recém-gerado ocupa o início da
+consulta, com código, link e compartilhamento antes do histórico. Cartões
+identificam situação, validade e usos; a revogação fica separada das opções de
+compartilhar. Revelar e ocultar usam o mesmo controle para preservar o foco.
+
+Configurações apresenta identidade e edição na área principal, estado no
+apoio e encerramento definitivo em cartão próprio. Uma loja encerrada mostra
+nome, apresentação e fuso somente para consulta. Confirmações, mensagens,
+recuperação após falha e permissões existentes permanecem completas.
+
+As colunas empilham com espaço reduzido ou texto ampliado. O Visor segmentado,
+as regras dos códigos e a entrada do participante são preservados. Não há
+mudança em contratos, dados ou serviços. Plano e evidências:
+[Convites e Configurações no desktop](docs/superpowers/plans/2026-10-23-desktop-convites-configuracoes.md).
+
 ## 4. Regras de uso e validação
 
 ### Biblioteca compartilhada de ilustrações
