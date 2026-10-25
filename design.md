@@ -251,6 +251,25 @@ Revalidação, destinos internos, perfil, notificações, MFA e recuperação re
 continuam com o Auth real. Plano, auditoria e evidências:
 [Acesso à conta](docs/superpowers/plans/2026-10-24-acesso-conta.md).
 
+### 3.8. Minha conta e Novidades no desktop
+
+A área autenticada tem uma composição própria: perfil e preferências na área
+principal, verificação em duas etapas e saída no apoio. O perfil usa campos
+lado a lado quando houver espaço. A entrada/cadastro/recuperação conserva a
+composição anterior. Revalidação oculta os dados privados e a identidade da
+sessão continua determinando o descarte de rascunhos e componentes.
+
+Novidades aproxima filtros e lista em colunas. Os cartões identificam loja,
+categoria, momento, acontecimento e leitura; abrir a origem é a ação principal.
+O contador global usa consulta independente da lista filtrada; indisponibilidade
+não vira zero. Marcar como lido mantém a versão observada e só conduz foco ao
+cartão se a pessoa ainda estiver no acionador. Preferências mantêm seleção
+explícita da loja e o tratamento existente de intenções incertas.
+
+Journal, envelope e ícones atuais acompanham os títulos e estados. As colunas
+empilham no celular/texto ampliado. Não há alteração em APIs ou permissões.
+Plano e evidências: [Minha conta e Novidades](docs/superpowers/plans/2026-10-24-desktop-conta-notificacoes.md).
+
 ## 4. Regras de uso e validação
 
 ### Biblioteca compartilhada de ilustrações
