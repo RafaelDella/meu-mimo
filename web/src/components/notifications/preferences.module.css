@@ -1,0 +1,26 @@
+.settings { display: grid; gap: 1rem; min-width: 0; container-type: inline-size; }
+.heading { display: flex; align-items: start; gap: .625rem; }
+.heading > svg { width: 24px; height: 26px; color: var(--action); flex-shrink: 0; }
+.heading h2 { margin: 0 0 .5rem; }
+.heading p { margin: 0; color: var(--text-muted); font-size: .875rem; }
+.selector { min-width: 0; }
+.selector p:empty, .preferences > p:empty { display: none; }
+.selector p { margin: 0; font-size: .75rem; }
+.empty { display: flex; align-items: center; gap: 1rem; padding: 1rem; border: 1px dashed var(--border); border-radius: 1rem; background: var(--surface-soft); }
+.empty :global(.mimo-sticker) { width: 56px; height: auto; flex-shrink: 0; }
+.empty p { margin: 0; font-size: .875rem; color: var(--text-muted); }
+.preferences { padding-top: 1rem; border-top: 1px dashed var(--border); min-width: 0; }
+.preferences > p { font-size: .875rem; }
+.form { display: grid; gap: .75rem; min-width: 0; }
+.option { display: flex; align-items: start; gap: .75rem; min-height: 48px; padding: 16px; border: 1px solid var(--border); background: var(--surface); border-radius: .875rem; cursor: pointer; }
+.option:focus-within { outline: 3px solid var(--focus); outline-offset: 3px; }
+.option input { width: 20px; height: 20px; margin: .125rem 0 0; flex-shrink: 0; accent-color: var(--action); }
+.option span { display: grid; gap: .25rem; min-width: 0; }
+.option strong { font-size: .875rem; font-weight: 600; }
+.option small { color: var(--text-muted); font-size: .8125rem; line-height: 1.6; }
+.option:has(input:checked) { border-color: var(--border-control); background: var(--surface-soft); }
+.form > button { justify-self: start; }
+@container (max-width: 14rem) {
+  .empty, .option { flex-wrap: wrap; }
+  .option span { flex-basis: 100%; }
+}

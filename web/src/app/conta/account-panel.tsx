@@ -1,19 +1,15 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import Link from 'next/link';
 import type { FormEvent } from 'react';
 import { Button } from '@/components/ui/button';
-import { StatusBadge } from '@/components/ui/status-badge';
-import { MfaPanel } from './mfa-panel';
 import { AccountRequestError, accountRequest, accountSession, friendlyError, notifySessionChanged } from './account-api';
 import type { AccountSession } from './account-api';
-import { ProfilePanel } from './profile-panel';
-import { NotificationSettingsSection } from '@/components/notifications/notification-preferences';
-import { AdminEntry } from '@/components/admin/admin-entry';
 import { MimoIcon } from '@/components/ui/mimo-icon';
 import { AccountAccess } from './account-access';
 import type { AccessMode } from './account-access';
+import { AccountWelcome } from './account-welcome';
+import { AccountOverview } from './account-overview';
 
 export function AccountPanel() {
   const [session, setSession] = useState<AccountSession | null>(null);
@@ -135,13 +131,25 @@ export function AccountPanel() {
     });
   }
 
-  const title = session?.recovery ? 'Uma nova senha, um novo começo' : session ? 'Sua conta' : sent ? 'Confira seu e-mail' :
+  function logout() {
+    void perform(async () => {
+      await accountRequest('logout', 'POST', {});
+      notifySessionChanged(); moveFocus.current = true;
+      sessionRef.current = null; setSession(null); setEmail(''); setPassword('');
+      setSent(false); setMode('login'); setMessage('Você saiu da sua conta.');
+    });
+  }
+
+  if (session && !session.recovery) return <AccountOverview session={session} checking={checking} busy={busy}
+    message={message} error={error} headingRef={headingRef} onLogout={logout} onVerified={refreshSession} />;
+
+  const title = session?.recovery ? 'Uma nova senha, um novo começo' : sent ? 'Confira seu e-mail' :
     mode === 'signup' ? 'Crie sua conta' : mode === 'recovery' ? 'Recupere seu acesso' : 'Entre no seu cantinho';
   const description = session?.recovery ? 'Escolha uma nova senha para voltar ao seu cantinho.' : session ? '' : sent ?
     'Falta só continuar pelo link de confirmação.' : mode === 'signup' ? 'O primeiro passo para criar ou participar de uma lojinha.' :
     mode === 'recovery' ? 'Informe seu e-mail para receber um link de recuperação.' : 'Seus mimos e suas conquistas estão esperando por você.';
 
-  return (
+  return <div className="account-layout"><AccountWelcome />
     <section className="account-card" aria-labelledby="account-title" aria-busy={loading || busy || checking}>
       <MimoIcon name="bow" className="account-bow" />
       <p className="mimo-eyebrow">{session ? 'Tudo no seu cantinho' : mode === 'signup' ? 'O primeiro de muitos carinhos' : mode === 'recovery' ? 'Vamos cuidar do seu acesso' : 'Que bom ter você por aqui'}</p>
@@ -156,28 +164,11 @@ export function AccountPanel() {
       )}
       {session && (
         <div className="account-status" hidden={checking} inert={checking}>
-          {!session.recovery && <StatusBadge tone="success" text="Você está na sua conta" />}
-          {!session.recovery && <p><Link className="primary-link" href="/lojas">Minhas lojas</Link></p>}
-          {!session.recovery && <AdminEntry key={`admin:${session.userId}:${session.sessionId}:${session.assuranceLevel}`} />}
-          {!session.recovery && <ProfilePanel key={`${session.userId}:${session.sessionId}`} />}
-          {!session.recovery && <NotificationSettingsSection key={`notices:${session.userId}:${session.sessionId}`} accountKey={`${session.userId}:${session.sessionId}`} />}
           <div className="account-actions">
-            <Button variant="secondary" disabled={busy} onClick={() => void perform(async () => {
-              await accountRequest('logout', 'POST', {});
-              notifySessionChanged();
-              moveFocus.current = true;
-              sessionRef.current = null;
-              setSession(null);
-              setEmail('');
-              setPassword('');
-              setSent(false);
-              setMode('login');
-              setMessage('Você saiu da sua conta.');
-            })}>Sair da conta</Button>
+            <Button variant="secondary" disabled={busy} onClick={logout}>Sair da conta</Button>
           </div>
-          {!session.recovery && <MfaPanel key={`${session.userId}:${session.sessionId}`} verified={session.assuranceLevel === 'aal2'} onVerified={refreshSession} />}
         </div>
       )}
     </section>
-  );
+  </div>;
 }

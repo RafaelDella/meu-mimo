@@ -112,7 +112,7 @@ test('recuperação restrita só oferece nova senha, com feedback e retorno à c
   await password.fill('Recuperada!123');
   await page.getByRole('button', { name: 'Salvar nova senha' }).click();
   await expect(page.getByText('Sua senha foi atualizada.', { exact: true })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Sua conta', exact: true })).toBeFocused();
+  await expect(page.getByRole('heading', { name: 'Minha conta', exact: true })).toBeFocused();
   await expect(page.getByRole('link', { name: 'Minhas lojas' })).toBeVisible();
   await expect(password).toHaveCount(0);
 });
@@ -147,7 +147,7 @@ test('login padrão e saída conduzem foco ao título depois de revalidar a sess
   await page.getByLabel('E-mail', { exact: true }).fill('pessoa@example.test');
   await page.getByLabel('Senha', { exact: true }).fill('SenhaLocal!123');
   await form(page).getByRole('button', { name: 'Entrar', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Sua conta', exact: true })).toBeFocused();
+  await expect(page.getByRole('heading', { name: 'Minha conta', exact: true })).toBeFocused();
   await page.getByRole('button', { name: 'Sair da conta', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Entre no seu cantinho' })).toBeFocused();
   await expect(page.getByLabel('E-mail', { exact: true })).toHaveValue('');
