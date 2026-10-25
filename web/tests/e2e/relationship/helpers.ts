@@ -79,7 +79,7 @@ export async function mockRelationship(page: Page, options: { merchant?: boolean
     if (path.startsWith(`${reactionPath}/operacoes/`)) { const result = state.reactionOperations.get(path.split('/').pop()!); await json(route, { operation: result ? { ...result, state: state.reaction } : null }); return true; }
     if (path === '/api/notificacoes/grupos') {
       const items = state.groups.filter(item => (!url.searchParams.get('storeId') || item.storeId === url.searchParams.get('storeId')) && (!url.searchParams.get('category') || item.category === url.searchParams.get('category')));
-      await json(route, { items, page: 1, pageSize: 20, total: items.length, attentionUnreadCount: state.groups.filter(item => item.unreadCount && item.attentionActive).length }); return true;
+      await json(route, { items, page: 1, pageSize: 20, total: items.length, attentionUnreadCount: state.groups.filter(item => item.unreadCount && item.attentionActive && (!url.searchParams.get('storeId') || item.storeId === url.searchParams.get('storeId'))).length }); return true;
     }
     if (path.endsWith('/lida') && path.startsWith('/api/notificacoes/grupos/')) {
       const body = route.request().postDataJSON() as { throughVersion: number }; state.readBodies.push(body);

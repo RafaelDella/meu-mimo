@@ -77,7 +77,7 @@ export function MfaPanel({ verified, onVerified }: { verified: boolean; onVerifi
 
   return (
     <section className="account-mfa" aria-labelledby="mfa-title" aria-busy={busy || loading}>
-      <h3 id="mfa-title">Verificação em duas etapas</h3>
+      <h2 id="mfa-title">Verificação em duas etapas</h2>
       <p>Uma proteção a mais para sua conta. Obrigatória para acessar a administração.</p>
       <p className="account-feedback" role="status" aria-live="polite" aria-atomic="true">{message}</p>
       <p className="account-error" role="alert" aria-atomic="true">{error}</p>

@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Feedback } from '@/components/stores/store-controls';
 import { storeError, storeRequest, useResource, useStoreAction } from '@/components/stores/store-api';
+import { MimoIcon } from '@/components/ui/mimo-icon';
 
 function ProfileForm({ profile }: { profile: ProfileView }) {
   const [name, setName] = useState(profile.displayName ?? '');
@@ -24,9 +25,9 @@ function ProfileForm({ profile }: { profile: ProfileView }) {
       }
     }, value => { setName(value.displayName ?? ''); action.setMessage('Seu nome foi salvo.'); });
   }
-  return <section className="account-profile" aria-labelledby="profile-title"><h3 id="profile-title">Como você quer aparecer?</h3>
+  return <section className="account-profile" aria-labelledby="profile-title"><h2 id="profile-title"><MimoIcon name="people" /> Como você quer aparecer?</h2>
     <p>Este nome identifica você nas suas lojas e nos convites.</p><Feedback {...action} />
-    <form className="account-form" onSubmit={save}><Input label="E-mail da sua conta" type="email" value={profile.email} readOnly />
+    <form className="account-form" onSubmit={save}><Input label="E-mail da sua conta" name="accountEmail" autoComplete="email" type="email" value={profile.email} readOnly hint="Seu e-mail de acesso, apenas para consulta." />
       <Input label="Seu nome" name="displayName" autoComplete="name" maxLength={80} value={name}
       onChange={event => setName(event.target.value)} disabled={action.busy} /><Button type="submit" disabled={action.busy}>Salvar nome</Button></form>
   </section>;
